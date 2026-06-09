@@ -182,7 +182,7 @@ define([
              * @return {originRestoreCatStep4}
              */
             initRestoreCatStep4: function(region, site) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new originRestoreCatStep4(region, site);
             }
         };

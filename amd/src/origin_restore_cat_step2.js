@@ -110,7 +110,7 @@ define([
              * @return {originRestoreCatStep2}
              */
             initRestoreCatStep2: function(region) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new originRestoreCatStep2(region);
             }
         };

@@ -145,7 +145,7 @@ define([
          * @return {originRemoveStep2}
          */
         initOriginRemoveStep2: function(region) {
-            // eslint-disable-next-line babel/new-cap
+            // eslint-disable-next-line new-cap
             return new originRemoveStep2(region);
         }
     };

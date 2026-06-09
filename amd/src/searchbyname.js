@@ -101,7 +101,7 @@ define([
              * @return {searchbyname}
              */
             initSearchbyname: function(region) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new searchbyname(region);
             }
         };

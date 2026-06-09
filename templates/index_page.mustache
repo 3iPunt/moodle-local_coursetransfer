@@ -31,19 +31,19 @@
     <div class="card text-center">
         <div class="card-header">
         </div>
-        <div class="card-body text-left">
+        <div class="card-body text-left text-start">
             {{# error }}
             <div class="alert alert-danger" role="alert">
                 {{ message }} . {{# str }} click_refresh, local_coursetransfer {{/ str }}
             </div>
             {{/ error }}
-            <h4 class="card-title font-weight-bold">{{# str }} index_title, local_coursetransfer {{/ str }}</h4>
+            <h4 class="card-title font-weight-bold fw-bold">{{# str }} index_title, local_coursetransfer {{/ str }}</h4>
             <hr>
             <h6 class="section-title">{{# str }} user_ws, local_coursetransfer {{/ str }}</h6>
             <p><span class="label">{{# str }} token_user_ws, local_coursetransfer {{/ str }}:</span> <span class="value"> {{# token }}<code>{{ token }}</code>{{/ token }}</span></p>
             <hr>
             <a href="{{ url_config }}" class="btn btn-primary" target="_blank">{{# str }} config, local_coursetransfer {{/ str }}</a>
-            <a href="{{ url_postinstall }}" class="btn btn-outline-primary ml-2">{{# str }} refresh, local_coursetransfer {{/ str }}</a>
+            <a href="{{ url_postinstall }}" class="btn btn-outline-primary ml-2 ms-2">{{# str }} refresh, local_coursetransfer {{/ str }}</a>
         </div>
         <div class="card-footer text-muted">
         </div>

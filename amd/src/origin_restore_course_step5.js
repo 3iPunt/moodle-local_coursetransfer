@@ -168,7 +168,7 @@ define([
              * @return {restoreCourseStep5}
              */
             initRestoreCourseStep5: function(region, site) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new restoreCourseStep5(region, site);
             }
         };

@@ -109,7 +109,7 @@ define([
              * @return {originRestore}
              */
             initOriginRestore: function(region) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new originRestore(region);
             }
         };

@@ -157,7 +157,7 @@ define([
              * @return {originRestoreStep3}
              */
             initRestoreStep3: function(region) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new originRestoreStep3(region);
             }
         };

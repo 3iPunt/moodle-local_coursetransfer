@@ -96,8 +96,15 @@ class request {
         global $USER;
         $user = is_null($user) ? $USER : $user;
         $params = [];
-        $params['field'] = get_config('local_coursetransfer', 'origin_field_search_user');
-        $params['value'] = $user->{$params['field']};
+        $field = (string)get_config('local_coursetransfer', 'origin_field_search_user');
+        if ($field === '' || $field === false) {
+            $field = 'username';
+        }
+        // The configurable field 'userid' is exposed in the UI but the real user property is 'id'.
+        $userprop = ($field === 'userid') ? 'id' : $field;
+        $value = isset($user->{$userprop}) ? $user->{$userprop} : '';
+        $params['field'] = $field;
+        $params['value'] = (string)$value;
         if (!empty($perpage)) {
             $params['page'] = $page ?? 0;
             $params['perpage'] = $perpage;
@@ -421,6 +428,12 @@ class request {
                         $message = $response->msg;
                     } else {
                         $message = get_string('error_not_controlled', 'local_coursetransfer');
+                    }
+                    if (!empty($response->debuginfo)) {
+                        $message .= ' [' . $response->debuginfo . ']';
+                    }
+                    if (!empty($response->errorcode)) {
+                        $message .= ' (errorcode: ' . $response->errorcode . ')';
                     }
                     $error = new stdClass();
                     $error->code = '12002';

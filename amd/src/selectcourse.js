@@ -189,7 +189,7 @@ define([
              * @return {selectcourse}
              */
             initSelectcourse: function(region, courseid) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new selectcourse(region, courseid);
             }
         };

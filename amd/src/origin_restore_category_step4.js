@@ -162,7 +162,7 @@ define([
              * @return {restoreCategoryStep4}
              */
             initRestoreCategoryStep4: function(region, site) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new restoreCategoryStep4(region, site);
             }
         };

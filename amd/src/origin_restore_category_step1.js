@@ -108,7 +108,7 @@ define([
              * @return {restoreCategoryStep1}
              */
             initRestoreCategoryStep1: function(region, categoryid) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new restoreCategoryStep1(region, categoryid);
             }
         };

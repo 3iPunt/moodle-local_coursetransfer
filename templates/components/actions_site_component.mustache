@@ -28,7 +28,7 @@
 
 }}
 <div data-region="actions_site_component">
-    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#{{ type }}Delete{{ id }}">
+    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#{{ type }}Delete{{ id }}" data-bs-toggle="modal" data-bs-target="#{{ type }}Delete{{ id }}">
         {{#str}} delete {{/str}}
     </button>
 
@@ -38,13 +38,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">{{#str}} delete_site, local_coursetransfer {{/str}} {{ id }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <p><b>{{#str}} delete_site_question, local_coursetransfer {{/str}}</b></p>
                     <p>{{ host }}</p>
+                    <div class="alert alert-danger" role="alert" data-region="remove-error-msg" style="display: none"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">{{#str}} cancel {{/str}}</button>
@@ -54,7 +55,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editSite-{{ id }}">
+    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editSite-{{ id }}" data-bs-toggle="modal" data-bs-target="#editSite-{{ id }}">
         {{#str}} edit {{/str}}
     </button>
 
@@ -64,18 +65,18 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">{{#str}} edit_site, local_coursetransfer {{/str}} {{ id }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <form data-region="edit-form" data-id="{{ id }}" style="text-align: left">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="host">{{#str}} host_url, local_coursetransfer {{/str}}</label>
                             <input type="text" value="{{ host }}" class="form-control" id="host" aria-describedby="hostHelp" placeholder="{{#str}} host_url, local_coursetransfer {{/str}}">
                             <small id="hostHelp" class="form-text text-muted">{{#str}} host_url_desc, local_coursetransfer {{/str}}</small>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="token">{{#str}} host_token, local_coursetransfer {{/str}}</label>
                             <input type="text" value="{{ token }}" class="form-control" id="token" placeholder="{{#str}} host_token, local_coursetransfer {{/str}}">
                             <small id="tokenHelp" class="form-text text-muted">{{#str}} host_token_desc, local_coursetransfer {{/str}}</small>
@@ -91,7 +92,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-action="test" data-target="#test-{{ id }}" data-id="{{ id }}">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-bs-toggle="modal" data-action="test" data-target="#test-{{ id }}" data-bs-target="#test-{{ id }}" data-id="{{ id }}">
         <i class="fa fa-check hidden" data-region="test-ok" aria-hidden="true" style="color: white"></i>
         <i class="fa fa-times hidden" data-region="test-ko" aria-hidden="true" style="color: white"></i>
         {{#str}} test, local_coursetransfer {{/str}}

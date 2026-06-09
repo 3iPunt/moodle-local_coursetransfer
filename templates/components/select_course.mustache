@@ -28,11 +28,11 @@
 
 }}
 <div data-region="select_course_component-{{id}}" class="select_course_component">
-    <button data-region="change-button" type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalDestiny-{{ id }}" data-targetid="0" data-categorytarget="{{ categoryiddefault }}">
+    <button data-region="change-button" type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalDestiny-{{ id }}" data-bs-toggle="modal" data-bs-target="#modalDestiny-{{ id }}" data-targetid="0" data-categorytarget="{{ categoryiddefault }}">
         <span id="in-new-course">{{#str}} in_new_course, local_coursetransfer {{/str}}</span>
         <span id="course-selected" style="display: none">{{#str}} in_new_course, local_coursetransfer {{/str}}</span>
     </button>
-    <span class="badge badge-secondary ml-2" data-region="cattargetname">{{ categorynamedefault }}</span>
+    <span class="badge badge-secondary bg-secondary ml-2 ms-2" data-region="cattargetname">{{ categorynamedefault }}</span>
 
     <!-- Modal -->
     <div class="modal fade" id="modalDestiny-{{ id }}" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
@@ -40,7 +40,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLongTitle">{{#str}} select_destination, local_coursetransfer {{/str}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>

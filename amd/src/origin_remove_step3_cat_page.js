@@ -141,7 +141,7 @@ define([
          * @return {originRemoveCatStep3}
          */
         initOriginRemoveCatStep3: function(region, site, removeid) {
-            // eslint-disable-next-line babel/new-cap
+            // eslint-disable-next-line new-cap
             return new originRemoveCatStep3(region, site, removeid);
         }
     };

@@ -77,7 +77,7 @@ define([
              * @return {restoreCourseStep4}
              */
             initRestoreCourseStep4: function(region) {
-                // eslint-disable-next-line babel/new-cap
+                // eslint-disable-next-line new-cap
                 return new restoreCourseStep4(region);
             }
         };

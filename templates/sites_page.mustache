@@ -36,7 +36,7 @@
 
     <div>
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#createSite">
+        <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#createSite" data-bs-toggle="modal" data-bs-target="#createSite">
            {{#str}} create_site, local_coursetransfer {{/str}}
         </button>
 
@@ -46,18 +46,18 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">{{#str}} create_site, local_coursetransfer {{/str}}</h5>
-                        <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         <form data-region="create-form">
-                            <div class="form-group">
+                            <div class="form-group mb-3">
                                 <label for="host">{{#str}} host_url, local_coursetransfer {{/str}}</label>
                                 <input type="text" class="form-control" id="host" aria-describedby="emailHelp" placeholder="{{#str}} host_url, local_coursetransfer {{/str}}">
                                 <small id="hostHelp" class="form-text text-muted">{{#str}} host_url_desc, local_coursetransfer {{/str}}</small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group mb-3">
                                 <label for="token">{{#str}} host_token, local_coursetransfer {{/str}}</label>
                                 <input type="text" class="form-control" id="token" placeholder="{{#str}} host_token, local_coursetransfer {{/str}}">
                                 <small id="tokenHelp" class="form-text text-muted">{{#str}} host_token_desc, local_coursetransfer {{/str}}</small>
@@ -82,8 +82,20 @@
 </style>
 
 {{#js}}
-    require(['local_coursetransfer/sites'], function(sites) {
+    require(['jquery', 'local_coursetransfer/sites'], function($, sites) {
         sites.initSites('[data-region="sites_page"]', '{{ type }}');
+        $(function() {
+            var $popovers = $('[data-toggle="popover"], [data-bs-toggle="popover"]');
+            if (window.bootstrap && window.bootstrap.Popover) {
+                $popovers.each(function() {
+                    if (!window.bootstrap.Popover.getInstance(this)) {
+                        new window.bootstrap.Popover(this);
+                    }
+                });
+            } else if (typeof $popovers.popover === 'function') {
+                $popovers.popover();
+            }
+        });
     });
 {{/js}}
 

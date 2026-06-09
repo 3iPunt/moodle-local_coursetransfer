@@ -97,8 +97,8 @@ class sites_external extends external_api {
         );
 
         $type = $params['type'];
-        $host = $params['host'];
-        $token = $params['token'];
+        $host = trim($params['host']);
+        $token = trim($params['token']);
 
         $success = false;
         $errors = [];
@@ -106,46 +106,45 @@ class sites_external extends external_api {
         $data->id = 0;
 
         if ($type !== 'target' && $type !== 'origin') {
-            $errors[] =
-                    [
-                        'code' => '18044',
-                        'msg' => 'TYPE INVALID',
-                    ];
+            $errors[] = [
+                'code' => '18044',
+                'msg' => get_string('type_invalid', 'local_coursetransfer'),
+            ];
         } else if ($host === '' || $token === '') {
-            $errors[] =
-                    [
-                        'code' => '18043',
-                        'msg' => get_string('host_token_empty', 'local_coursetransfer'),
-                    ];
+            $errors[] = [
+                'code' => '18043',
+                'msg' => get_string('host_token_empty', 'local_coursetransfer'),
+            ];
+        } else if (!self::is_valid_url($host)) {
+            $errors[] = [
+                'code' => '18045',
+                'msg' => get_string('host_url_invalid', 'local_coursetransfer'),
+            ];
         } else {
             try {
                 $object = new stdClass();
                 $object->host = coursetransfer_sites::clean_host($host);
-                $object->token = trim($token);
+                $object->token = $token;
                 $object->userid = $USER->id;
                 $object->timemodified = time();
                 $object->timecreated = time();
-                $params = ['host' => $object->host];
                 $recordselect = $DB->get_record_select('local_coursetransfer_' . $type,
-                "host = :host", $params);
+                    "host = :host", ['host' => $object->host]);
                 if ($recordselect) {
-                    $success = false;
-                    $errors[] =
-                            [
-                                    'code' => '18042',
-                                    'msg' => get_string('site_exist', 'local_coursetransfer'),
-                            ];
+                    $errors[] = [
+                        'code' => '18042',
+                        'msg' => get_string('site_exist', 'local_coursetransfer'),
+                    ];
                 } else {
                     $res = $DB->insert_record('local_coursetransfer_' . $type, $object);
                     $data->id = $res;
                     $success = true;
                 }
             } catch (moodle_exception $e) {
-                $errors[] =
-                        [
-                            'code' => '18041',
-                            'msg' => $e->getMessage(),
-                        ];
+                $errors[] = [
+                    'code' => '18041',
+                    'msg' => $e->getMessage(),
+                ];
             }
         }
 
@@ -154,6 +153,22 @@ class sites_external extends external_api {
             'errors' => $errors,
             'data' => $data,
         ];
+    }
+
+    /**
+     * Validate that a value is a syntactically correct HTTP/HTTPS URL.
+     *
+     * @param string $url
+     * @return bool
+     */
+    protected static function is_valid_url(string $url): bool {
+        if ($url === '') {
+            return false;
+        }
+        if (!preg_match('#^https?://#i', $url)) {
+            return false;
+        }
+        return filter_var($url, FILTER_VALIDATE_URL) !== false;
     }
 
     /**
@@ -220,8 +235,8 @@ class sites_external extends external_api {
 
         $type = $params['type'];
         $id = $params['id'];
-        $host = $params['host'];
-        $token = $params['token'];
+        $host = trim($params['host']);
+        $token = trim($params['token']);
 
         $success = false;
         $errors = [];
@@ -229,52 +244,56 @@ class sites_external extends external_api {
         $data->id = $id;
 
         if ($type !== 'target' && $type !== 'origin') {
-            $errors[] =
-                    [
-                        'code' => '18032',
-                        'msg' => 'TYPE INVALID',
-                    ];
+            $errors[] = [
+                'code' => '18032',
+                'msg' => get_string('type_invalid', 'local_coursetransfer'),
+            ];
         } else if ($host === '' || $token === '') {
-            $errors[] =
-                    [
-                        'code' => '18043',
-                        'msg' => get_string('host_token_empty', 'local_coursetransfer'),
-                    ];
+            $errors[] = [
+                'code' => '18043',
+                'msg' => get_string('host_token_empty', 'local_coursetransfer'),
+            ];
+        } else if (!self::is_valid_url($host)) {
+            $errors[] = [
+                'code' => '18045',
+                'msg' => get_string('host_url_invalid', 'local_coursetransfer'),
+            ];
+        } else if (!$DB->record_exists('local_coursetransfer_' . $type, ['id' => $id])) {
+            $errors[] = [
+                'code' => '18033',
+                'msg' => get_string('site_not_found', 'local_coursetransfer'),
+            ];
         } else {
             try {
                 $object = new stdClass();
                 $object->id = $id;
                 $object->host = coursetransfer_sites::clean_host($host);
-                $object->token = trim($token);
+                $object->token = $token;
                 $object->userid = $USER->id;
                 $object->timemodified = time();
-                $params = ['host' => $object->host];
                 $recordselect = $DB->get_record_select('local_coursetransfer_' . $type,
-                        "host = :host", $params);
+                    "host = :host", ['host' => $object->host]);
                 if ($recordselect && (int)$recordselect->id !== $object->id) {
-                    $success = false;
-                    $errors[] =
-                            [
-                                'code' => '18032',
-                                'msg' => get_string('site_exist', 'local_coursetransfer'),
-                            ];
+                    $errors[] = [
+                        'code' => '18032',
+                        'msg' => get_string('site_exist', 'local_coursetransfer'),
+                    ];
                 } else {
                     $DB->update_record('local_coursetransfer_' . $type, $object);
                     $success = true;
                 }
             } catch (moodle_exception $e) {
-                $errors[] =
-                        [
-                            'code' => '18031',
-                            'msg' => $e->getMessage(),
-                        ];
+                $errors[] = [
+                    'code' => '18031',
+                    'msg' => $e->getMessage(),
+                ];
             }
         }
 
         return [
-                'success' => $success,
-                'errors' => $errors,
-                'data' => $data,
+            'success' => $success,
+            'errors' => $errors,
+            'data' => $data,
         ];
     }
 
@@ -342,28 +361,39 @@ class sites_external extends external_api {
         $data->id = $id;
 
         if ($type !== 'target' && $type !== 'origin') {
-            $errors[] =
-                    [
-                        'code' => '18022',
-                        'msg' => 'TYPE INVALID',
-                    ];
+            $errors[] = [
+                'code' => '18022',
+                'msg' => get_string('type_invalid', 'local_coursetransfer'),
+            ];
         } else {
-            try {
-                $DB->delete_records('local_coursetransfer_' . $type, ['id' => $id]);
-                $success = true;
-            } catch (moodle_exception $e) {
-                $errors[] =
-                        [
-                            'code' => '18021',
-                            'msg' => $e->getMessage(),
-                        ];
+            $record = $DB->get_record('local_coursetransfer_' . $type, ['id' => $id]);
+            if (!$record) {
+                $errors[] = [
+                    'code' => '18023',
+                    'msg' => get_string('site_not_found', 'local_coursetransfer'),
+                ];
+            } else if ($DB->record_exists('local_coursetransfer_request', ['siteurl' => $record->host])) {
+                $errors[] = [
+                    'code' => '18024',
+                    'msg' => get_string('site_in_use', 'local_coursetransfer'),
+                ];
+            } else {
+                try {
+                    $DB->delete_records('local_coursetransfer_' . $type, ['id' => $id]);
+                    $success = true;
+                } catch (moodle_exception $e) {
+                    $errors[] = [
+                        'code' => '18021',
+                        'msg' => $e->getMessage(),
+                    ];
+                }
             }
         }
 
         return [
-                'success' => $success,
-                'errors' => $errors,
-                'data' => $data,
+            'success' => $success,
+            'errors' => $errors,
+            'data' => $data,
         ];
     }
 
@@ -426,61 +456,53 @@ class sites_external extends external_api {
         $id = $params['id'];
 
         $success = false;
-        $error = [
-                'code' => '',
-                'msg' => '',
-        ];
+        $errors = [];
         $data = new stdClass();
         $data->id = $id;
 
         if ($type !== 'target' && $type !== 'origin') {
-            $error = [
-                        'code' => '18011',
-                        'msg' => 'TYPE INVALID',
-                    ];
+            $errors[] = [
+                'code' => '18011',
+                'msg' => get_string('type_invalid', 'local_coursetransfer'),
+            ];
         } else {
             try {
-                if ($type === 'origin') {
-                    $site = coursetransfer::get_site_by_position($id);
-                    $request = new request($site);
-                    $res = $request->site_origin_test($USER);
-                    if ($res->success) {
-                        $success = true;
-                    } else {
-                        $success = false;
-                        $error = empty($res->errors) ? null : $res->errors[0];
-                        $error = [
-                                'code' => !is_null($error) ? $error->code : '',
-                                'msg' => !is_null($error) ? $error->msg : '',
+                $site = coursetransfer::get_site_by_position($id, $type);
+                $request = new request($site);
+                $res = ($type === 'origin')
+                    ? $request->site_origin_test($USER)
+                    : $request->site_target_test($USER);
+                if ($res->success) {
+                    $success = true;
+                } else {
+                    foreach ((array)$res->errors as $err) {
+                        $errors[] = [
+                            'code' => isset($err->code) ? (string)$err->code : '',
+                            'msg' => isset($err->msg) ? (string)$err->msg : '',
                         ];
                     }
-                } else if ($type === 'target') {
-                    $site = coursetransfer::get_site_by_position($id, 'target');
-                    $request = new request($site);
-                    $res = $request->site_target_test($USER);
-                    if ($res->success) {
-                        $success = true;
-                    } else {
-                        $success = false;
-                        $error = empty($res->errors) ? null : $res->errors[0];
-                        $error = [
-                                'code' => !is_null($error) ? $error->code : '',
-                                'msg' => !is_null($error) ? $error->msg : '',
+                    if (empty($errors)) {
+                        $errors[] = [
+                            'code' => '18012',
+                            'msg' => get_string('unknown_error', 'local_coursetransfer'),
                         ];
                     }
                 }
             } catch (moodle_exception $e) {
-                $error = [
-                        'code' => '18010',
-                        'msg' => $e->getMessage(),
+                $errors[] = [
+                    'code' => '18010',
+                    'msg' => $e->getMessage(),
                 ];
             }
         }
 
+        $primary = !empty($errors) ? $errors[0] : ['code' => '', 'msg' => ''];
+
         return [
-                'success' => $success,
-                'error' => $error,
-                'data' => $data,
+            'success' => $success,
+            'error' => $primary,
+            'errors' => $errors,
+            'data' => $data,
         ];
     }
 
@@ -491,20 +513,26 @@ class sites_external extends external_api {
      */
     public static function site_test_returns(): external_single_structure {
         return new external_single_structure(
-                [
-                    'success' => new external_value(PARAM_BOOL, 'Was it a success?'),
-                    'error' => new external_single_structure(
-                        [
-                            'code' => new external_value(PARAM_TEXT, 'Code'),
-                            'msg' => new external_value(PARAM_RAW, 'Message'),
-                        ]
-                    ),
-                    'data' => new external_single_structure(
-                        [
-                            'id' => new external_value(PARAM_INT, 'Site ID', VALUE_OPTIONAL),
-                        ]
-                    ),
-                ]
+            [
+                'success' => new external_value(PARAM_BOOL, 'Was it a success?'),
+                'error' => new external_single_structure(
+                    [
+                        'code' => new external_value(PARAM_TEXT, 'Code'),
+                        'msg' => new external_value(PARAM_RAW, 'Message'),
+                    ]
+                ),
+                'errors' => new external_multiple_structure(new external_single_structure(
+                    [
+                        'code' => new external_value(PARAM_TEXT, 'Code'),
+                        'msg' => new external_value(PARAM_RAW, 'Message'),
+                    ]
+                ), 'List of errors', VALUE_OPTIONAL),
+                'data' => new external_single_structure(
+                    [
+                        'id' => new external_value(PARAM_INT, 'Site ID', VALUE_OPTIONAL),
+                    ]
+                ),
+            ]
         );
     }
 
@@ -515,11 +543,11 @@ class sites_external extends external_api {
      */
     public static function origin_test_parameters(): external_function_parameters {
         return new external_function_parameters(
-                [
-                    'field' => new external_value(PARAM_TEXT, 'Field'),
-                    'value' => new external_value(PARAM_TEXT, 'Value'),
-                    'targetsite' => new external_value(PARAM_TEXT, 'Target Site URL'),
-                ]
+            [
+                'field' => new external_value(PARAM_ALPHANUMEXT, 'Field'),
+                'value' => new external_value(PARAM_RAW, 'Value'),
+                'targetsite' => new external_value(PARAM_RAW, 'Target Site URL'),
+            ]
         );
     }
 
@@ -614,10 +642,10 @@ class sites_external extends external_api {
      */
     public static function target_test_parameters(): external_function_parameters {
         return new external_function_parameters(
-                [
-                    'field' => new external_value(PARAM_TEXT, 'Field'),
-                    'value' => new external_value(PARAM_TEXT, 'Value'),
-                ]
+            [
+                'field' => new external_value(PARAM_ALPHANUMEXT, 'Field'),
+                'value' => new external_value(PARAM_RAW, 'Value'),
+            ]
         );
     }
 

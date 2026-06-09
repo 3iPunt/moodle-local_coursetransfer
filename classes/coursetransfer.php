@@ -183,60 +183,58 @@ class coursetransfer {
      */
     public static function auth_user(string $field, string $value): array {
         global $DB;
-        if (in_array($field, self::FIELDS_USER)) {
-            $res = $DB->get_record('user', [$field => $value]);
-            if ($res) {
-                $user = core_user::get_user($res->id);
-                $hascourse = self::has_course($user);
-                if ($hascourse) {
-                    return
-                        [
-                            'success' => true,
-                            'data' => $user,
-                            'error' =>
-                                [
-                                    'code' => '',
-                                    'msg' => '',
-                                ],
-                        ];
-                } else {
-                    return
-                        [
-                            'success' => false,
-                            'data' => new stdClass(),
-                            'error' =>
-                                [
-                                    'code' => '17001',
-                                    'msg' => get_string('user_does_not_have_courses', 'local_coursetransfer'),
-                                ],
-                        ];
-                }
-
-            } else {
-                return
-                    [
-                        'success' => false,
-                        'data' => new stdClass(),
-                        'error' =>
-                            [
-                                'code' => '17002',
-                                'msg' => get_string('user_not_found', 'local_coursetransfer'),
-                            ],
-                    ];
-            }
-
-        } else {
-            return
-                [
-                    'success' => false,
-                    'data' => new stdClass(),
-                    'error' =>
-                        [
-                            'code' => '17001',
-                            'msg' => get_string('field_not_valid', 'local_coursetransfer'),
-                        ],
-                ];
+        if (!in_array($field, self::FIELDS_USER)) {
+            return [
+                'success' => false,
+                'data' => new stdClass(),
+                'error' => [
+                    'code' => '17001',
+                    'msg' => get_string('field_not_valid', 'local_coursetransfer'),
+                ],
+            ];
         }
+        if ($value === '' || $value === null) {
+            return [
+                'success' => false,
+                'data' => new stdClass(),
+                'error' => [
+                    'code' => '17003',
+                    'msg' => get_string('user_not_found', 'local_coursetransfer'),
+                ],
+            ];
+        }
+        // The 'userid' field exposed in the UI maps to the 'id' column in the user table.
+        $column = ($field === 'userid') ? 'id' : $field;
+        $res = $DB->get_record('user', [$column => $value]);
+        if (!$res) {
+            return [
+                'success' => false,
+                'data' => new stdClass(),
+                'error' => [
+                    'code' => '17002',
+                    'msg' => get_string('user_not_found', 'local_coursetransfer'),
+                ],
+            ];
+        }
+        $user = core_user::get_user($res->id);
+        if (!self::has_course($user)) {
+            return [
+                'success' => false,
+                'data' => new stdClass(),
+                'error' => [
+                    'code' => '17001',
+                    'msg' => get_string('user_does_not_have_courses', 'local_coursetransfer'),
+                ],
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => $user,
+            'error' => [
+                'code' => '',
+                'msg' => '',
+            ],
+        ];
     }
 
     /**

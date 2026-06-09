@@ -61,8 +61,55 @@ define([
         EDIT : '#editSite-',
         TEST_OK : '[data-region="test-ok"]',
         TEST_KO : '[data-region="test-ko"]',
-        ERROR_MSG : '[data-region="error-msg"]'
+        ERROR_MSG : '[data-region="error-msg"]',
+        REMOVE_ERROR : '[data-region="remove-error-msg"]'
     };
+
+    /**
+     * Extract a readable error message from a WS response.
+     *
+     * @param {Object} response
+     * @return {String}
+     */
+    function extractErrorMsg(response) {
+        if (response && response.errors && response.errors.length > 0 && response.errors[0].msg) {
+            return response.errors[0].msg;
+        }
+        if (response && response.error && response.error.msg) {
+            return response.error.msg;
+        }
+        return 'Unknown error';
+    }
+
+    /**
+     * Refresh popover content for a button so the new message is shown next time it opens.
+     * Compatible with Bootstrap 4 (jQuery plugin) and Bootstrap 5 (vanilla API).
+     *
+     * @param {jQuery} $btn
+     * @param {String} content
+     */
+    function refreshPopoverContent($btn, content) {
+        $btn.attr('data-content', content);
+        $btn.attr('data-bs-content', content);
+        let el = $btn.get(0);
+        if (!el) {
+            return;
+        }
+        // Bootstrap 5.
+        if (window.bootstrap && window.bootstrap.Popover) {
+            let instance = window.bootstrap.Popover.getInstance(el);
+            if (instance) {
+                instance.setContent({'.popover-body': content});
+            } else {
+                new window.bootstrap.Popover(el);
+            }
+            return;
+        }
+        // Bootstrap 4 via jQuery plugin.
+        if (typeof $btn.popover === 'function') {
+            $btn.popover('dispose').popover();
+        }
+    }
 
     /**
      * @param {String} region
@@ -73,7 +120,6 @@ define([
     function sites(region, type) {
         this.node = $(region);
         this.type = type;
-        console.log('Sites');
         this.node.find(ACTIONS.CREATE).on('click', this.clickCreate.bind(this));
         this.node.find(ACTIONS.EDIT).on('click', this.clickEdit.bind(this));
         this.node.find(ACTIONS.REMOVE).on('click', this.clickRemove.bind(this));
@@ -86,7 +132,8 @@ define([
         let createregion = this.node.find(REGIONS.CREATE);
         let host = createregion.find('#host').val();
         let token = createregion.find('#token').val();
-        let errormsg = this.node.find(REGIONS.ERROR_MSG);
+        let errormsg = createregion.find(REGIONS.ERROR_MSG);
+        errormsg.hide().text('');
 
         const request = {
             methodname: SERVICES.SITE_ADD,
@@ -100,12 +147,14 @@ define([
             if (response.success) {
                 location.reload();
             } else {
-                console.log(response);
-                errormsg.text(response.errors[0].msg);
+                button.attr('disabled', false);
+                errormsg.text(extractErrorMsg(response));
                 errormsg.show();
             }
         }).fail(function(fail) {
-            console.log(fail);
+            button.attr('disabled', false);
+            errormsg.text(fail && fail.message ? fail.message : 'Request failed');
+            errormsg.show();
         });
     };
 
@@ -115,7 +164,8 @@ define([
         let editregion = this.node.find(REGIONS.EDIT + siteid);
         let host = editregion.find('#host').val();
         let token = editregion.find('#token').val();
-        let errormsg = this.node.find(REGIONS.ERROR_MSG);
+        let errormsg = editregion.find(REGIONS.ERROR_MSG);
+        errormsg.hide().text('');
 
         button.attr('disabled', true);
         const request = {
@@ -131,12 +181,14 @@ define([
             if (response.success) {
                 location.reload();
             } else {
-                console.log(response);
-                errormsg.text(response.errors[0].msg);
+                button.attr('disabled', false);
+                errormsg.text(extractErrorMsg(response));
                 errormsg.show();
             }
         }).fail(function(fail) {
-            console.log(fail);
+            button.attr('disabled', false);
+            errormsg.text(fail && fail.message ? fail.message : 'Request failed');
+            errormsg.show();
         });
     };
 
@@ -144,12 +196,12 @@ define([
         let $button = $(e.currentTarget);
         let siteid = $button.data('id');
         $button.attr('disabled', true);
-        $button.addClass('btn-light', true);
-        $button.removeClass('btn-success', true);
-        $button.removeClass('btn-danger', true);
-        let $buttonerror = $('[data-target="#error-' + siteid + '"]');
+        $button.addClass('btn-light');
+        $button.removeClass('btn-success');
+        $button.removeClass('btn-danger');
+        let $buttonerror = $('[data-target="#error-' + siteid + '"], [data-bs-target="#error-' + siteid + '"]');
         $buttonerror.addClass('hidden');
-        $buttonerror.data('content', '');
+        refreshPopoverContent($buttonerror, '');
         $button.find(REGIONS.TEST_OK).addClass('hidden');
         $button.find(REGIONS.TEST_KO).addClass('hidden');
         const request = {
@@ -161,27 +213,36 @@ define([
         };
         Ajax.call([request])[0].done(function(response) {
             $button.attr('disabled', false);
-            console.log(response);
             if (response.success) {
                 $button.find(REGIONS.TEST_OK).removeClass('hidden');
-                $button.addClass('btn-success', true);
-                $button.removeClass('btn-light', true);
+                $button.addClass('btn-success');
+                $button.removeClass('btn-light');
             } else {
                 $button.find(REGIONS.TEST_KO).removeClass('hidden');
                 $buttonerror.removeClass('hidden');
-                $button.addClass('btn-danger', true);
-                $button.removeClass('btn-light', true);
-                $buttonerror.data('content', response.error.msg);
+                $button.addClass('btn-danger');
+                $button.removeClass('btn-light');
+                refreshPopoverContent($buttonerror, extractErrorMsg(response));
             }
         }).fail(function(fail) {
-            console.log(fail);
+            $button.attr('disabled', false);
+            $button.find(REGIONS.TEST_KO).removeClass('hidden');
+            $buttonerror.removeClass('hidden');
+            $button.addClass('btn-danger');
+            $button.removeClass('btn-light');
+            refreshPopoverContent($buttonerror, fail && fail.message ? fail.message : 'Request failed');
         });
     };
 
     sites.prototype.clickRemove = function(e) {
         let button = $(e.currentTarget);
-        button.attr('disabled', true);
         let siteid = button.data('id');
+        let modal = $('#' + this.type + 'Delete' + siteid);
+        let errormsg = modal.find(REGIONS.REMOVE_ERROR);
+        if (errormsg.length) {
+            errormsg.hide().text('');
+        }
+        button.attr('disabled', true);
         const request = {
             methodname: SERVICES.SITE_REMOVE,
             args: {
@@ -193,10 +254,18 @@ define([
             if (response.success) {
                 location.reload();
             } else {
-                console.log(response);
+                button.attr('disabled', false);
+                if (errormsg.length) {
+                    errormsg.text(extractErrorMsg(response));
+                    errormsg.show();
+                }
             }
         }).fail(function(fail) {
-            console.log(fail);
+            button.attr('disabled', false);
+            if (errormsg.length) {
+                errormsg.text(fail && fail.message ? fail.message : 'Request failed');
+                errormsg.show();
+            }
         });
     };
 
@@ -209,7 +278,7 @@ define([
          * @return {sites}
          */
         initSites: function(region, type) {
-            // eslint-disable-next-line babel/new-cap
+            // eslint-disable-next-line new-cap
             return new sites(region, type);
         }
     };

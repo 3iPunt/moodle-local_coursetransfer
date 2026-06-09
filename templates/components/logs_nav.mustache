@@ -29,8 +29,8 @@
 }}
 <ul data-region="logs_nav" class="nav nav-tabs">
     <form action="{{ form_url }}" method="post">
-        <div class="form-row">
-            <div class="form-group mr-3">
+        <div class="form-row row g-2">
+            <div class="form-group mb-3 mr-3 me-3">
                 <label for="type">{{#str}} type, local_coursetransfer {{/str}}</label>
                 <select id="type" class="form-control" name="type">
                     {{# selects.type }}
@@ -38,7 +38,7 @@
                     {{/ selects.type }}
                 </select>
             </div>
-            <div class="form-group mr-3">
+            <div class="form-group mb-3 mr-3 me-3">
                 <label for="direction">{{#str}} direction, local_coursetransfer {{/str}}</label>
                 <select id="direction" class="form-control" name="direction">
                     {{# selects.direction }}
@@ -46,10 +46,10 @@
                     {{/ selects.direction }}
                 </select>
             </div>
-            <div class="form-group mr-2" style="display: flex; align-items: flex-end;">
+            <div class="form-group mb-3 mr-2 me-2" style="display: flex; align-items: flex-end;">
                 <button type="submit" class="btn btn-primary">{{#str}} view_logs, local_coursetransfer {{/str}}</button>
             </div>
-            <div class="form-group" style="display: flex; align-items: flex-end;">
+            <div class="form-group mb-3" style="display: flex; align-items: flex-end;">
                 <a href="{{ restore_url }}" class="btn btn-outline-secondary" target="_blank">{{#str}} restore_page, local_coursetransfer {{/str}}</a>
             </div>
         </div>
