@@ -163,9 +163,10 @@ class coursetransfer_restore {
                     return true;
                 } else {
                     if (!array_key_exists('errors', $results)) {
-                        $request->error_code = '104003';
-                        $request->error_message = 'Warnings en precheck: ' . json_encode($rc->get_precheck_results());
-                        coursetransfer_request::insert_or_update($request, $request->id);
+                        // Only warnings (e.g. role mapping, question bank category context):
+                        // the restore proceeds, it is NOT an error. Log them to the cron
+                        // output instead of flagging the request as errored (LLAOMW-107).
+                        mtrace('local_coursetransfer restore warnings: ' . json_encode($rc->get_precheck_results()));
                         $rc->execute_plan();
                         $rc->destroy();
                         return true;

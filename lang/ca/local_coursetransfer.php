@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * Strings for component 'course transfer', language 'cat'
+ * Strings for component 'course transfer', language 'ca'
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE

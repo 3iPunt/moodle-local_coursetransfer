@@ -56,6 +56,8 @@ use moodle_exception;
 use moodle_url;
 use stdClass;
 use stored_file;
+use Throwable;
+use tool_policy\api as policyapi;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -891,9 +893,35 @@ class coursetransfer {
         // 6. Enable webservices documentation.
         set_config('enablewsdocumentation', 1);
 
-        // 7. Create Token.
+        // 7. Accept site policies for the WS user: otherwise pluginfile downloads
+        // are rejected with 'sitepolicynotagreed' and surface as a corrupt backup
+        // ("Plan is NULL") on the target. See fix LLAOMW-107.
+        self::accept_site_policies($userid);
+
+        // 8. Create Token.
         return user::create_token($userid);
 
+    }
+
+    /**
+     * Accept the current site policies (tool_policy) on behalf of the WS user.
+     *
+     * No-op if the site policy tool is not present or no policies are defined.
+     *
+     * @param int $userid WS user id.
+     */
+    private static function accept_site_policies(int $userid): void {
+        if (!class_exists(policyapi::class)) {
+            return;
+        }
+        try {
+            $versionids = policyapi::get_current_versions_ids();
+            if (!empty($versionids)) {
+                policyapi::accept_policies(array_values($versionids), $userid);
+            }
+        } catch (Throwable $e) {
+            debugging('local_coursetransfer: could not accept site policies for the WS user: ' . $e->getMessage());
+        }
     }
 
     /**
