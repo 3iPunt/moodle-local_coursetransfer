@@ -854,6 +854,7 @@ class coursetransfer {
 
         // 2. Add Permission.
         role::add_capability($roleid, 'moodle/category:viewcourselist');
+        role::add_capability($roleid, 'moodle/category:viewhiddencategories');
         role::add_capability($roleid, 'moodle/course:view');
         role::add_capability($roleid, 'moodle/course:create');
         role::add_capability($roleid, 'moodle/course:viewhiddencourses');
