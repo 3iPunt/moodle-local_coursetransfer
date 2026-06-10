@@ -71,6 +71,10 @@ class download_file_course_task extends \core\task\adhoc_task {
         $request = coursetransfer_request::get($requestid);
 
         try {
+            // Mark as "downloading" so the request shows progress while the file is fetched.
+            $request->status = coursetransfer_request::STATUS_DOWNLOAD;
+            coursetransfer_request::insert_or_update($request, $request->id);
+
             // Download with Moodle's cURL client so the HTTP response can be inspected.
             $curl = new curl();
             $filecontent = $curl->get($fileurle);
