@@ -326,6 +326,7 @@ $string['retry_ok'] = 'Eskaera berrabiarazi da.';
 $string['retry_error'] = 'Ezin izan da eskaera berrabiarazi: {$a}';
 $string['retry_not_supported'] = 'Berriz saiatzea ikastaroa leheneratzeko eskaeretarako baino ez dago erabilgarri.';
 $string['retry_already_completed'] = 'Eskaera jada osatuta dago.';
+$string['retry_task_running'] = 'Eskaera honetarako adhoc ataza bat dago martxan; itxaron amaitu arte.';
 $string['tracking'] = 'Jarraipena';
 $string['tracking_none'] = 'Ez dago eskaera honetarako adhoc atazarik ilaran ingurune honetan (agian amaitu dute edo beste Moodlen exekutatzen dira).';
 $string['tracking_corelogs'] = 'Nukleoaren atazen erregistroak';

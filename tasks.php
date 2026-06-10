@@ -66,19 +66,8 @@ if (!$request) {
 echo html_writer::tag('h4', get_string('tracking', 'local_coursetransfer') . ' — '
         . get_string('request_id', 'local_coursetransfer') . ' ' . $requestid);
 
-// Find the adhoc tasks of this plugin whose customdata references this request (this site only).
-$candidates = $DB->get_records_select('task_adhoc',
-        'component = :component AND ' . $DB->sql_like('customdata', ':needle'),
-        ['component' => 'local_coursetransfer', 'needle' => '%"requestid":' . $requestid . '%'],
-        'nextruntime ASC');
-
-$tasks = [];
-foreach ($candidates as $task) {
-    $data = json_decode($task->customdata);
-    if (isset($data->requestid) && (int)$data->requestid === $requestid) {
-        $tasks[] = $task;
-    }
-}
+// Find the adhoc tasks of this plugin related to this request (this site only).
+$tasks = coursetransfer_request::get_related_adhoc_tasks($requestid);
 
 if (empty($tasks)) {
     echo $OUTPUT->notification(get_string('tracking_none', 'local_coursetransfer'),

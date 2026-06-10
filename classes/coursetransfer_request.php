@@ -214,6 +214,33 @@ class coursetransfer_request {
     }
 
     /**
+     * Get the plugin's adhoc tasks (this site) whose customdata references the given request.
+     *
+     * Single source of truth used both by the tracking page and by the retry
+     * anti-duplicate check. Filters with LIKE and then confirms the exact
+     * requestid via json_decode (so 12 does not match 123).
+     *
+     * @param int $requestid
+     * @return array task_adhoc records keyed by id.
+     * @throws dml_exception
+     */
+    public static function get_related_adhoc_tasks(int $requestid): array {
+        global $DB;
+        $candidates = $DB->get_records_select('task_adhoc',
+                'component = :component AND ' . $DB->sql_like('customdata', ':needle'),
+                ['component' => 'local_coursetransfer', 'needle' => '%"requestid":' . $requestid . '%'],
+                'nextruntime ASC');
+        $tasks = [];
+        foreach ($candidates as $task) {
+            $data = json_decode($task->customdata);
+            if (isset($data->requestid) && (int)$data->requestid === $requestid) {
+                $tasks[$task->id] = $task;
+            }
+        }
+        return $tasks;
+    }
+
+    /**
      * Update status request category.
      *
      * @param int $requestid

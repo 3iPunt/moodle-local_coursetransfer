@@ -332,6 +332,7 @@ $string['retry_ok'] = 'Request relaunched.';
 $string['retry_error'] = 'Could not relaunch the request: {$a}';
 $string['retry_not_supported'] = 'Retry is only available for course restore requests.';
 $string['retry_already_completed'] = 'The request is already completed.';
+$string['retry_task_running'] = 'There is already an adhoc task in progress for this request; wait for it to finish.';
 $string['tracking'] = 'Tracking';
 $string['tracking_none'] = 'No queued adhoc tasks for this request on this site (they may have finished, or run on the other Moodle).';
 $string['tracking_corelogs'] = 'Core task logs';

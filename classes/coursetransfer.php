@@ -526,6 +526,24 @@ class coursetransfer {
                     ['code' => '10021', 'msg' => get_string('retry_already_completed', 'local_coursetransfer')]]];
         }
 
+        // Anti-duplicate: relaunching while a healthy adhoc task is queued/running would
+        // duplicate the operation (double restore, races). So (LCT-023):
+        //  - block if there is an ACTIVE task (faildelay == 0: queued or running normally);
+        //  - if the related tasks are only FAILING/backing off (faildelay > 0), remove them
+        //    and proceed — recovering a stuck task is exactly what the retry is for.
+        global $DB;
+        $stucktaskids = [];
+        foreach (coursetransfer_request::get_related_adhoc_tasks((int)$request->id) as $task) {
+            if ((int)$task->faildelay === 0) {
+                return ['success' => false, 'errors' => [
+                        ['code' => '10023', 'msg' => get_string('retry_task_running', 'local_coursetransfer')]]];
+            }
+            $stucktaskids[] = $task->id;
+        }
+        if (!empty($stucktaskids)) {
+            $DB->delete_records_list('task_adhoc', 'id', $stucktaskids);
+        }
+
         // 1. Re-restore: if the .mbz is already downloaded, just re-queue the restore.
         $status = (int)$request->status;
         if ($status === coursetransfer_request::STATUS_DOWNLOADED

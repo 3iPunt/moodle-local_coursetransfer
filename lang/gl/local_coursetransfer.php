@@ -326,6 +326,7 @@ $string['retry_ok'] = 'Petición relanzada.';
 $string['retry_error'] = 'Non se puido relanzar a petición: {$a}';
 $string['retry_not_supported'] = 'O reintento só está dispoñible para peticións de restauración de curso.';
 $string['retry_already_completed'] = 'A petición xa está completada.';
+$string['retry_task_running'] = 'Xa hai unha tarefa ad-hoc en curso para esta petición; agarda a que remate.';
 $string['tracking'] = 'Seguimento';
 $string['tracking_none'] = 'Non hai tarefas ad-hoc en cola para esta petición neste entorno (pode que xa rematasen ou se executen no outro Moodle).';
 $string['tracking_corelogs'] = 'Rexistros de tarefas do core';

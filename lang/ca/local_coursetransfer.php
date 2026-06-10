@@ -332,6 +332,7 @@ $string['retry_ok'] = 'Petició rellançada.';
 $string['retry_error'] = 'No s\'ha pogut rellançar la petició: {$a}';
 $string['retry_not_supported'] = 'El reintent només està disponible per a peticions de restauració de curs.';
 $string['retry_already_completed'] = 'La petició ja està completada.';
+$string['retry_task_running'] = 'Ja hi ha una tasca adhoc en curs per a aquesta petició; espera que acabi.';
 $string['tracking'] = 'Seguiment';
 $string['tracking_none'] = 'No hi ha tasques adhoc en cua per a aquesta petició en aquest entorn (potser ja han acabat o s\'executen a l\'altre Moodle).';
 $string['tracking_corelogs'] = 'Registres de tasques del core';
