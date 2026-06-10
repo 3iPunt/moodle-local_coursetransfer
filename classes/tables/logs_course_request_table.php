@@ -86,6 +86,7 @@ class logs_course_request_table extends table_sql {
                 'timemodified',
                 'timecreated',
                 'detail',
+                'retry',
         ]);
 
         $this->define_headers([
@@ -101,6 +102,7 @@ class logs_course_request_table extends table_sql {
                 get_string('timemodified', 'local_coursetransfer'),
                 get_string('timecreated', 'local_coursetransfer'),
                 get_string('detail', 'local_coursetransfer'),
+                get_string('retry', 'local_coursetransfer'),
         ]);
 
         $this->sortable(false);
@@ -280,5 +282,21 @@ class logs_course_request_table extends table_sql {
         $href = new moodle_url('/local/coursetransfer/log.php', ['id' => $row->id]);
         return '<a href="' . $href->out(false) . '" target="_blank">' .
                 get_string('detail', 'local_coursetransfer') . '</a>';
+    }
+
+    /**
+     * Col Retry: relaunch a non-completed request ("refresh").
+     *
+     * @param stdClass $row Full data of the current row.
+     * @return string
+     * @throws moodle_exception
+     */
+    public function col_retry(stdClass $row): string {
+        if ((int)$row->status === coursetransfer_request::STATUS_COMPLETED) {
+            return '';
+        }
+        $href = new moodle_url('/local/coursetransfer/retry.php', ['id' => $row->id]);
+        return '<a class="btn btn-sm btn-outline-primary" href="' . $href->out(false) . '">' .
+                get_string('retry', 'local_coursetransfer') . '</a>';
     }
 }

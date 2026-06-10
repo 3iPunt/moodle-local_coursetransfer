@@ -501,6 +501,99 @@ class coursetransfer {
     }
 
     /**
+     * Retry ("refresh") a non-completed course restore request.
+     *
+     * Behaviour depends on the current state (LCT-023): if a downloaded `.mbz`
+     * is still available (states downloaded/restore) the restore is re-queued
+     * with it; otherwise the whole operation is relaunched from the parameters
+     * stored in the request. Only course restore requests (type course,
+     * direction request) are supported.
+     *
+     * @param stdClass $request The request to retry.
+     * @return array {success: bool, mode?: string, errors: array, data?: array}
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    public static function restore_retry(stdClass $request): array {
+        if ((int)$request->type !== coursetransfer_request::TYPE_COURSE
+                || (int)$request->direction !== coursetransfer_request::DIRECTION_REQUEST) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10020', 'msg' => get_string('retry_not_supported', 'local_coursetransfer')]]];
+        }
+        if ((int)$request->status === coursetransfer_request::STATUS_COMPLETED) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10021', 'msg' => get_string('retry_already_completed', 'local_coursetransfer')]]];
+        }
+
+        // 1. Re-restore: if the .mbz is already downloaded, just re-queue the restore.
+        $status = (int)$request->status;
+        if ($status === coursetransfer_request::STATUS_DOWNLOADED
+                || $status === coursetransfer_request::STATUS_RESTORE) {
+            $file = self::find_downloaded_backup($request);
+            if ($file) {
+                $request->status = coursetransfer_request::STATUS_DOWNLOADED;
+                $request->error_code = null;
+                $request->error_message = null;
+                coursetransfer_request::insert_or_update($request, $request->id);
+                coursetransfer_restore::create_task_restore_course($request, $file);
+                return ['success' => true, 'mode' => 'rerestore',
+                        'data' => ['requestid' => (int)$request->id], 'errors' => []];
+            }
+        }
+
+        // 2. Full relaunch from the stored parameters.
+        $user = core_user::get_user((int)$request->userid);
+        if (!$user) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10022', 'msg' => get_string('user_not_found', 'local_coursetransfer')]]];
+        }
+        $site = self::get_site_by_url($request->siteurl);
+        $configuration = new configuration_course(
+                (int)$request->target_target,
+                (bool)$request->target_remove_enrols,
+                (bool)$request->target_remove_groups,
+                (bool)$request->origin_enrolusers,
+                (bool)$request->origin_remove_course,
+                !empty($request->origin_schedule_datetime) ? (int)$request->origin_schedule_datetime : null,
+                (string)($request->origin_remove_activities ?? '')
+        );
+        $sections = !empty($request->origin_activities) ? (array) json_decode($request->origin_activities, true) : [];
+        $res = self::restore_course(
+                $user, $site, (int)$request->target_course_id, (int)$request->origin_course_id, $configuration, $sections);
+        if (!empty($res['success'])) {
+            // Mark the old request as superseded by the new one.
+            $newid = $res['data']['requestid'] ?? '';
+            $request->status = coursetransfer_request::STATUS_ERROR;
+            $request->error_code = null;
+            $request->error_message = 'Relaunched as request #' . $newid;
+            coursetransfer_request::insert_or_update($request, $request->id);
+            $res['mode'] = 'relaunch';
+        }
+        return $res;
+    }
+
+    /**
+     * Find the most recent `.mbz` downloaded into the target course for a request.
+     *
+     * @param stdClass $request
+     * @return stored_file|null
+     * @throws dml_exception
+     */
+    private static function find_downloaded_backup(stdClass $request): ?stored_file {
+        $context = context_course::instance((int)$request->target_course_id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'backup', 'course', false, 'timemodified DESC', false);
+        $prefix = 'local_coursetransfer_' . (int)$request->origin_course_id . '_';
+        foreach ($files as $file) {
+            if (strpos($file->get_filename(), $prefix) === 0) {
+                return $file;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Remove Course.
      *
      * @param stdClass $site
