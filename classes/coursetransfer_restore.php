@@ -164,9 +164,15 @@ class coursetransfer_restore {
                 } else {
                     if (!array_key_exists('errors', $results)) {
                         // Only warnings (e.g. role mapping, question bank category context):
-                        // the restore proceeds, it is NOT an error. Log them to the cron
-                        // output instead of flagging the request as errored (LLAOMW-107).
-                        mtrace('local_coursetransfer restore warnings: ' . json_encode($rc->get_precheck_results()));
+                        // the restore proceeds and completes. Keep the warnings VISIBLE in the
+                        // request log (error_message) but WITHOUT an error code, so they are not
+                        // lost and the restore is not flagged as failed. Log to cron too.
+                        // (LLAOMW-107 / LCT-013.)
+                        $warnings = $rc->get_precheck_results();
+                        mtrace('local_coursetransfer restore warnings: ' . json_encode($warnings));
+                        $request->error_code = null;
+                        $request->error_message = 'Warnings en precheck: ' . json_encode($warnings);
+                        coursetransfer_request::insert_or_update($request, $request->id);
                         $rc->execute_plan();
                         $rc->destroy();
                         return true;
