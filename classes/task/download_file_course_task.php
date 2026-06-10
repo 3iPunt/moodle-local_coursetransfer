@@ -76,7 +76,27 @@ class download_file_course_task extends \core\task\adhoc_task {
             coursetransfer_request::insert_or_update($request, $request->id);
 
             // Download with Moodle's cURL client so the HTTP response can be inspected.
+            // A throttled progress callback bumps timemodified (heartbeat) so a large or
+            // stalled download is observable in the logs (LCT-022): if "Downloading" stays
+            // but timemodified stops advancing, the download is stuck.
             $curl = new curl();
+            $reqid = (int)$request->id;
+            $lastheartbeat = 0;
+            $curl->setopt([
+                    'CURLOPT_NOPROGRESS' => 0,
+                    'CURLOPT_PROGRESSFUNCTION' =>
+                            function($res, $dltotal, $dlnow, $ultotal, $ulnow) use ($reqid, &$lastheartbeat) {
+                                global $DB;
+                                $now = time();
+                                if ($dlnow > 0 && ($now - $lastheartbeat) >= 5) {
+                                    $lastheartbeat = $now;
+                                    $DB->set_field('local_coursetransfer_request', 'timemodified', $now, ['id' => $reqid]);
+                                    $totalmb = $dltotal > 0 ? ' / ' . round($dltotal / 1048576, 1) . ' MB' : '';
+                                    mtrace('  ... downloading ' . round($dlnow / 1048576, 1) . ' MB' . $totalmb);
+                                }
+                                return 0;
+                            },
+            ]);
             $filecontent = $curl->get($fileurle);
             $info = $curl->get_info();
             $httpcode = (int)($info['http_code'] ?? 0);

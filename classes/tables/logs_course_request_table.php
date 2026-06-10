@@ -87,6 +87,7 @@ class logs_course_request_table extends table_sql {
                 'timecreated',
                 'detail',
                 'retry',
+                'tracking',
         ]);
 
         $this->define_headers([
@@ -103,6 +104,7 @@ class logs_course_request_table extends table_sql {
                 get_string('timecreated', 'local_coursetransfer'),
                 get_string('detail', 'local_coursetransfer'),
                 get_string('retry', 'local_coursetransfer'),
+                get_string('tracking', 'local_coursetransfer'),
         ]);
 
         $this->sortable(false);
@@ -298,5 +300,18 @@ class logs_course_request_table extends table_sql {
         $href = new moodle_url('/local/coursetransfer/retry.php', ['id' => $row->id]);
         return '<a class="btn btn-sm btn-outline-primary" href="' . $href->out(false) . '">' .
                 get_string('retry', 'local_coursetransfer') . '</a>';
+    }
+
+    /**
+     * Col Tracking: link to the adhoc tasks related to this request (this site).
+     *
+     * @param stdClass $row Full data of the current row.
+     * @return string
+     * @throws moodle_exception
+     */
+    public function col_tracking(stdClass $row): string {
+        $href = new moodle_url('/local/coursetransfer/tasks.php', ['requestid' => $row->id]);
+        return '<a class="btn btn-sm btn-outline-secondary" href="' . $href->out(false) . '" target="_blank">' .
+                get_string('tracking', 'local_coursetransfer') . '</a>';
     }
 }
