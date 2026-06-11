@@ -143,6 +143,9 @@ class coursetransfer_restore {
             $rc = new restore_controller($filepath, $courseid,
                     backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid, $target);
 
+            // Report live restore progress (percent) into the request row (LCT-022).
+            $rc->set_progress(new restore_progress((int)$request->id));
+
             $plan = $rc->get_plan();
 
             if (!is_null($plan)) {
@@ -213,14 +216,35 @@ class coursetransfer_restore {
      * @return string
      */
     private static function build_restore_error_message(\Throwable $e, string $filepath): string {
-        $msg = $e->getMessage();
+        global $CFG;
+        $msg = get_class($e) . ': ' . $e->getMessage();
         if ($filepath !== '') {
+            // Compare the origin Moodle version embedded in the backup with this
+            // (target) site. A backup made on a NEWER Moodle than the target is the
+            // most common cause of 'not_specified_restore_task': the backup carries
+            // restore tasks/steps the target code does not know about.
+            try {
+                $info = backup_general_helper::get_backup_information($filepath);
+            } catch (\Throwable $ignored) {
+                $info = null;
+            }
+            if ($info && !empty($info->moodle_version)) {
+                $msg .= ' | Origin Moodle ' . ($info->moodle_release ?? '?')
+                        . ' (v' . $info->moodle_version . ') -> target Moodle ' . $CFG->release
+                        . ' (v' . $CFG->version . ')';
+                if ((float)$info->moodle_version > (float)$CFG->version) {
+                    $msg .= ' | The origin is NEWER than the target: upgrade the target Moodle to '
+                            . 'the origin version (or higher) before transferring.';
+                }
+            }
+
             $missing = self::get_missing_target_modules($filepath);
             if (!empty($missing)) {
                 $msg .= ' | Missing modules in target (install/upgrade them): ' . implode(', ', $missing);
             } else {
                 $msg .= ' | All backup modules are installed in target '
-                        . '(likely a subplugin/content incompatibility between origin and target).';
+                        . '(likely a subplugin/content incompatibility -- e.g. assignsubmission_*, '
+                        . 'qtype_*, qbank_*, format_* present in origin but missing/older in target).';
             }
         }
         return $msg;

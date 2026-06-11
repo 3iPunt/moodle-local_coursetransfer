@@ -80,6 +80,7 @@ class logs_course_request_table extends table_sql {
                 'target_course_id',
                 'status',
                 'progress',
+                'restore_progress',
                 'origin_activities',
                 'configuration',
                 'backupsize',
@@ -89,6 +90,7 @@ class logs_course_request_table extends table_sql {
                 'detail',
                 'retry',
                 'tracking',
+                'delete',
         ]);
 
         $this->define_headers([
@@ -97,7 +99,8 @@ class logs_course_request_table extends table_sql {
                 get_string('origin_course_id', 'local_coursetransfer'),
                 get_string('target_course_id', 'local_coursetransfer'),
                 get_string('status', 'local_coursetransfer'),
-                get_string('progress', 'local_coursetransfer'),
+                get_string('progress_download', 'local_coursetransfer'),
+                get_string('progress_restore', 'local_coursetransfer'),
                 get_string('origin_activities', 'local_coursetransfer'),
                 get_string('configuration', 'local_coursetransfer'),
                 get_string('backupsize', 'local_coursetransfer'),
@@ -107,6 +110,7 @@ class logs_course_request_table extends table_sql {
                 get_string('detail', 'local_coursetransfer'),
                 get_string('retry', 'local_coursetransfer'),
                 get_string('tracking', 'local_coursetransfer'),
+                get_string('deletelog', 'local_coursetransfer'),
         ]);
 
         $this->sortable(false);
@@ -212,6 +216,32 @@ class logs_course_request_table extends table_sql {
         }
         $marker = $active ? ' data-ct-active="1"' : '';
         return '<span class="ct-progress"' . $marker . '>' . $label . '</span>';
+    }
+
+    /**
+     * Col Restore Progress: live restore percentage (0-100), written by the
+     * restore_progress reporter while the restore plan runs (LCT-022).
+     *
+     * @param stdClass $row Full data of the current row.
+     * @return string
+     */
+    public function col_restore_progress(stdClass $row): string {
+        $restored = isset($row->restored) ? (int)$row->restored : 0;
+        $status = (int)$row->status;
+        if ($status === coursetransfer_request::STATUS_COMPLETED) {
+            $label = '100%';
+        } else if ($restored > 0) {
+            $label = $restored . '%';
+        } else {
+            $label = '-';
+        }
+        // Mark the row active during the restore phase so the page auto-refreshes.
+        $active = in_array($status, [
+                coursetransfer_request::STATUS_DOWNLOADED,
+                coursetransfer_request::STATUS_RESTORE,
+        ], true);
+        $marker = $active ? ' data-ct-active="1"' : '';
+        return '<span class="ct-restore-progress"' . $marker . '>' . $label . '</span>';
     }
 
     /**
@@ -348,5 +378,21 @@ class logs_course_request_table extends table_sql {
         $href = new moodle_url('/local/coursetransfer/tasks.php', ['requestid' => $row->id]);
         return '<a class="btn btn-sm btn-outline-secondary" href="' . $href->out(false) . '" target="_blank">' .
                 get_string('tracking', 'local_coursetransfer') . '</a>';
+    }
+
+    /**
+     * Col Delete: remove this log record. Restricted to site administrators.
+     *
+     * @param stdClass $row Full data of the current row.
+     * @return string
+     * @throws moodle_exception
+     */
+    public function col_delete(stdClass $row): string {
+        if (!is_siteadmin()) {
+            return '';
+        }
+        $href = new moodle_url('/local/coursetransfer/delete.php', ['id' => $row->id]);
+        return '<a class="btn btn-sm btn-outline-danger" href="' . $href->out(false) . '">' .
+                get_string('deletelog', 'local_coursetransfer') . '</a>';
     }
 }
