@@ -44,6 +44,8 @@ $fdatefrom = optional_param('fdatefrom', '', PARAM_RAW);
 $fdateto = optional_param('fdateto', '', PARAM_RAW);
 $fsizemin = optional_param('fsizemin', 0, PARAM_INT);
 $fsizemax = optional_param('fsizemax', 0, PARAM_INT);
+$forigincourseid = optional_param('forigincourseid', 0, PARAM_INT);
+$ftargetcourseid = optional_param('ftargetcourseid', 0, PARAM_INT);
 $dataformat = optional_param('dataformat', 'csv', PARAM_ALPHA);
 
 require_login();
@@ -54,7 +56,8 @@ $datetots = $fdateto !== '' ? strtotime($fdateto . ' 23:59:59') : null;
 list($where, $params) = coursetransfer_request::get_logs_filter_sql(
         $type, $direction, $fstatus, $datefromts, $datetots,
         $fsizemin ? $fsizemin * 1000000 : null,
-        $fsizemax ? $fsizemax * 1000000 : null);
+        $fsizemax ? $fsizemax * 1000000 : null,
+        $forigincourseid ?: null, $ftargetcourseid ?: null);
 
 $columns = [
         'id' => get_string('request_id', 'local_coursetransfer'),

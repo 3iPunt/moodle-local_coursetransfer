@@ -105,22 +105,39 @@ class download_file_course_task extends \core\task\adhoc_task {
                                 return 0;
                             },
             ]);
-            $filecontent = $curl->get($fileurle);
+            // Stream the download to a temporary file on disk instead of holding the
+            // whole .mbz in memory: a large backup (>1.5 GB) exhausts the PHP memory
+            // limit otherwise (LCT-011 / fatal 13099 OOM). download_one() writes the
+            // body directly to the file via CURLOPT_FILE. The temp dir is auto-cleaned.
+            $tmpfile = make_request_directory() . '/local_coursetransfer_' . $reqid . '.mbz';
+            $result = $curl->download_one($fileurle, null, ['filepath' => $tmpfile]);
             $info = $curl->get_info();
             $httpcode = (int)($info['http_code'] ?? 0);
 
-            // 1. Transport / HTTP error.
-            if ($curl->get_errno() || $httpcode !== 200) {
+            // 1. Transport / HTTP error. download_one() returns true on success or an
+            // error string, and removes the temp file on failure.
+            if ($result !== true || $curl->get_errno() || $httpcode !== 200) {
                 $this->set_request_error($request, '13001',
-                        'HTTP ' . $httpcode . ': ' . ($curl->error !== '' ? $curl->error : 'request failed in file download'));
+                        'HTTP ' . $httpcode . ': ' .
+                        (is_string($result) && $result !== '' ? $result :
+                                ($curl->error !== '' ? $curl->error : 'request failed in file download')));
                 $this->log_finish("Download File Backup Course Remote and Restore Finishing...");
                 return;
             }
 
             // 2. The body is a Moodle web service error (JSON) instead of the MBZ.
             // A valid .mbz is gzip-compressed: it starts with the magic bytes 0x1f 0x8b.
-            if (substr((string)$filecontent, 0, 2) !== "\x1f\x8b") {
-                $error = json_decode($filecontent);
+            // Read only the first bytes from disk so a huge valid file is never loaded.
+            $fh = fopen($tmpfile, 'rb');
+            $magic = $fh ? fread($fh, 2) : '';
+            if ($fh) {
+                fclose($fh);
+            }
+            if ($magic !== "\x1f\x8b") {
+                $size = filesize($tmpfile);
+                // The error payload is small: read the first 4 KB to extract the message.
+                $body = (string) @file_get_contents($tmpfile, false, null, 0, 4096);
+                $error = json_decode($body);
                 if ($error && !empty($error->errorcode)) {
                     // e.g. "sitepolicynotagreed: No ha aceptado la política del sitio [debuginfo]".
                     $msg = $error->errorcode . ': ' . (isset($error->error) ? $error->error : '');
@@ -130,13 +147,14 @@ class download_file_course_task extends \core\task\adhoc_task {
                     $this->set_request_error($request, '13002', $msg);
                 } else {
                     $this->set_request_error($request, '13003',
-                            'Downloaded file is not a valid MBZ backup (' . strlen((string)$filecontent) . ' bytes)');
+                            'Downloaded file is not a valid MBZ backup (' . $size . ' bytes)');
                 }
                 $this->log_finish("Download File Backup Course Remote and Restore Finishing...");
                 return;
             }
 
-            // 3. Valid backup: store it and queue the restore.
+            // 3. Valid backup: store it from the file on disk (streamed copy, no full
+            // in-memory load) and queue the restore.
             $fs = get_file_storage();
             $this->log('Backup File Dowload Success!');
             $context = context_course::instance($request->target_course_id);
@@ -149,10 +167,10 @@ class download_file_course_task extends \core\task\adhoc_task {
                     'filepath' => '/',
                     'filename' => $filename,
             ];
-            $file = $fs->create_file_from_string($fileinfo, $filecontent);
+            $file = $fs->create_file_from_pathname($fileinfo, $tmpfile);
             $this->log('Backup File Dowload in Moodle Success!');
             $request->status = coursetransfer_request::STATUS_DOWNLOADED;
-            $request->downloaded = strlen((string)$filecontent);
+            $request->downloaded = filesize($tmpfile);
             coursetransfer_request::insert_or_update($request, $request->id);
             coursetransfer_restore::create_task_restore_course($request, $file);
         } catch (\Exception $e) {

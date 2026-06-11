@@ -89,6 +89,12 @@ class logs_page implements renderable, templatable {
     /** @var int Filter: max backup size (MB) */
     protected $fsizemax;
 
+    /** @var int Filter: origin course id */
+    protected $forigincourseid;
+
+    /** @var int Filter: target course id */
+    protected $ftargetcourseid;
+
     /**
      *  constructor.
      *
@@ -102,6 +108,8 @@ class logs_page implements renderable, templatable {
         $this->fdateto = optional_param('fdateto', '', PARAM_RAW);
         $this->fsizemin = optional_param('fsizemin', 0, PARAM_INT);
         $this->fsizemax = optional_param('fsizemax', 0, PARAM_INT);
+        $this->forigincourseid = optional_param('forigincourseid', 0, PARAM_INT);
+        $this->ftargetcourseid = optional_param('ftargetcourseid', 0, PARAM_INT);
     }
 
     /**
@@ -150,6 +158,8 @@ class logs_page implements renderable, templatable {
         $filter->dateto = s($this->fdateto);
         $filter->sizemin = $this->fsizemin ?: '';
         $filter->sizemax = $this->fsizemax ?: '';
+        $filter->origincourseid = $this->forigincourseid ?: '';
+        $filter->targetcourseid = $this->ftargetcourseid ?: '';
         return $filter;
     }
 
@@ -169,7 +179,8 @@ class logs_page implements renderable, templatable {
         list($where, $params) = coursetransfer_request::get_logs_filter_sql(
                 $this->type, $this->direction, $this->fstatus, $datefromts, $datetots,
                 $this->fsizemin ? $this->fsizemin * 1000000 : null,
-                $this->fsizemax ? $this->fsizemax * 1000000 : null);
+                $this->fsizemax ? $this->fsizemax * 1000000 : null,
+                $this->forigincourseid ?: null, $this->ftargetcourseid ?: null);
         $table->set_sql($select, $from, $where, $params);
         $table->sortable(false, 'id', SORT_DESC);
         $table->collapsible(false);

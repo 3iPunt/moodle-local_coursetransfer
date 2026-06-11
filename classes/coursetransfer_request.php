@@ -256,12 +256,21 @@ class coursetransfer_request {
      * @return array [string $where, array $params]
      */
     public static function get_logs_filter_sql(int $type, int $direction, $status = null,
-            $datefrom = null, $dateto = null, $sizeminbytes = null, $sizemaxbytes = null): array {
+            $datefrom = null, $dateto = null, $sizeminbytes = null, $sizemaxbytes = null,
+            $origincourseid = null, $targetcourseid = null): array {
         $where = 'direction = :direction AND type = :type';
         $params = ['direction' => $direction, 'type' => $type];
         if (is_numeric($status)) {
             $where .= ' AND status = :status';
             $params['status'] = (int)$status;
+        }
+        if (!empty($origincourseid)) {
+            $where .= ' AND origin_course_id = :origincourseid';
+            $params['origincourseid'] = (int)$origincourseid;
+        }
+        if (!empty($targetcourseid)) {
+            $where .= ' AND target_course_id = :targetcourseid';
+            $params['targetcourseid'] = (int)$targetcourseid;
         }
         if (!empty($datefrom)) {
             $where .= ' AND timemodified >= :datefrom';
