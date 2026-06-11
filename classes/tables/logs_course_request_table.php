@@ -79,6 +79,7 @@ class logs_course_request_table extends table_sql {
                 'origin_course_id',
                 'target_course_id',
                 'status',
+                'progress',
                 'origin_activities',
                 'configuration',
                 'backupsize',
@@ -96,6 +97,7 @@ class logs_course_request_table extends table_sql {
                 get_string('origin_course_id', 'local_coursetransfer'),
                 get_string('target_course_id', 'local_coursetransfer'),
                 get_string('status', 'local_coursetransfer'),
+                get_string('progress', 'local_coursetransfer'),
                 get_string('origin_activities', 'local_coursetransfer'),
                 get_string('configuration', 'local_coursetransfer'),
                 get_string('backupsize', 'local_coursetransfer'),
@@ -177,6 +179,39 @@ class logs_course_request_table extends table_sql {
                 . get_string('status_'.coursetransfer::STATUS[$row->status]['shortname'],
                     'local_coursetransfer') . '</label>';
         }
+    }
+
+    /**
+     * Col Progress: live download progress (% and MB). Marks active rows so the
+     * logs page can auto-refresh while something is in progress (LCT-022).
+     *
+     * @param stdClass $row Full data of the current row.
+     * @return string
+     * @throws coding_exception
+     */
+    public function col_progress(stdClass $row): string {
+        $downloaded = isset($row->downloaded) ? (int)$row->downloaded : 0;
+        $total = !is_null($row->origin_backup_size) ? (int)$row->origin_backup_size : 0;
+        $active = in_array((int)$row->status, [
+                coursetransfer_request::STATUS_IN_PROGRESS,
+                coursetransfer_request::STATUS_BACKUP,
+                coursetransfer_request::STATUS_DOWNLOAD,
+                coursetransfer_request::STATUS_DOWNLOADED,
+                coursetransfer_request::STATUS_RESTORE,
+        ], true);
+        $label = '-';
+        if ($downloaded > 0) {
+            $dlmb = number_format($downloaded / 1048576, 1, ',', ' ');
+            if ($total > 0) {
+                $pct = min(100, (int)round($downloaded / $total * 100));
+                $totalmb = number_format($total / 1048576, 1, ',', ' ');
+                $label = $pct . '% (' . $dlmb . ' / ' . $totalmb . ' MB)';
+            } else {
+                $label = $dlmb . ' MB';
+            }
+        }
+        $marker = $active ? ' data-ct-active="1"' : '';
+        return '<span class="ct-progress"' . $marker . '>' . $label . '</span>';
     }
 
     /**

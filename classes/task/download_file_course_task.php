@@ -70,9 +70,16 @@ class download_file_course_task extends \core\task\adhoc_task {
         $requestid = $this->get_custom_data()->requestid;
         $request = coursetransfer_request::get($requestid);
 
+        // Large backups need time and memory; remove the limits for this task and
+        // record any uncatchable fatal (timeout/OOM) into the request log.
+        \core_php_time_limit::raise();
+        raise_memory_limit(MEMORY_HUGE);
+        coursetransfer_request::register_fatal_shutdown((int)$requestid, '13099');
+
         try {
             // Mark as "downloading" so the request shows progress while the file is fetched.
             $request->status = coursetransfer_request::STATUS_DOWNLOAD;
+            $request->downloaded = 0;
             coursetransfer_request::insert_or_update($request, $request->id);
 
             // Download with Moodle's cURL client so the HTTP response can be inspected.
@@ -90,6 +97,7 @@ class download_file_course_task extends \core\task\adhoc_task {
                                 $now = time();
                                 if ($dlnow > 0 && ($now - $lastheartbeat) >= 5) {
                                     $lastheartbeat = $now;
+                                    $DB->set_field('local_coursetransfer_request', 'downloaded', (int)$dlnow, ['id' => $reqid]);
                                     $DB->set_field('local_coursetransfer_request', 'timemodified', $now, ['id' => $reqid]);
                                     $totalmb = $dltotal > 0 ? ' / ' . round($dltotal / 1048576, 1) . ' MB' : '';
                                     mtrace('  ... downloading ' . round($dlnow / 1048576, 1) . ' MB' . $totalmb);
@@ -144,6 +152,7 @@ class download_file_course_task extends \core\task\adhoc_task {
             $file = $fs->create_file_from_string($fileinfo, $filecontent);
             $this->log('Backup File Dowload in Moodle Success!');
             $request->status = coursetransfer_request::STATUS_DOWNLOADED;
+            $request->downloaded = strlen((string)$filecontent);
             coursetransfer_request::insert_or_update($request, $request->id);
             coursetransfer_restore::create_task_restore_course($request, $file);
         } catch (\Exception $e) {

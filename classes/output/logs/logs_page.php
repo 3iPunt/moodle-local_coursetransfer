@@ -35,6 +35,7 @@
 namespace local_coursetransfer\output\logs;
 
 use coding_exception;
+use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use moodle_exception;
 use moodle_url;
@@ -73,6 +74,21 @@ class logs_page implements renderable, templatable {
     /** @var string[] URL */
     protected $selects;
 
+    /** @var string Filter: status (numeric code, or '' for all) */
+    protected $fstatus;
+
+    /** @var string Filter: date from (Y-m-d) */
+    protected $fdatefrom;
+
+    /** @var string Filter: date to (Y-m-d) */
+    protected $fdateto;
+
+    /** @var int Filter: min backup size (MB) */
+    protected $fsizemin;
+
+    /** @var int Filter: max backup size (MB) */
+    protected $fsizemax;
+
     /**
      *  constructor.
      *
@@ -81,6 +97,11 @@ class logs_page implements renderable, templatable {
     public function __construct() {
         $this->type = optional_param('type', coursetransfer_request::TYPE_COURSE, PARAM_INT);
         $this->direction = optional_param('direction', coursetransfer_request::DIRECTION_REQUEST, PARAM_INT);
+        $this->fstatus = optional_param('fstatus', '', PARAM_RAW);
+        $this->fdatefrom = optional_param('fdatefrom', '', PARAM_RAW);
+        $this->fdateto = optional_param('fdateto', '', PARAM_RAW);
+        $this->fsizemin = optional_param('fsizemin', 0, PARAM_INT);
+        $this->fsizemax = optional_param('fsizemax', 0, PARAM_INT);
     }
 
     /**
@@ -100,7 +121,36 @@ class logs_page implements renderable, templatable {
         $data->selects = $this->selects;
         $data->form_url = $formurl->out(false);
         $data->restore_url = $restoreurl->out(false);
+        $data->export_url = (new moodle_url('/local/coursetransfer/export.php'))->out(false);
+        $data->filter = $this->get_filter_data();
         return $data;
+    }
+
+    /**
+     * Filter values + status options for the logs filter form.
+     *
+     * @return stdClass
+     * @throws coding_exception
+     */
+    protected function get_filter_data(): stdClass {
+        $filter = new stdClass();
+        $filter->statusoptions = [[
+                'value' => '',
+                'name' => get_string('filter_all', 'local_coursetransfer'),
+                'selected' => !is_numeric($this->fstatus),
+        ]];
+        foreach (coursetransfer::STATUS as $code => $info) {
+            $filter->statusoptions[] = [
+                    'value' => $code,
+                    'name' => get_string('status_' . $info['shortname'], 'local_coursetransfer'),
+                    'selected' => is_numeric($this->fstatus) && (int)$this->fstatus === $code,
+            ];
+        }
+        $filter->datefrom = s($this->fdatefrom);
+        $filter->dateto = s($this->fdateto);
+        $filter->sizemin = $this->fsizemin ?: '';
+        $filter->sizemax = $this->fsizemax ?: '';
+        return $filter;
     }
 
     /**
@@ -114,11 +164,12 @@ class logs_page implements renderable, templatable {
         $table->pageable(false);
         $select = 'csr.*';
         $from = '{local_coursetransfer_request} csr';
-        $where = 'direction = :direction AND type = :type';
-        $params = [
-                'direction' => $this->direction,
-                'type' => $this->type,
-        ];
+        $datefromts = $this->fdatefrom !== '' ? strtotime($this->fdatefrom . ' 00:00:00') : null;
+        $datetots = $this->fdateto !== '' ? strtotime($this->fdateto . ' 23:59:59') : null;
+        list($where, $params) = coursetransfer_request::get_logs_filter_sql(
+                $this->type, $this->direction, $this->fstatus, $datefromts, $datetots,
+                $this->fsizemin ? $this->fsizemin * 1000000 : null,
+                $this->fsizemax ? $this->fsizemax * 1000000 : null);
         $table->set_sql($select, $from, $where, $params);
         $table->sortable(false, 'id', SORT_DESC);
         $table->collapsible(false);

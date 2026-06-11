@@ -241,6 +241,76 @@ class coursetransfer_request {
     }
 
     /**
+     * Build the WHERE clause + params for the logs listing/export, with optional filters.
+     *
+     * Single source of truth for the logs table and the export endpoint. Uses
+     * placeholders (no concatenation). Bare column names (single table).
+     *
+     * @param int $type Request type.
+     * @param int $direction Request direction.
+     * @param int|string|null $status Status code, or null/'' for all.
+     * @param int|null $datefrom Lower bound for timemodified (timestamp).
+     * @param int|null $dateto Upper bound for timemodified (timestamp).
+     * @param int|null $sizeminbytes Lower bound for origin_backup_size (bytes).
+     * @param int|null $sizemaxbytes Upper bound for origin_backup_size (bytes).
+     * @return array [string $where, array $params]
+     */
+    public static function get_logs_filter_sql(int $type, int $direction, $status = null,
+            $datefrom = null, $dateto = null, $sizeminbytes = null, $sizemaxbytes = null): array {
+        $where = 'direction = :direction AND type = :type';
+        $params = ['direction' => $direction, 'type' => $type];
+        if (is_numeric($status)) {
+            $where .= ' AND status = :status';
+            $params['status'] = (int)$status;
+        }
+        if (!empty($datefrom)) {
+            $where .= ' AND timemodified >= :datefrom';
+            $params['datefrom'] = (int)$datefrom;
+        }
+        if (!empty($dateto)) {
+            $where .= ' AND timemodified <= :dateto';
+            $params['dateto'] = (int)$dateto;
+        }
+        if (!empty($sizeminbytes)) {
+            $where .= ' AND origin_backup_size >= :sizemin';
+            $params['sizemin'] = (int)$sizeminbytes;
+        }
+        if (!empty($sizemaxbytes)) {
+            $where .= ' AND origin_backup_size <= :sizemax';
+            $params['sizemax'] = (int)$sizemaxbytes;
+        }
+        return [$where, $params];
+    }
+
+    /**
+     * Register a shutdown handler that records an uncatchable fatal error
+     * (e.g. execution timeout or out-of-memory) into the request log, so large
+     * downloads/restores that die do not leave the request stuck and silent.
+     *
+     * @param int $requestid
+     * @param string $errorcode Error code to store if a fatal happens.
+     */
+    public static function register_fatal_shutdown(int $requestid, string $errorcode): void {
+        \core_shutdown_manager::register_function(function() use ($requestid, $errorcode) {
+            global $DB;
+            $err = error_get_last();
+            $fatalmask = E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR;
+            if (!$err || !((int)$err['type'] & $fatalmask)) {
+                return;
+            }
+            $request = $DB->get_record(self::TABLE, ['id' => $requestid]);
+            if (!$request || in_array((int)$request->status, [self::STATUS_COMPLETED, self::STATUS_ERROR], true)) {
+                return;
+            }
+            $request->status = self::STATUS_ERROR;
+            $request->error_code = $errorcode;
+            $request->error_message = 'Fatal: ' . $err['message'];
+            $request->timemodified = time();
+            $DB->update_record(self::TABLE, $request);
+        });
+    }
+
+    /**
      * Update status request category.
      *
      * @param int $requestid

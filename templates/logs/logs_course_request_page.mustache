@@ -38,6 +38,17 @@
     {{{ table }}}
 
 </div>
+{{#js}}
+// Auto-refresh the logs while a request is still in progress, so download progress
+// updates live. Only reloads if there is at least one active row (LCT-022).
+(function() {
+    if (document.querySelector('[data-ct-active="1"]')) {
+        window.setTimeout(function() {
+            window.location.reload();
+        }, 8000);
+    }
+})();
+{{/js}}
 <style>
     body#page-local-coursetransfer-logs #topofscroll {
         max-width: inherit;

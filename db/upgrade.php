@@ -117,5 +117,15 @@ function xmldb_local_coursetransfer_upgrade($oldversion): bool {
 
     }
 
+    if ($oldversion < 2026061002) {
+        // Add 'downloaded' field to track live download progress.
+        $table = new xmldb_table('local_coursetransfer_request');
+        $field = new xmldb_field('downloaded', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'origin_backup_url');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026061002, 'local', 'coursetransfer');
+    }
+
     return true;
 }

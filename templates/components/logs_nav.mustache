@@ -53,5 +53,42 @@
                 <a href="{{ restore_url }}" class="btn btn-outline-secondary" target="_blank">{{#str}} restore_page, local_coursetransfer {{/str}}</a>
             </div>
         </div>
+        <div class="form-row row g-2">
+            <div class="form-group mb-3 mr-3 me-3">
+                <label for="fstatus">{{#str}} status, local_coursetransfer {{/str}}</label>
+                <select id="fstatus" class="form-control" name="fstatus">
+                    {{# filter.statusoptions }}
+                        <option value="{{ value }}" {{# selected }}selected{{/ selected }}>{{ name }}</option>
+                    {{/ filter.statusoptions }}
+                </select>
+            </div>
+            <div class="form-group mb-3 mr-3 me-3">
+                <label for="fdatefrom">{{#str}} filter_datefrom, local_coursetransfer {{/str}}</label>
+                <input type="date" id="fdatefrom" class="form-control" name="fdatefrom" value="{{ filter.datefrom }}">
+            </div>
+            <div class="form-group mb-3 mr-3 me-3">
+                <label for="fdateto">{{#str}} filter_dateto, local_coursetransfer {{/str}}</label>
+                <input type="date" id="fdateto" class="form-control" name="fdateto" value="{{ filter.dateto }}">
+            </div>
+            <div class="form-group mb-3 mr-3 me-3">
+                <label for="fsizemin">{{#str}} filter_sizemin, local_coursetransfer {{/str}}</label>
+                <input type="number" min="0" id="fsizemin" class="form-control" name="fsizemin" value="{{ filter.sizemin }}">
+            </div>
+            <div class="form-group mb-3 mr-3 me-3">
+                <label for="fsizemax">{{#str}} filter_sizemax, local_coursetransfer {{/str}}</label>
+                <input type="number" min="0" id="fsizemax" class="form-control" name="fsizemax" value="{{ filter.sizemax }}">
+            </div>
+            <div class="form-group mb-3 mr-2 me-2" style="display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary">{{#str}} filter_apply, local_coursetransfer {{/str}}</button>
+            </div>
+            <div class="form-group mb-3" style="display: flex; align-items: flex-end;">
+                <select name="dataformat" class="form-control mr-2 me-2" style="width: auto;">
+                    <option value="csv">CSV</option>
+                    <option value="excel">Excel</option>
+                    <option value="ods">ODS</option>
+                </select>
+                <button type="submit" class="btn btn-outline-secondary" formaction="{{ export_url }}">{{#str}} export, local_coursetransfer {{/str}}</button>
+            </div>
+        </div>
     </form>
 </ul>
