@@ -68,7 +68,6 @@ global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->libdir . '/setuplib.php');
-require_once($CFG->libdir . '/cronlib.php');
 
 /**
  * coursetransfer_restore_course_test
