@@ -56,6 +56,8 @@ use moodle_exception;
 use moodle_url;
 use stdClass;
 use stored_file;
+use Throwable;
+use tool_policy\api as policyapi;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -499,6 +501,117 @@ class coursetransfer {
     }
 
     /**
+     * Retry ("refresh") a non-completed course restore request.
+     *
+     * Behaviour depends on the current state (LCT-023): if a downloaded `.mbz`
+     * is still available (states downloaded/restore) the restore is re-queued
+     * with it; otherwise the whole operation is relaunched from the parameters
+     * stored in the request. Only course restore requests (type course,
+     * direction request) are supported.
+     *
+     * @param stdClass $request The request to retry.
+     * @return array {success: bool, mode?: string, errors: array, data?: array}
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    public static function restore_retry(stdClass $request): array {
+        if ((int)$request->type !== coursetransfer_request::TYPE_COURSE
+                || (int)$request->direction !== coursetransfer_request::DIRECTION_REQUEST) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10020', 'msg' => get_string('retry_not_supported', 'local_coursetransfer')]]];
+        }
+        if ((int)$request->status === coursetransfer_request::STATUS_COMPLETED) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10021', 'msg' => get_string('retry_already_completed', 'local_coursetransfer')]]];
+        }
+
+        // Anti-duplicate: relaunching while a healthy adhoc task is queued/running would
+        // duplicate the operation (double restore, races). So (LCT-023):
+        //  - block if there is an ACTIVE task (faildelay == 0: queued or running normally);
+        //  - if the related tasks are only FAILING/backing off (faildelay > 0), remove them
+        //    and proceed — recovering a stuck task is exactly what the retry is for.
+        global $DB;
+        $stucktaskids = [];
+        foreach (coursetransfer_request::get_related_adhoc_tasks((int)$request->id) as $task) {
+            if ((int)$task->faildelay === 0) {
+                return ['success' => false, 'errors' => [
+                        ['code' => '10023', 'msg' => get_string('retry_task_running', 'local_coursetransfer')]]];
+            }
+            $stucktaskids[] = $task->id;
+        }
+        if (!empty($stucktaskids)) {
+            $DB->delete_records_list('task_adhoc', 'id', $stucktaskids);
+        }
+
+        // 1. Re-restore: if the .mbz is already downloaded, just re-queue the restore.
+        $status = (int)$request->status;
+        if ($status === coursetransfer_request::STATUS_DOWNLOADED
+                || $status === coursetransfer_request::STATUS_RESTORE) {
+            $file = self::find_downloaded_backup($request);
+            if ($file) {
+                $request->status = coursetransfer_request::STATUS_DOWNLOADED;
+                $request->error_code = null;
+                $request->error_message = null;
+                coursetransfer_request::insert_or_update($request, $request->id);
+                coursetransfer_restore::create_task_restore_course($request, $file);
+                return ['success' => true, 'mode' => 'rerestore',
+                        'data' => ['requestid' => (int)$request->id], 'errors' => []];
+            }
+        }
+
+        // 2. Full relaunch from the stored parameters.
+        $user = core_user::get_user((int)$request->userid);
+        if (!$user) {
+            return ['success' => false, 'errors' => [
+                    ['code' => '10022', 'msg' => get_string('user_not_found', 'local_coursetransfer')]]];
+        }
+        $site = self::get_site_by_url($request->siteurl);
+        $configuration = new configuration_course(
+                (int)$request->target_target,
+                (bool)$request->target_remove_enrols,
+                (bool)$request->target_remove_groups,
+                (bool)$request->origin_enrolusers,
+                (bool)$request->origin_remove_course,
+                !empty($request->origin_schedule_datetime) ? (int)$request->origin_schedule_datetime : null,
+                (string)($request->origin_remove_activities ?? '')
+        );
+        $sections = !empty($request->origin_activities) ? (array) json_decode($request->origin_activities, true) : [];
+        $res = self::restore_course(
+                $user, $site, (int)$request->target_course_id, (int)$request->origin_course_id, $configuration, $sections);
+        if (!empty($res['success'])) {
+            // Mark the old request as superseded by the new one.
+            $newid = $res['data']['requestid'] ?? '';
+            $request->status = coursetransfer_request::STATUS_ERROR;
+            $request->error_code = null;
+            $request->error_message = 'Relaunched as request #' . $newid;
+            coursetransfer_request::insert_or_update($request, $request->id);
+            $res['mode'] = 'relaunch';
+        }
+        return $res;
+    }
+
+    /**
+     * Find the most recent `.mbz` downloaded into the target course for a request.
+     *
+     * @param stdClass $request
+     * @return stored_file|null
+     * @throws dml_exception
+     */
+    private static function find_downloaded_backup(stdClass $request): ?stored_file {
+        $context = context_course::instance((int)$request->target_course_id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'backup', 'course', false, 'timemodified DESC', false);
+        $prefix = 'local_coursetransfer_' . (int)$request->origin_course_id . '_';
+        foreach ($files as $file) {
+            if (strpos($file->get_filename(), $prefix) === 0) {
+                return $file;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Remove Course.
      *
      * @param stdClass $site
@@ -852,6 +965,7 @@ class coursetransfer {
 
         // 2. Add Permission.
         role::add_capability($roleid, 'moodle/category:viewcourselist');
+        role::add_capability($roleid, 'moodle/category:viewhiddencategories');
         role::add_capability($roleid, 'moodle/course:view');
         role::add_capability($roleid, 'moodle/course:create');
         role::add_capability($roleid, 'moodle/course:viewhiddencourses');
@@ -891,9 +1005,35 @@ class coursetransfer {
         // 6. Enable webservices documentation.
         set_config('enablewsdocumentation', 1);
 
-        // 7. Create Token.
+        // 7. Accept site policies for the WS user: otherwise pluginfile downloads
+        // are rejected with 'sitepolicynotagreed' and surface as a corrupt backup
+        // ("Plan is NULL") on the target. See fix LLAOMW-107.
+        self::accept_site_policies($userid);
+
+        // 8. Create Token.
         return user::create_token($userid);
 
+    }
+
+    /**
+     * Accept the current site policies (tool_policy) on behalf of the WS user.
+     *
+     * No-op if the site policy tool is not present or no policies are defined.
+     *
+     * @param int $userid WS user id.
+     */
+    private static function accept_site_policies(int $userid): void {
+        if (!class_exists(policyapi::class)) {
+            return;
+        }
+        try {
+            $versionids = policyapi::get_current_versions_ids();
+            if (!empty($versionids)) {
+                policyapi::accept_policies(array_values($versionids), $userid);
+            }
+        } catch (Throwable $e) {
+            debugging('local_coursetransfer: could not accept site policies for the WS user: ' . $e->getMessage());
+        }
     }
 
     /**

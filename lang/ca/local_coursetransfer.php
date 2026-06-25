@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * Strings for component 'course transfer', language 'cat'
+ * Strings for component 'course transfer', language 'ca'
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -218,7 +218,22 @@ $string['restore_origin_data'] = "Configuració del curs dorigen";
 $string['restore_origin_cat_data'] = "Configuració de la categoria i cursos dorigen";
 $string['restore_origin_user_data'] = "Restaurar el curs amb dades d'usuaris d'origen";
 $string['restore_origin_user_data_desc'] = "El curs es restaurarà amb les dades d'usuaris que hi ha al curs d'origen";
-$string['detail'] = "Detall";
+$string['detail'] = "Detalls";
+$string['progress'] = "Progrés";
+$string['progress_download'] = "Descàrrega";
+$string['progress_restore'] = "Restauració";
+$string['deletelog'] = "Esborrar";
+$string['deletelog_confirm'] = "Segur que vols esborrar el registre de log {\$a}? Aquesta acció no es pot desfer.";
+$string['deletelog_ok'] = "Registre de log esborrat.";
+$string['deletelog_error'] = "No s'ha pogut esborrar el registre de log: {\$a}";
+$string['filter_all'] = "Tots";
+$string['filter_datefrom'] = "Des de";
+$string['filter_dateto'] = "Fins a";
+$string['filter_sizemin'] = "Mida mín. (MB)";
+$string['filter_sizemax'] = "Mida màx. (MB)";
+$string['filter_apply'] = "Filtrar";
+$string['export'] = "Exportar";
+$string['configuration_detail'] = "Detalls de configuració";
 $string['type'] = "Tipus";
 $string['direction'] = "Direcció";
 $string['restore_course'] = "Restauració de Curs";
@@ -325,6 +340,21 @@ $string['courses_not_selected'] = 'No hi ha cursos seleccionats';
 $string['request_timeout'] = 'Timeout';
 $string['request_timeout_desc'] = "Temps en segons d'espera petició CURL entre origen i destinació";
 $string['clean_adhoc_failed_task'] = 'Tasca que neteja les tasques adhoc que han fallat aquest component';
+$string['retry'] = 'Reintentar';
+$string['retry_confirm'] = 'Voleu reintentar la petició {$a}? Es rellançarà la restauració (re-restaura si la còpia ja està baixada; si no, rellança completament).';
+$string['retry_ok'] = 'Petició rellançada.';
+$string['retry_error'] = 'No s\'ha pogut rellançar la petició: {$a}';
+$string['retry_not_supported'] = 'El reintent només està disponible per a peticions de restauració de curs.';
+$string['retry_already_completed'] = 'La petició ja està completada.';
+$string['retry_task_running'] = 'Ja hi ha una tasca adhoc en curs per a aquesta petició; espera que acabi.';
+$string['tracking'] = 'Seguiment';
+$string['tracking_none'] = 'No hi ha tasques adhoc en cua per a aquesta petició en aquest entorn (potser ja han acabat o s\'executen a l\'altre Moodle).';
+$string['tracking_corelogs'] = 'Registres de tasques del core';
+$string['tracking_class'] = 'Tasca';
+$string['tracking_faildelay'] = 'Retard per fallada (s)';
+$string['tracking_nextrun'] = 'Següent execució';
+$string['clean_adhoc_faildelay'] = 'Llindar de neteja de tasques fallides';
+$string['clean_adhoc_faildelay_desc'] = "Les tasques adhoc d'aquest connector amb un retard per fallada (faildelay) superior a aquests segons s'eliminen en la neteja (i la seva petició es marca com a error). Useu un valor alt perquè les fallades transitòries continuïn reintentant; 0 desactiva la neteja. Per defecte: 86400 (24 h).";
 $string['remove_course_cleanup'] = 'Esborrat definitiu curs';
 $string['remove_course_cleanup_desc'] = "Si està actiu, s'esborrarà definitivament el curs sense tenir en compte la paperera de reciclatge";
 $string['remove_cat_cleanup'] = 'Esborrat definitiu categoria';

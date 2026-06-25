@@ -36,6 +36,7 @@ namespace local_coursetransfer;
 
 use backup;
 use backup_controller;
+use backup_general_helper;
 use base_plan_exception;
 use base_setting;
 use base_setting_exception;
@@ -93,6 +94,7 @@ class coursetransfer_restore {
      * @throws moodle_exception
      */
     public static function restore_course(stdClass $request, stored_file $file): bool {
+        $filepath = '';
         try {
             $courseid = (int)$request->target_course_id;
             $userid = (int)$request->userid;
@@ -141,6 +143,9 @@ class coursetransfer_restore {
             $rc = new restore_controller($filepath, $courseid,
                     backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid, $target);
 
+            // Report live restore progress (percent) into the request row (LCT-022).
+            $rc->set_progress(new restore_progress((int)$request->id));
+
             $plan = $rc->get_plan();
 
             if (!is_null($plan)) {
@@ -163,8 +168,15 @@ class coursetransfer_restore {
                     return true;
                 } else {
                     if (!array_key_exists('errors', $results)) {
-                        $request->error_code = '104003';
-                        $request->error_message = 'Warnings en precheck: ' . json_encode($rc->get_precheck_results());
+                        // Only warnings (e.g. role mapping, question bank category context):
+                        // the restore proceeds and completes. Keep the warnings VISIBLE in the
+                        // request log (error_message) but WITHOUT an error code, so they are not
+                        // lost and the restore is not flagged as failed. Log to cron too.
+                        // (LLAOMW-107 / LCT-013.)
+                        $warnings = $rc->get_precheck_results();
+                        mtrace('local_coursetransfer restore warnings: ' . json_encode($warnings));
+                        $request->error_code = null;
+                        $request->error_message = 'Warnings en precheck: ' . json_encode($warnings);
                         coursetransfer_request::insert_or_update($request, $request->id);
                         $rc->execute_plan();
                         $rc->destroy();
@@ -185,13 +197,83 @@ class coursetransfer_restore {
                 return false;
             }
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $request->status = coursetransfer_request::STATUS_ERROR;
             $request->error_code = '10400';
-            $request->error_message = $e->getMessage();
+            $request->error_message = self::build_restore_error_message($e, $filepath);
             coursetransfer_request::insert_or_update($request, $request->id);
             return false;
         }
+    }
+
+    /**
+     * Build a readable restore error message, adding which activity modules of the
+     * backup are NOT installed on this site (the most common cause of restore
+     * failures such as 'not_specified_restore_task'). See LLAOMW-107.
+     *
+     * @param \Throwable $e The exception/error thrown during the restore.
+     * @param string $filepath Extracted backup temp dir name (empty if not reached).
+     * @return string
+     */
+    private static function build_restore_error_message(\Throwable $e, string $filepath): string {
+        global $CFG;
+        $msg = get_class($e) . ': ' . $e->getMessage();
+        if ($filepath !== '') {
+            // Compare the origin Moodle version embedded in the backup with this
+            // (target) site. A backup made on a NEWER Moodle than the target is the
+            // most common cause of 'not_specified_restore_task': the backup carries
+            // restore tasks/steps the target code does not know about.
+            try {
+                $info = backup_general_helper::get_backup_information($filepath);
+            } catch (\Throwable $ignored) {
+                $info = null;
+            }
+            if ($info && !empty($info->moodle_version)) {
+                $msg .= ' | Origin Moodle ' . ($info->moodle_release ?? '?')
+                        . ' (v' . $info->moodle_version . ') -> target Moodle ' . $CFG->release
+                        . ' (v' . $CFG->version . ')';
+                if ((float)$info->moodle_version > (float)$CFG->version) {
+                    $msg .= ' | The origin is NEWER than the target: upgrade the target Moodle to '
+                            . 'the origin version (or higher) before transferring.';
+                }
+            }
+
+            $missing = self::get_missing_target_modules($filepath);
+            if (!empty($missing)) {
+                $msg .= ' | Missing modules in target (install/upgrade them): ' . implode(', ', $missing);
+            } else {
+                $msg .= ' | All backup modules are installed in target '
+                        . '(likely a subplugin/content incompatibility -- e.g. assignsubmission_*, '
+                        . 'qtype_*, qbank_*, format_* present in origin but missing/older in target).';
+            }
+        }
+        return $msg;
+    }
+
+    /**
+     * List the activity modules present in the backup that are NOT installed on this site.
+     *
+     * @param string $filepath Extracted backup temp dir name.
+     * @return string[] Module names missing on the target.
+     */
+    private static function get_missing_target_modules(string $filepath): array {
+        global $DB;
+        try {
+            $info = backup_general_helper::get_backup_information($filepath);
+        } catch (\Throwable $e) {
+            return [];
+        }
+        if (empty($info->activities)) {
+            return [];
+        }
+        $installed = $DB->get_records_menu('modules', null, '', 'name, id');
+        $missing = [];
+        foreach ($info->activities as $activity) {
+            if (!empty($activity->modulename) && !isset($installed[$activity->modulename])) {
+                $missing[$activity->modulename] = true;
+            }
+        }
+        return array_keys($missing);
     }
 
 }

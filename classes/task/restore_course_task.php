@@ -73,6 +73,12 @@ class restore_course_task extends \core\task\adhoc_task {
         $request = coursetransfer_request::get($requestid);
         $file = $fs->get_file_by_id($fileid);
 
+        // Large restores need time and memory; remove the limits for this task and
+        // record any uncatchable fatal (timeout/OOM) into the request log.
+        \core_php_time_limit::raise();
+        raise_memory_limit(MEMORY_HUGE);
+        coursetransfer_request::register_fatal_shutdown((int)$requestid, '10499');
+
         if (!$file) {
             $this->log('Restore in Moodle not working beacuse File not found! :' . $fileid);
             $request->status = coursetransfer_request::STATUS_ERROR;
@@ -80,6 +86,9 @@ class restore_course_task extends \core\task\adhoc_task {
             $request->error_message = 'Restore in Moodle not working beacuse File not found! :' . $fileid;
             coursetransfer_request::insert_or_update($request, $requestid);
         } else {
+            // Mark as "restoring" so the request shows progress during the (long) restore.
+            $request->status = coursetransfer_request::STATUS_RESTORE;
+            coursetransfer_request::insert_or_update($request, $request->id);
             $success = coursetransfer_restore::restore_course($request, $file);
             if ($success) {
                 $this->log('Restore in Moodle Success!');

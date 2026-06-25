@@ -126,8 +126,10 @@ class origin_course_external extends external_api {
                     $item->idnumber = $course->idnumber;
                     $item->categoryid = $course->category;
                     $item->backupsizeestimated = coursetransfer::get_backup_size_estimated($course->id);
-                    $category = core_course_category::get($item->categoryid);
-                    $item->categoryname = $category->name;
+                    // Resolve the category name defensively: a course in a category not visible
+                    // to the WS user must not abort the whole listing (LLAOMW-107 / 22011).
+                    $category = core_course_category::get($item->categoryid, IGNORE_MISSING);
+                    $item->categoryname = $category ? $category->name : '';
                     $data[] = $item;
                 }
                 $paging['totalcount'] = $totalcourses;
@@ -245,14 +247,15 @@ class origin_course_external extends external_api {
             $authres = coursetransfer::auth_user($field, $value);
             if ($authres['success']) {
                 $course = get_course($courseid);
-                $category = core_course_category::get($course->category);
+                // Defensive: a category not visible to the WS user must not break the detail.
+                $category = core_course_category::get($course->category, IGNORE_MISSING);
                 $data = [
                         'id' => $course->id,
                         'fullname' => $course->fullname,
                         'shortname' => $course->shortname,
                         'idnumber' => $course->idnumber,
                         'categoryid' => $course->category,
-                        'categoryname' => $category->name,
+                        'categoryname' => $category ? $category->name : '',
                         'backupsizeestimated' => coursetransfer::get_backup_size_estimated($course->id),
                         'sections' => coursetransfer::get_sections_with_activities($course->id),
                 ];

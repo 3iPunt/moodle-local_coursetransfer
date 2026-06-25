@@ -80,6 +80,11 @@ if ($hassiteconfig) {
         get_string('request_timeout_desc', 'local_coursetransfer'),
             20, PARAM_INT));
 
+    $settings->add(new admin_setting_configduration('local_coursetransfer/clean_adhoc_faildelay',
+        get_string('clean_adhoc_faildelay', 'local_coursetransfer'),
+        get_string('clean_adhoc_faildelay_desc', 'local_coursetransfer'),
+            86400, DAYSECS));
+
     $settings->add(new admin_setting_configempty('local_coursetransfer/target_sites',
             new lang_string('setting_target_sites', 'local_coursetransfer'),
             html_writer::link(new moodle_url('/local/coursetransfer/targetsites.php'),

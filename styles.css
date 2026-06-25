@@ -1,0 +1,34 @@
+/* Local Course Transfer - plugin styles. */
+
+/*
+ * Logs page: render the table readably on ANY theme (force white background and
+ * dark text) and let it adapt with horizontal scroll instead of breaking the
+ * layout. Scoped to the logs page body id so it never leaks to other pages.
+ * Overrides (higher, id-based specificity) the centering set inline in the
+ * logs page templates.
+ */
+#page-local-coursetransfer-logs [data-region="logs_page"] {
+    width: 100%;
+    align-items: stretch;
+}
+
+#page-local-coursetransfer-logs [data-region="logs_page"] .no-overflow {
+    width: 100%;
+    overflow-x: auto;
+}
+
+body#page-local-coursetransfer-logs #topofscroll {
+    max-width: inherit !important;
+}
+
+#page-local-coursetransfer-logs [data-region="logs_page"] table {
+    width: 100%;
+    background-color: #fff;
+}
+
+#page-local-coursetransfer-logs [data-region="logs_page"] table th,
+#page-local-coursetransfer-logs [data-region="logs_page"] table td {
+    background-color: #fff;
+    color: #1d2125;
+    vertical-align: middle;
+}
