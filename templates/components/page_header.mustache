@@ -22,24 +22,23 @@
     Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos
 }}
 {{!
-  @template local_coursetransfer/components/page_nav
+  @template local_coursetransfer/components/page_header
 
-  Shared footer navigation for every plugin screen: back to settings and
-  plugin summary.
+  Shared page hero: plugin icon + page title + description. The title lives
+  here (the theme heading is cleared with set_heading('') to avoid a
+  duplicate h1). Wrap it in a .ct-hero and put page actions after it.
+
+  Context variables:
+  * headertitle - string, the page title (required)
+  * headerdesc  - string, one-line description (optional)
 
   Example context (json):
-  {
-    "back": "#",
-    "summary": "#"
-  }
+  { "headertitle": "Plataformas emparejadas", "headerdesc": "Registra los Moodle remotos…" }
 }}
-<div class="ct-pagenav">
-    <a class="ct-btn ct-btn--secondary ct-btn--sm" href="{{ back }}">
-        <i class="fa fa-cog" aria-hidden="true"></i>
-        {{#str}} configuration, local_coursetransfer {{/str}}
-    </a>
-    <a class="ct-btn ct-btn--secondary ct-btn--sm" href="{{ summary }}">
-        <i class="fa fa-list" aria-hidden="true"></i>
-        {{#str}} summary, local_coursetransfer {{/str}}
-    </a>
+<div class="ct-hero-main">
+    <span class="ct-page-icon">{{#pix}} icon, local_coursetransfer {{/pix}}</span>
+    <div class="ct-hero-text">
+        <h1 class="ct-hero-title">{{ headertitle }}</h1>
+        {{#headerdesc}}<p class="ct-hero-desc">{{ headerdesc }}</p>{{/headerdesc}}
+    </div>
 </div>

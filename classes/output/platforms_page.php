@@ -81,6 +81,8 @@ class platforms_page implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output): stdClass {
         $data = new stdClass();
+        $data->headertitle = get_string('platforms_title', 'local_coursetransfer');
+        $data->headerdesc = get_string('platforms_lead', 'local_coursetransfer');
         $data->back = (new moodle_url('/admin/settings.php', ['section' => 'local_coursetransfer']))->out(false);
         $data->summary = (new moodle_url('/local/coursetransfer/index.php'))->out(false);
         $data->platforms = [];

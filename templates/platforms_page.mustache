@@ -44,12 +44,10 @@
 }}
 <div class="local-coursetransfer" data-region="platforms_page">
 
-    {{! The page h1 is rendered by the theme header (set_heading): the
-        screen only adds the lead text and the primary action. }}
-    <div class="ct-page-header">
-        <div class="ct-page-header-text">
-            <p class="ct-text-muted ct-page-lead">{{#str}} platforms_lead, local_coursetransfer {{/str}}</p>
-        </div>
+    {{! Shared hero (icon + title + description); theme heading cleared with
+        set_heading('') to avoid a duplicate h1. Primary action on the right. }}
+    <div class="ct-hero">
+        {{> local_coursetransfer/components/page_header }}
         <button type="button" class="ct-btn ct-btn--primary" data-action="add">
             <i class="fa fa-plus" aria-hidden="true"></i>
             {{#str}} platforms_add, local_coursetransfer {{/str}}

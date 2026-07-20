@@ -43,6 +43,7 @@ use local_coursetransfer\external\frontend\origin_remove_external;
 use local_coursetransfer\external\frontend\restore_category_external;
 use local_coursetransfer\external\frontend\restore_course_external;
 use local_coursetransfer\external\frontend\restore_external;
+use local_coursetransfer\external\frontend\restore_wizard_external;
 use local_coursetransfer\external\frontend\search_course;
 use local_coursetransfer\external\frontend\sites_external;
 
@@ -356,6 +357,33 @@ $functions = [
         'loginrequired' => true,
     ],
 
+    'local_coursetransfer_restore_wizard_get_sites' => [
+        'classname' => restore_wizard_external::class,
+        'methodname' => 'get_sites',
+        'description' => 'Restore wizard: list origin sites',
+        'type' => 'read',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+
+    'local_coursetransfer_restore_wizard_list_origin' => [
+        'classname' => restore_wizard_external::class,
+        'methodname' => 'list_origin',
+        'description' => 'Restore wizard: list origin courses or categories',
+        'type' => 'read',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+
+    'local_coursetransfer_restore_wizard_submit' => [
+        'classname' => restore_wizard_external::class,
+        'methodname' => 'submit',
+        'description' => 'Restore wizard: submit restore request',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+
 ];
 
 $services = [
@@ -394,6 +422,9 @@ $services = [
             'local_coursetransfer_dest_search_course_name',
             'local_coursetransfer_origin_get_courses_by_ids',
             'local_coursetransfer_get_category_idnumber',
+            'local_coursetransfer_restore_wizard_get_sites',
+            'local_coursetransfer_restore_wizard_list_origin',
+            'local_coursetransfer_restore_wizard_submit',
         ],
         'downloadfiles' => 1,
         'restrictedusers' => 1,

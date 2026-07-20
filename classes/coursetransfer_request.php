@@ -292,6 +292,158 @@ class coursetransfer_request {
     }
 
     /**
+     * WHERE + params for the unified executions log (all types and
+     * directions in one query). Placeholders only. Columns are prefixed
+     * with "r." so the caller can join {course} for the local target name.
+     *
+     * Accepted filters: statusgroup ('prog'|'wait'|'done'|'err'),
+     * type (0..3), dir ('in'|'out'), site (siteurl), q (course search),
+     * from / to (timestamps on timemodified).
+     *
+     * @param array $filters
+     * @return array [string $where, array $params]
+     */
+    public static function get_executions_filter_sql(array $filters): array {
+        global $DB;
+        $where = ['1 = 1'];
+        $params = [];
+
+        $groups = [
+            'prog' => [self::STATUS_IN_PROGRESS, self::STATUS_BACKUP, self::STATUS_DOWNLOAD,
+                    self::STATUS_DOWNLOADED, self::STATUS_RESTORE],
+            'wait' => [self::STATUS_NOT_STARTED],
+            'done' => [self::STATUS_COMPLETED],
+            'err' => [self::STATUS_ERROR, self::STATUS_INCOMPLETED],
+        ];
+        if (!empty($filters['statusgroup']) && isset($groups[$filters['statusgroup']])) {
+            [$insql, $inparams] = $DB->get_in_or_equal($groups[$filters['statusgroup']], SQL_PARAMS_NAMED, 'st');
+            $where[] = "r.status $insql";
+            $params += $inparams;
+        }
+        if (isset($filters['type']) && is_numeric($filters['type']) && (int)$filters['type'] >= 0) {
+            $where[] = 'r.type = :ftype';
+            $params['ftype'] = (int)$filters['type'];
+        }
+        // Direction of the exchange from this site's point of view:
+        // "in" (I pull) = restores initiated here or removes requested by a peer;
+        // "out" (I serve/act outwards) = the inverse combinations.
+        if (!empty($filters['dir']) && in_array($filters['dir'], ['in', 'out'], true)) {
+            $restores = '(r.type = ' . self::TYPE_COURSE . ' OR r.type = ' . self::TYPE_CATEGORY . ')';
+            if ($filters['dir'] === 'in') {
+                $where[] = "(($restores AND r.direction = " . self::DIRECTION_REQUEST . ')'
+                        . ' OR (NOT ' . $restores . ' AND r.direction = ' . self::DIRECTION_RESPONSE . '))';
+            } else {
+                $where[] = "(($restores AND r.direction = " . self::DIRECTION_RESPONSE . ')'
+                        . ' OR (NOT ' . $restores . ' AND r.direction = ' . self::DIRECTION_REQUEST . '))';
+            }
+        }
+        if (!empty($filters['site'])) {
+            $compare = $DB->sql_compare_text('r.siteurl', 255);
+            $where[] = "$compare = " . $DB->sql_compare_text(':fsite', 255);
+            $params['fsite'] = $filters['site'];
+        }
+        if (!empty($filters['q'])) {
+            $like1 = $DB->sql_like('r.origin_course_fullname', ':fq1', false, false);
+            $like2 = $DB->sql_like('r.origin_category_name', ':fq2', false, false);
+            $like3 = $DB->sql_like('c.fullname', ':fq3', false, false);
+            $where[] = "($like1 OR $like2 OR $like3)";
+            $needle = '%' . $DB->sql_like_escape($filters['q']) . '%';
+            $params['fq1'] = $needle;
+            $params['fq2'] = $needle;
+            $params['fq3'] = $needle;
+        }
+        if (!empty($filters['from'])) {
+            $where[] = 'r.timemodified >= :ffrom';
+            $params['ffrom'] = (int)$filters['from'];
+        }
+        if (!empty($filters['to'])) {
+            $where[] = 'r.timemodified <= :fto';
+            $params['fto'] = (int)$filters['to'];
+        }
+        return [implode(' AND ', $where), $params];
+    }
+
+    /**
+     * Unified executions page: one slice of the request log across all
+     * types and directions, newest first. Includes the LOCAL target
+     * course fullname when it exists (targetcoursename).
+     *
+     * @param array $filters see get_executions_filter_sql()
+     * @param int $page zero-based page
+     * @param int $perpage
+     * @return stdClass[]
+     * @throws dml_exception
+     */
+    public static function get_executions(array $filters, int $page, int $perpage): array {
+        global $DB;
+        [$where, $params] = self::get_executions_filter_sql($filters);
+        $sql = 'SELECT r.*, c.fullname AS targetcoursename
+                  FROM {' . self::TABLE . '} r
+             LEFT JOIN {course} c ON c.id = r.target_course_id
+                 WHERE ' . $where . '
+              ORDER BY r.timemodified DESC, r.id DESC';
+        return $DB->get_records_sql($sql, $params, $page * $perpage, $perpage);
+    }
+
+    /**
+     * Total rows for the unified executions page.
+     *
+     * @param array $filters see get_executions_filter_sql()
+     * @return int
+     * @throws dml_exception
+     */
+    public static function count_executions(array $filters): int {
+        global $DB;
+        [$where, $params] = self::get_executions_filter_sql($filters);
+        $sql = 'SELECT COUNT(1)
+                  FROM {' . self::TABLE . '} r
+             LEFT JOIN {course} c ON c.id = r.target_course_id
+                 WHERE ' . $where;
+        return (int)$DB->count_records_sql($sql, $params);
+    }
+
+    /**
+     * Requests currently moving (or waiting for cron), newest first.
+     *
+     * @param int $limit
+     * @return stdClass[]
+     * @throws dml_exception
+     */
+    public static function get_active_executions(int $limit = 20): array {
+        global $DB;
+        $active = [self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_BACKUP,
+                self::STATUS_DOWNLOAD, self::STATUS_DOWNLOADED, self::STATUS_RESTORE];
+        [$insql, $params] = $DB->get_in_or_equal($active, SQL_PARAMS_NAMED, 'ac');
+        $sql = 'SELECT r.*, c.fullname AS targetcoursename
+                  FROM {' . self::TABLE . '} r
+             LEFT JOIN {course} c ON c.id = r.target_course_id
+                 WHERE r.status ' . $insql . '
+              ORDER BY r.timemodified DESC, r.id DESC';
+        return $DB->get_records_sql($sql, $params, 0, $limit);
+    }
+
+    /**
+     * Distinct site URLs present in the request log (for the site filter).
+     *
+     * @return string[]
+     * @throws dml_exception
+     */
+    public static function get_execution_sites(): array {
+        global $DB;
+        $compare = $DB->sql_compare_text('siteurl', 255);
+        $records = $DB->get_records_sql(
+                "SELECT DISTINCT $compare AS siteurl FROM {" . self::TABLE . '}');
+        $sites = [];
+        foreach ($records as $record) {
+            if (!empty($record->siteurl)) {
+                $sites[] = $record->siteurl;
+            }
+        }
+        sort($sites);
+        return $sites;
+    }
+
+    /**
      * Register a shutdown handler that records an uncatchable fatal error
      * (e.g. execution timeout or out-of-memory) into the request log, so large
      * downloads/restores that die do not leave the request stuck and silent.

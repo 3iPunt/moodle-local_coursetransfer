@@ -47,7 +47,8 @@ $title = get_string('platforms_title', 'local_coursetransfer');
 $PAGE->set_pagelayout('standard');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title($title);
-$PAGE->set_heading($title);
+// Heading cleared: the page hero (component) renders the title with the icon.
+$PAGE->set_heading('');
 $PAGE->set_url('/local/coursetransfer/sites.php');
 
 $platforms = coursetransfer_sites::get_platforms();

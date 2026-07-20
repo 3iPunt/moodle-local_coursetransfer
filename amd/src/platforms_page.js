@@ -71,6 +71,16 @@ define([
     }
 
     /**
+     * Escape a dynamic value before inserting it into banner HTML.
+     *
+     * @param {String} value
+     * @return {String}
+     */
+    function escapeHtml(value) {
+        return $('<span>').text(value || '').html();
+    }
+
+    /**
      * First error message of a WS response.
      *
      * @param {Object} response
@@ -85,16 +95,18 @@ define([
     }
 
     /**
-     * Show the action banner.
+     * Show the action banner. The text is rendered as HTML so our lang
+     * strings can carry <strong>: every DYNAMIC value (names, remote
+     * messages) must be passed through escapeHtml() by the caller.
      *
      * @param {String} tone success|error
-     * @param {String} text
+     * @param {String} html
      */
-    function showBanner(tone, text) {
+    function showBanner(tone, html) {
         var $banner = $root.find('[data-region="banner"]');
         $banner.removeClass('ct-banner--success ct-banner--error')
             .addClass(tone === 'error' ? 'ct-banner--error' : 'ct-banner--success');
-        $banner.find('[data-region="banner-text"]').text(text);
+        $banner.find('[data-region="banner-text"]').html(html);
         $banner.prop('hidden', false);
     }
 
@@ -393,13 +405,13 @@ define([
                 bannerAfterReload('success', state.testok ? strings.saved : strings.saveduntested);
             } else {
                 state.saving = false;
-                showBanner('error', errorMsg(failed[0]));
+                showBanner('error', escapeHtml(errorMsg(failed[0])));
                 closeWizard();
             }
             return null;
         }).catch(function(e) {
             state.saving = false;
-            showBanner('error', e.message || strings.unknown);
+            showBanner('error', escapeHtml(e.message || strings.unknown));
             closeWizard();
         });
     }
@@ -430,13 +442,13 @@ define([
             var ok = responses.every(function(r) {
                 return r.success;
             });
-            var name = $card.attr('data-name');
+            var name = '<strong>' + escapeHtml($card.attr('data-name')) + '</strong>';
             bannerAfterReload(ok ? 'success' : 'error',
                 ok ? strings.testrowok.replace('{$a}', name) : strings.testrowko.replace('{$a}', name));
             return null;
         }).catch(function(e) {
             $button.removeClass('ct-spin ct-iconbtn--active');
-            showBanner('error', e.message || strings.unknown);
+            showBanner('error', escapeHtml(e.message || strings.unknown));
         });
     }
 
@@ -481,12 +493,12 @@ define([
             if (failed.length === 0) {
                 bannerAfterReload('success', strings.deleted);
             } else {
-                showBanner('error', errorMsg(failed[0]));
+                showBanner('error', escapeHtml(errorMsg(failed[0])));
             }
             return null;
         }).catch(function(e) {
             $modal.prop('hidden', true);
-            showBanner('error', e.message || strings.unknown);
+            showBanner('error', escapeHtml(e.message || strings.unknown));
         });
     }
 

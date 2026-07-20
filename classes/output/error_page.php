@@ -35,7 +35,6 @@
 namespace local_coursetransfer\output;
 
 use coding_exception;
-use local_coursetransfer\tables\sites_table;
 use moodle_exception;
 use moodle_url;
 use renderable;

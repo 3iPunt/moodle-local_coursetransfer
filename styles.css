@@ -1,39 +1,6 @@
 /* Local Course Transfer - plugin styles. */
 
 /*
- * Logs page: render the table readably on ANY theme (force white background and
- * dark text) and let it adapt with horizontal scroll instead of breaking the
- * layout. Scoped to the logs page body id so it never leaks to other pages.
- * Overrides (higher, id-based specificity) the centering set inline in the
- * logs page templates.
- */
-#page-local-coursetransfer-logs [data-region="logs_page"] {
-    width: 100%;
-    align-items: stretch;
-}
-
-#page-local-coursetransfer-logs [data-region="logs_page"] .no-overflow {
-    width: 100%;
-    overflow-x: auto;
-}
-
-body#page-local-coursetransfer-logs #topofscroll {
-    max-width: inherit !important;
-}
-
-#page-local-coursetransfer-logs [data-region="logs_page"] table {
-    width: 100%;
-    background-color: #fff;
-}
-
-#page-local-coursetransfer-logs [data-region="logs_page"] table th,
-#page-local-coursetransfer-logs [data-region="logs_page"] table td {
-    background-color: #fff;
-    color: #1d2125;
-    vertical-align: middle;
-}
-
-/*
  * ============================================================
  * Course Transfer design system (Tresipunt / Claude Design).
  * Everything is scoped under .local-coursetransfer so tokens and
@@ -112,7 +79,10 @@ body#page-local-coursetransfer-logs #topofscroll {
     --dur-base: 200ms;
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-body);
-    max-width: 880px;
+    /* No own width/margin: the content fills the theme's already-centered
+       content container, so the page heading and this content share the
+       same box and line up. (The old #topofscroll max-width override that
+       broke this alignment was removed.) */
 }
 
 /* ---- Typography helpers ---- */
@@ -631,12 +601,77 @@ body#page-local-coursetransfer-logs #topofscroll {
     margin-bottom: 18px;
 }
 
-/* ---- Page header ---- */
+/* ---- Page header (shared hero: icon + title + description) ---- */
+.local-coursetransfer .ct-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.local-coursetransfer .ct-hero-main {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-page-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    flex: none;
+    background: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-page-icon img {
+    width: 45px;
+    height: 45px;
+    /* Override core/theme .icon rule (max-width/height:24px + margin-right). */
+    max-width: 45px;
+    max-height: 45px;
+    margin: 0;
+    object-fit: contain;
+}
+
+.local-coursetransfer .ct-hero-text {
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-hero-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    margin: 0 0 3px;
+}
+
+.local-coursetransfer .ct-hero-desc {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    max-width: 640px;
+}
+
+/* Legacy alias kept for any header not yet migrated */
 .local-coursetransfer .ct-page-header {
     display: flex;
     align-items: center;
     gap: 16px;
     margin-bottom: 22px;
+}
+
+/* Tresipunt logo where a full brand mark fits (landing, done) */
+.local-coursetransfer .ct-logo {
+    height: 30px;
+    width: auto;
 }
 
 .local-coursetransfer .ct-page-header-text {
@@ -655,8 +690,9 @@ body#page-local-coursetransfer-logs #topofscroll {
 .local-coursetransfer .ct-pagenav {
     display: flex;
     gap: 10px;
-    margin-top: 24px;
-    padding-top: 16px;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    padding-top: 20px;
     border-top: 1px solid var(--divider);
 }
 
@@ -1153,6 +1189,1358 @@ body#page-local-coursetransfer-logs #topofscroll {
     gap: 10px;
     justify-content: flex-end;
     margin-top: 22px;
+}
+
+/* ---- Executions log (registro de ejecuciones) ---- */
+
+.local-coursetransfer .ct-tabs {
+    display: flex;
+    gap: 26px;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 22px;
+}
+
+.local-coursetransfer .ct-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 4px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1px;
+}
+
+.local-coursetransfer .ct-tab:hover {
+    color: var(--text-body);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-tab--active {
+    color: var(--text-strong);
+    border-bottom-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-tab-count {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--neutral-100);
+    color: var(--text-muted);
+    border-radius: var(--radius-pill);
+    padding: 1px 8px;
+}
+
+.local-coursetransfer .ct-tab-count--hot {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+/* Active migration cards */
+.local-coursetransfer .ct-active-list {
+    display: grid;
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-active-card {
+    padding: 16px 18px;
+}
+
+.local-coursetransfer .ct-active-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.local-coursetransfer .ct-active-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-active-title .fa {
+    font-size: 11px;
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-active-spacer {
+    flex: 1;
+}
+
+.local-coursetransfer .ct-active-id {
+    font-size: 12px;
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-segments {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 9px;
+}
+
+.local-coursetransfer .ct-segment {
+    flex: 1;
+    height: 7px;
+    border-radius: 4px;
+    background: var(--neutral-100);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-segment-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-active-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+}
+
+.local-coursetransfer .ct-active-caption {
+    font-weight: 600;
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-active-caption--stuck {
+    color: var(--warning-700);
+}
+
+.local-coursetransfer .ct-active-sep {
+    color: var(--border-strong);
+}
+
+/* Filters */
+.local-coursetransfer .ct-filters {
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.local-coursetransfer .ct-filters-toprow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.local-coursetransfer .ct-filters-search {
+    flex: 1;
+    min-width: 220px;
+    height: 40px;
+}
+
+.local-coursetransfer .ct-filters-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.local-coursetransfer .ct-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0;
+}
+
+.local-coursetransfer .ct-filter-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-filter select {
+    height: 40px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text-body);
+    background: var(--neutral-0);
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-filter-dates {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 0 11px;
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-filter-dates input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-resultlabel {
+    font-size: 12.5px;
+    margin: 0 2px 10px;
+}
+
+/* Log table */
+.local-coursetransfer .ct-log {
+    padding: 0;
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-log-head,
+.local-coursetransfer .ct-log-row {
+    display: grid;
+    grid-template-columns: 120px 1.7fr 1fr 76px 116px 32px;
+    gap: 12px;
+    padding: 11px 16px;
+    align-items: center;
+}
+
+.local-coursetransfer .ct-log-head {
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--divider);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-log-row-wrap {
+    border-bottom: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-log-row {
+    padding: 12px 16px;
+}
+
+.local-coursetransfer .ct-log-fromto {
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-log-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-log-line + .ct-log-line {
+    margin-top: 4px;
+}
+
+.local-coursetransfer .ct-dirtag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 2px 6px;
+    flex: none;
+    min-width: 66px;
+    text-align: center;
+}
+
+.local-coursetransfer .ct-dirtag--origin {
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-dirtag--target {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-dirtag--self {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+}
+
+.local-coursetransfer .ct-dirtag--danger {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-log-course {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-link);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-log-course span,
+.local-coursetransfer .ct-log-course {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-log-course .fa {
+    font-size: 10px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-log-note,
+.local-coursetransfer .ct-log-typedir {
+    display: block;
+    font-size: 11px;
+    color: var(--text-subtle);
+    margin-top: 3px;
+}
+
+.local-coursetransfer .ct-log-site {
+    font-size: 12.5px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-log-actions {
+    text-align: right;
+}
+
+.local-coursetransfer .ct-iconbtn--xs {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-iconbtn--xs .fa {
+    font-size: 13px;
+}
+
+.local-coursetransfer .ct-log-error {
+    margin: 0 16px 14px;
+}
+
+.local-coursetransfer .ct-log-error-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    background: var(--danger-50);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--danger-500);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.local-coursetransfer .ct-log-error-toggle span {
+    flex: 1;
+}
+
+.local-coursetransfer .ct-log-error-toggle [data-region="chevron"] {
+    transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-log-error-body {
+    background: var(--danger-50);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 2px 14px 13px 35px;
+    margin-top: -4px;
+}
+
+.local-coursetransfer .ct-log-empty {
+    padding: 30px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.local-coursetransfer .ct-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+/* ---- Request detail ---- */
+.local-coursetransfer .ct-detail-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.local-coursetransfer .ct-detail-title {
+    font-size: 24px;
+    margin: 0 0 12px;
+}
+
+.local-coursetransfer .ct-detail-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.local-coursetransfer .ct-linkbtn {
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-linkbtn--origin {
+    border: 1.5px solid var(--teal-200);
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-linkbtn--target {
+    border: 1.5px solid var(--color-primary-border);
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-detail-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 720px) {
+    .local-coursetransfer .ct-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.local-coursetransfer .ct-card-eyebrow {
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+.local-coursetransfer .ct-timeline-card {
+    padding: 20px;
+}
+
+/* Timeline */
+.local-coursetransfer .ct-tl-step {
+    display: flex;
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-tl-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: none;
+}
+
+.local-coursetransfer .ct-tl-marker {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-tl-marker .fa {
+    font-size: 12px;
+}
+
+.local-coursetransfer .ct-tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+.local-coursetransfer .ct-tl-bar {
+    width: 2px;
+    flex: 1;
+    min-height: 20px;
+    background: var(--border-default);
+}
+
+.local-coursetransfer .ct-tl-bar--done {
+    background: var(--success-500);
+}
+
+.local-coursetransfer .ct-tl--done .ct-tl-marker {
+    background: var(--success-50);
+    border-color: var(--success-500);
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-tl--current .ct-tl-marker {
+    background: var(--orange-50);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* First (start flag) and last (finish flag) stand out as milestones:
+   larger, solid ring even when pending. */
+.local-coursetransfer .ct-tl--first .ct-tl-marker,
+.local-coursetransfer .ct-tl--last .ct-tl-marker {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+}
+
+.local-coursetransfer .ct-tl--first.ct-tl--pending .ct-tl-marker,
+.local-coursetransfer .ct-tl--last.ct-tl--pending .ct-tl-marker {
+    border-color: var(--neutral-400);
+    color: var(--neutral-500);
+    background: var(--surface-sunken);
+}
+
+.local-coursetransfer .ct-tl--last.ct-tl--done .ct-tl-marker {
+    background: var(--success-500);
+    border-color: var(--success-500);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-tl--first .ct-tl-marker .fa,
+.local-coursetransfer .ct-tl--last .ct-tl-marker .fa {
+    font-size: 13px;
+}
+
+.local-coursetransfer .ct-tl-tag {
+    display: inline-block;
+    margin-left: 7px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    background: var(--neutral-100);
+    border-radius: var(--radius-pill);
+    padding: 1px 7px;
+    vertical-align: middle;
+}
+
+.local-coursetransfer .ct-tl-body {
+    padding-bottom: 14px;
+}
+
+.local-coursetransfer .ct-tl-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-tl--done .ct-tl-label,
+.local-coursetransfer .ct-tl--current .ct-tl-label {
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-tl-time {
+    font-size: 11.5px;
+    color: var(--text-subtle);
+    margin-top: 1px;
+}
+
+/* Field groups */
+.local-coursetransfer .ct-detail-main {
+    display: grid;
+    gap: 16px;
+}
+
+.local-coursetransfer .ct-fieldgroup {
+    padding: 20px 22px;
+}
+
+.local-coursetransfer .ct-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+}
+
+@media (max-width: 540px) {
+    .local-coursetransfer .ct-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
+.local-coursetransfer .ct-field-key {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.local-coursetransfer .ct-field-val {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+}
+
+.local-coursetransfer .ct-field-val--muted {
+    color: var(--text-subtle);
+    font-weight: 400;
+}
+
+/* Detail error card */
+.local-coursetransfer .ct-detail-error {
+    background: var(--danger-50);
+    border-color: #f0cfca;
+    padding: 18px 20px;
+}
+
+.local-coursetransfer .ct-detail-error-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-detail-error-foot {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* Section / activity tree */
+.local-coursetransfer .ct-sectree {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-sectree-section {
+    border-bottom: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-sectree-section:last-child {
+    border-bottom: none;
+}
+
+.local-coursetransfer .ct-sectree-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface-alt);
+}
+
+.local-coursetransfer .ct-sectree-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    flex: none;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-sectree-check--on {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-sectree-check .fa {
+    font-size: 10px;
+}
+
+.local-coursetransfer .ct-sectree-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-sectree-act {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 40px;
+}
+
+.local-coursetransfer .ct-sectree-actdot {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    background: var(--success-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-sectree-actdot .fa {
+    font-size: 9px;
+}
+
+.local-coursetransfer .ct-sectree-actname {
+    flex: 1;
+    font-size: 12.5px;
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-sectree-acttype {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--neutral-100);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+}
+
+/* ============================================================
+   Restore wizard (admin + teacher, TIPGOODLE-352)
+   ============================================================ */
+
+/* Landing: start card */
+.local-coursetransfer .ct-startcard {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 22px 24px;
+}
+
+.local-coursetransfer .ct-startcard-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange-50);
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-startcard-icon .fa {
+    font-size: 26px;
+}
+
+.local-coursetransfer .ct-startcard-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-startcard-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text-strong);
+    margin: 0 0 3px;
+}
+
+.local-coursetransfer .ct-startcard-desc {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Recent restorations list */
+.local-coursetransfer .ct-recent-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 6px 2px 12px;
+}
+
+.local-coursetransfer .ct-recent-head h2 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-strong);
+    margin: 0;
+}
+
+.local-coursetransfer .ct-recent-list {
+    display: grid;
+    gap: 10px;
+}
+
+.local-coursetransfer .ct-recent-card {
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs, 0 1px 2px rgba(30, 30, 31, 0.06));
+    padding: 16px 18px;
+}
+
+.local-coursetransfer .ct-recent-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-recent-summary {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+}
+
+/* Selection counter bar */
+.local-coursetransfer .ct-selcounter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 11px 15px;
+    margin-bottom: 14px;
+    background: var(--surface-sunken);
+}
+
+.local-coursetransfer .ct-selcounter--active {
+    background: var(--orange-50);
+    border-color: var(--color-primary-border);
+}
+
+.local-coursetransfer .ct-selcounter-num {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--neutral-400);
+    color: var(--neutral-0);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 12.5px;
+}
+
+.local-coursetransfer .ct-selcounter--active .ct-selcounter-num {
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-selcounter-label {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-selcounter--active .ct-selcounter-label {
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-selcounter-clear {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--color-primary);
+    padding: 0;
+}
+
+/* Selection list */
+.local-coursetransfer .ct-seltable {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-seltable-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--divider);
+    padding: 10px 15px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-seltable-head .ct-col-name {
+    flex: 1;
+}
+
+.local-coursetransfer .ct-seltable-head .ct-col-meta {
+    width: 130px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-selrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: var(--neutral-0);
+    border: none;
+    border-bottom: 1px solid var(--divider);
+    padding: 12px 15px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-selrow:last-child {
+    border-bottom: none;
+}
+
+.local-coursetransfer .ct-selrow:hover {
+    background: var(--surface-alt);
+}
+
+.local-coursetransfer .ct-selrow[aria-pressed="true"] {
+    background: var(--orange-50);
+}
+
+.local-coursetransfer .ct-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    flex: none;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-checkbox .fa {
+    font-size: 11px;
+    visibility: hidden;
+}
+
+.local-coursetransfer [aria-pressed="true"] > .ct-checkbox,
+.local-coursetransfer .ct-checkbox--on,
+.local-coursetransfer .ct-checkbox--some {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer [aria-pressed="true"] > .ct-checkbox .fa,
+.local-coursetransfer .ct-checkbox--on .fa,
+.local-coursetransfer .ct-checkbox--some .fa {
+    visibility: visible;
+}
+
+.local-coursetransfer .ct-selrow-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-selrow-name {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-selrow-sub {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.local-coursetransfer .ct-selrow-meta {
+    width: 130px;
+    flex: none;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-selempty {
+    padding: 26px 15px;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-selpager {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.local-coursetransfer .ct-selpager-info {
+    flex: 1;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+/* Mode selector (merge / replace, with destructive confirm) */
+.local-coursetransfer .ct-modeopt {
+    background: var(--neutral-0);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-modeopt[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--orange-50);
+}
+
+.local-coursetransfer .ct-modeopt--danger[aria-pressed="true"] {
+    border-color: var(--danger-500);
+    background: var(--danger-50);
+}
+
+.local-coursetransfer .ct-modeopt-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    text-align: left;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 15px 17px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    margin-top: 1px;
+    border: 2px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-modeopt[aria-pressed="true"] .ct-radio {
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-modeopt--danger[aria-pressed="true"] .ct-radio {
+    border-color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-radio::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    display: none;
+}
+
+.local-coursetransfer .ct-modeopt--danger .ct-radio::after {
+    background: var(--danger-500);
+}
+
+.local-coursetransfer .ct-modeopt[aria-pressed="true"] .ct-radio::after {
+    display: block;
+}
+
+.local-coursetransfer .ct-modeopt-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-modeopt-desc {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.45;
+}
+
+.local-coursetransfer .ct-tag-rec {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--success-500);
+    background: var(--success-50);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+}
+
+.local-coursetransfer .ct-tag-danger {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--danger-500);
+    background: var(--danger-50);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+}
+
+.local-coursetransfer .ct-modeopt-confirm {
+    border-top: 1px solid #f0cfca;
+    background: var(--danger-50);
+    padding: 13px 17px 13px 50px;
+}
+
+.local-coursetransfer .ct-modeopt-confirm-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    text-align: left;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--danger-500);
+    font-weight: 500;
+}
+
+.local-coursetransfer .ct-modeopt-confirm-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    flex: none;
+    margin-top: 1px;
+    border: 2px solid var(--danger-500);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-modeopt-confirm-box .fa {
+    font-size: 11px;
+    visibility: hidden;
+}
+
+.local-coursetransfer .ct-modeopt-confirm-btn[aria-checked="true"] .ct-modeopt-confirm-box {
+    background: var(--danger-500);
+}
+
+.local-coursetransfer .ct-modeopt-confirm-btn[aria-checked="true"] .ct-modeopt-confirm-box .fa {
+    visibility: visible;
+}
+
+/* Switch (include users) */
+.local-coursetransfer .ct-switchrow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 15px 17px;
+    margin-top: 16px;
+}
+
+.local-coursetransfer .ct-switchrow-body {
+    flex: 1;
+}
+
+.local-coursetransfer .ct-switch {
+    width: 48px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+    border: none;
+    flex: none;
+    cursor: pointer;
+    background: var(--neutral-300);
+    position: relative;
+    transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-switch[aria-checked="true"] {
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-pill);
+    background: var(--neutral-0);
+    box-shadow: var(--shadow-sm);
+    transition: left var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-switch[aria-checked="true"]::after {
+    left: 23px;
+}
+
+/* Review summary */
+.local-coursetransfer .ct-review {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-review-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-review-hero-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange-50);
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-review-hero-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-review-eyebrow {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.local-coursetransfer .ct-review-headline {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-review-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.local-coursetransfer .ct-review-count {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 30px;
+    color: var(--color-primary);
+    line-height: 1;
+    flex: none;
+}
+
+.local-coursetransfer .ct-review-list {
+    padding: 16px 20px;
+}
+
+.local-coursetransfer .ct-review-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-review-list-item + .ct-review-list-item {
+    margin-top: 8px;
+}
+
+.local-coursetransfer .ct-review-list-item .fa {
+    color: var(--color-primary);
+    font-size: 13px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-review-grid-cell {
+    padding: 14px 20px;
+}
+
+.local-coursetransfer .ct-review-grid-cell:first-child {
+    border-right: 1px solid var(--divider);
+}
+
+/* Done screen */
+.local-coursetransfer .ct-done {
+    text-align: center;
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.local-coursetransfer .ct-done-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--radius-pill);
+    background: var(--orange-50);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.local-coursetransfer .ct-done-icon .fa {
+    font-size: 32px;
+}
+
+.local-coursetransfer .ct-done-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 24px;
 }
 
 /* ---- Wizard step states (set by AMD via data-state) ---- */
