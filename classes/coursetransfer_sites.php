@@ -123,4 +123,112 @@ class coursetransfer_sites {
     public static function clean_host(string $host): string {
         return rtrim($host, '/');
     }
+
+    /**
+     * Unified platform list: merges origin and target site rows by host.
+     *
+     * Each platform aggregates the two possible roles of a remote Moodle:
+     * "origin" (we pull courses from it) and "target" (it may request
+     * courses from us). Rows sharing the same host are one platform.
+     *
+     * @return stdClass[] platforms, each with: name, host, origin (row|null),
+     *                    target (row|null), lasttest, lastteststatus,
+     *                    lasttesterror (most recent of both roles).
+     * @throws dml_exception
+     */
+    public static function get_platforms(): array {
+        $platforms = [];
+        foreach (['origin', 'target'] as $type) {
+            foreach (self::list($type) as $row) {
+                $key = self::clean_host($row->host);
+                if (!isset($platforms[$key])) {
+                    $platform = new stdClass();
+                    $platform->host = $key;
+                    $platform->name = '';
+                    $platform->origin = null;
+                    $platform->target = null;
+                    $platform->lasttest = null;
+                    $platform->lastteststatus = null;
+                    $platform->lasttesterror = null;
+                    $platforms[$key] = $platform;
+                }
+                $platforms[$key]->{$type} = $row;
+                if (!empty($row->name)) {
+                    $platforms[$key]->name = $row->name;
+                }
+            }
+        }
+        foreach ($platforms as $platform) {
+            if ($platform->name === '') {
+                $platform->name = preg_replace('#^https?://#i', '', $platform->host);
+            }
+            self::set_platform_test_info($platform);
+        }
+        return array_values($platforms);
+    }
+
+    /**
+     * Combine the persisted test results of both role rows into the
+     * platform: status is OK only if every tested role is OK, and each
+     * failure is labelled with its role so the admin knows which
+     * direction of the pairing is broken.
+     *
+     * @param stdClass $platform
+     * @throws \coding_exception
+     */
+    protected static function set_platform_test_info(stdClass $platform): void {
+        $tested = [];
+        foreach (['origin', 'target'] as $type) {
+            $row = $platform->{$type};
+            if ($row && isset($row->lastteststatus) && $row->lastteststatus !== null) {
+                $tested[$type] = $row;
+            }
+        }
+        if (empty($tested)) {
+            return;
+        }
+        $status = 1;
+        $errors = [];
+        foreach ($tested as $type => $row) {
+            $platform->lasttest = max((int)$platform->lasttest, (int)$row->lasttest);
+            if ((int)$row->lastteststatus !== 1) {
+                $status = 0;
+                $errors[] = get_string('platforms_role_' . $type, 'local_coursetransfer')
+                        . ' — ' . $row->lasttesterror;
+            }
+        }
+        $platform->lastteststatus = $status;
+        $platform->lasttesterror = $errors ? implode(' | ', $errors) : null;
+    }
+
+    /**
+     * Persist the result of a connection test on a site row.
+     *
+     * @param string $type origin|target
+     * @param int $id site row id
+     * @param bool $ok test outcome
+     * @param string $error error message when the test failed
+     * @throws dml_exception
+     */
+    public static function save_test_result(string $type, int $id, bool $ok, string $error = ''): void {
+        global $DB;
+        $object = new stdClass();
+        $object->id = $id;
+        $object->lasttest = time();
+        $object->lastteststatus = $ok ? 1 : 0;
+        $object->lasttesterror = $ok ? null : $error;
+        $DB->update_record(self::TABLE_PREX . $type, $object);
+    }
+
+    /**
+     * Whether a platform host has requests registered (any direction).
+     *
+     * @param string $host
+     * @return bool
+     * @throws dml_exception
+     */
+    public static function is_in_use(string $host): bool {
+        global $DB;
+        return $DB->record_exists('local_coursetransfer_request', ['siteurl' => self::clean_host($host)]);
+    }
 }

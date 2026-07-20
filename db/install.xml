@@ -51,9 +51,13 @@
         <TABLE NAME="local_coursetransfer_origin" COMMENT="Origin Sites availables">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="false" COMMENT="Human-readable platform name"/>
                 <FIELD NAME="host" SEQUENCE="false" TYPE="text" NOTNULL="true" COMMENT="Origin Host URL"/>
                 <FIELD NAME="token" SEQUENCE="false" TYPE="text" NOTNULL="true" COMMENT="Origin Token"/>
                 <FIELD NAME="userid" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="User ID last modified"/>
+                <FIELD NAME="lasttest" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Timestamp of last connection test"/>
+                <FIELD NAME="lastteststatus" SEQUENCE="false" TYPE="int" LENGTH="2" NOTNULL="false" COMMENT="Last test result: 1 ok, 0 error, null untested"/>
+                <FIELD NAME="lasttesterror" SEQUENCE="false" TYPE="text" NOTNULL="false" COMMENT="Last test error message"/>
                 <FIELD NAME="timemodified" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"/>
                 <FIELD NAME="timecreated" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"/>
             </FIELDS>
@@ -64,9 +68,13 @@
         <TABLE NAME="local_coursetransfer_target" COMMENT="Target Sites availables">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="false" COMMENT="Human-readable platform name"/>
                 <FIELD NAME="host" SEQUENCE="false" TYPE="text" NOTNULL="true" COMMENT="Target Host URL"/>
                 <FIELD NAME="token" SEQUENCE="false" TYPE="text" NOTNULL="true" COMMENT="Target Token"/>
                 <FIELD NAME="userid" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="User ID last modified"/>
+                <FIELD NAME="lasttest" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Timestamp of last connection test"/>
+                <FIELD NAME="lastteststatus" SEQUENCE="false" TYPE="int" LENGTH="2" NOTNULL="false" COMMENT="Last test result: 1 ok, 0 error, null untested"/>
+                <FIELD NAME="lasttesterror" SEQUENCE="false" TYPE="text" NOTNULL="false" COMMENT="Last test error message"/>
                 <FIELD NAME="timemodified" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"/>
                 <FIELD NAME="timecreated" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"/>
             </FIELDS>

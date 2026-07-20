@@ -52,13 +52,34 @@ define([
         };
 
         /**
+         * Read the wizard session data, falling back to an empty selection
+         * when the storage entry is missing (direct URL access, new tab or
+         * cleared storage).
+         *
+         * @return {Object}
+         */
+        function readData() {
+            let data = JSON.parse(sessionStorage.getItem('local_coursetransfer_restore_page'), JSONutil.reviver);
+            if (data === null || typeof data !== 'object') {
+                data = {};
+            }
+            if (!Array.isArray(data.courses)) {
+                data.courses = [];
+            }
+            if (!Array.isArray(data.configuration)) {
+                data.configuration = [];
+            }
+            return data;
+        }
+
+        /**
          * @param {String} region
          *
          * @constructor
          */
         function originRestoreStep3(region) {
             this.node = $(region);
-            this.data = JSON.parse(sessionStorage.getItem('local_coursetransfer_restore_page'), JSONutil.reviver);
+            this.data = readData();
             let newcourses = [];
             this.data.courses.forEach(function(course) {
                 course.targetid = 0;
@@ -67,26 +88,23 @@ define([
             });
             this.data.courses = newcourses;
             sessionStorage.setItem('local_coursetransfer_restore_page', JSON.stringify(this.data, JSONutil.replacer));
-            this.data = JSON.parse(sessionStorage.getItem('local_coursetransfer_restore_page'), JSONutil.reviver);
-            console.log('Step 3 data: ', this.data);
-            if (this.data !== null) {
-                this.data.courses.forEach(function(course) {
-                    let courseid = parseInt(course.courseid);
-                    let targetid = parseInt(course.targetid);
-                    $(ACTIONS.COURSE_SELECT + '[data-courseid="' + courseid + '"]').prop("checked", true);
-                    let seltarget = '[data-action="target"][data-courseid="' + courseid + '"] option[value="' + targetid + '"]';
-                    $(seltarget).prop('selected', true);
-                });
-                this.data.configuration.forEach(function(config) {
-                    $('#' + config.name).prop('checked', config.selected);
-                });
-            }
+            this.data = readData();
+            this.data.courses.forEach(function(course) {
+                let courseid = parseInt(course.courseid);
+                let targetid = parseInt(course.targetid);
+                $(ACTIONS.COURSE_SELECT + '[data-courseid="' + courseid + '"]').prop("checked", true);
+                let seltarget = '[data-action="target"][data-courseid="' + courseid + '"] option[value="' + targetid + '"]';
+                $(seltarget).prop('selected', true);
+            });
+            this.data.configuration.forEach(function(config) {
+                $('#' + config.name).prop('checked', config.selected);
+            });
             this.node.find(ACTIONS.NEXT).on('click', this.clickNext.bind(this));
             this.node.find('#origin_schedule').on('click', this.clickSchedule.bind(this));
         }
 
         originRestoreStep3.prototype.clickNext = function(e) {
-            this.data = JSON.parse(sessionStorage.getItem('local_coursetransfer_restore_page'), JSONutil.reviver);
+            this.data = readData();
             let checkboxes = $('.configuration-checkbox');
             let configuration = [];
             checkboxes.each(function() {
@@ -105,7 +123,7 @@ define([
         };
 
         originRestoreStep3.prototype.generateForm = function() {
-            this.data = JSON.parse(sessionStorage.getItem('local_coursetransfer_restore_page'), JSONutil.reviver);
+            this.data = readData();
             let currentUrl = $(location).attr('href');
             let url = new URL(currentUrl);
             url.searchParams.set('step', '4');

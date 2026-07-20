@@ -32,3 +32,1147 @@ body#page-local-coursetransfer-logs #topofscroll {
     color: #1d2125;
     vertical-align: middle;
 }
+
+/*
+ * ============================================================
+ * Course Transfer design system (Tresipunt / Claude Design).
+ * Everything is scoped under .local-coursetransfer so tokens and
+ * component styles never leak outside the plugin's content region.
+ * The page shell stays with the theme (Boost, BS4/BS5); fonts fall
+ * back to the theme/system stack — no external font CDN is loaded.
+ * Source of truth: .tresipunt docs, design/claude-design/.
+ * ============================================================
+ */
+
+.local-coursetransfer {
+    /* Brand */
+    --orange-50: #fff1ed;
+    --orange-100: #ffddd2;
+    --orange-200: #ffbca6;
+    --orange-500: #f84015;
+    --orange-600: #da3208;
+    --orange-700: #b12706;
+    --teal-50: #e6f7f8;
+    --teal-500: #00a6b0;
+    --teal-600: #008791;
+    --teal-700: #006a72;
+    --teal-800: #004f55;
+    /* Neutrals */
+    --neutral-0: #fff;
+    --neutral-25: #fafafa;
+    --neutral-50: #f4f4f5;
+    --neutral-100: #ececed;
+    --neutral-200: #dddddf;
+    --neutral-300: #c6c6c9;
+    --neutral-400: #9a9a9e;
+    --neutral-500: #6f6f73;
+    --neutral-700: #424244;
+    --neutral-800: #333;
+    --neutral-900: #1e1e1f;
+    /* Status */
+    --success-500: #1f9d57;
+    --success-50: #e7f6ee;
+    --warning-500: #e8a317;
+    --warning-700: #9a6b08;
+    --warning-50: #fcf3df;
+    --danger-500: #e23b2e;
+    --danger-50: #fceae8;
+    --info-500: #2d7ff9;
+    --info-50: #e8f1fe;
+    /* Semantic aliases */
+    --color-primary: var(--orange-500);
+    --color-primary-hover: var(--orange-600);
+    --color-primary-press: var(--orange-700);
+    --color-secondary: var(--teal-500);
+    --text-strong: var(--neutral-900);
+    --text-body: var(--neutral-800);
+    --text-muted: var(--neutral-500);
+    --text-subtle: var(--neutral-400);
+    --text-link: var(--orange-600);
+    --surface-alt: var(--neutral-25);
+    --surface-sunken: var(--neutral-50);
+    --border-default: var(--neutral-200);
+    --border-strong: var(--neutral-300);
+    --border-subtle: var(--neutral-100);
+    --divider: var(--neutral-100);
+    --focus-ring: rgba(248, 64, 21, 0.45);
+    /* Type: the theme owns typography (decision Q4, TIPGOODLE-352). Both
+       tokens resolve to `inherit` so every ct-* component uses the theme
+       font; a theme shipping brand fonts (e.g. Fresk) cascades in alone. */
+    --font-heading: inherit;
+    --font-body: inherit;
+    /* Radii, elevation, motion */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-pill: 999px;
+    --shadow-sm: 0 2px 6px rgba(30, 30, 31, 0.07);
+    --shadow-md: 0 6px 18px rgba(30, 30, 31, 0.08);
+    --shadow-brand: 0 8px 24px rgba(248, 64, 21, 0.28);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-body);
+    max-width: 880px;
+}
+
+/* ---- Typography helpers ---- */
+.local-coursetransfer .ct-eyebrow {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-eyebrow--brand {
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-page-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 27px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-section-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-text-muted {
+    color: var(--text-muted);
+}
+
+/* ---- Card ---- */
+.local-coursetransfer .ct-card {
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 26px 28px;
+}
+
+/* ---- Status badge (request state machine, 9 states) ---- */
+.local-coursetransfer .ct-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 4px 11px;
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    flex: none;
+}
+
+/* status 1 (not_started) and 90 (incompleted) */
+.local-coursetransfer .ct-badge--not-started,
+.local-coursetransfer .ct-badge--incompleted {
+    background: var(--warning-50);
+    color: var(--warning-700);
+}
+
+/* status 10 (in_progress) and 30 (in_backup) */
+.local-coursetransfer .ct-badge--in-progress,
+.local-coursetransfer .ct-badge--in-backup {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+/* status 50 (download) and 70 (downloaded) */
+.local-coursetransfer .ct-badge--download,
+.local-coursetransfer .ct-badge--downloaded {
+    background: var(--info-50);
+    color: var(--info-500);
+}
+
+/* status 80 (restore) */
+.local-coursetransfer .ct-badge--restore {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+}
+
+/* status 100 (completed) */
+.local-coursetransfer .ct-badge--completed {
+    background: var(--success-50);
+    color: var(--success-500);
+}
+
+/* status 0 (error) */
+.local-coursetransfer .ct-badge--error {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+/* Self-pairing marker ("this site"), not a state: no leading dot */
+.local-coursetransfer .ct-badge--self {
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-badge--self::before {
+    display: none;
+}
+
+/* ---- Buttons ---- */
+.local-coursetransfer .ct-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 22px;
+    border-radius: var(--radius-sm);
+    border: 0;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-standard),
+        box-shadow var(--dur-base) var(--ease-standard),
+        transform var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.local-coursetransfer .ct-btn:active {
+    transform: translateY(1px);
+}
+
+.local-coursetransfer .ct-btn--primary {
+    background: var(--color-primary);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-btn--primary:hover {
+    background: var(--color-primary-hover);
+    color: var(--neutral-0);
+    box-shadow: var(--shadow-brand);
+}
+
+.local-coursetransfer .ct-btn--secondary {
+    background: var(--neutral-0);
+    border: 1.5px solid var(--border-default);
+    color: var(--text-body);
+    padding: 0 20px;
+}
+
+.local-coursetransfer .ct-btn--secondary:hover {
+    border-color: var(--border-strong);
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-btn--ghost {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0 18px;
+}
+
+.local-coursetransfer .ct-btn--ghost:hover {
+    color: var(--text-body);
+    background: var(--surface-sunken);
+}
+
+.local-coursetransfer .ct-btn--danger {
+    background: var(--danger-500);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-btn--danger:hover {
+    background: #c73224;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-btn:disabled,
+.local-coursetransfer .ct-btn--disabled {
+    background: var(--neutral-300);
+    color: var(--neutral-0);
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ---- Search field ---- */
+.local-coursetransfer .ct-search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 0 14px;
+    height: 42px;
+}
+
+.local-coursetransfer .ct-search input {
+    border: 0;
+    background: transparent;
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-body);
+    outline: none;
+}
+
+.local-coursetransfer .ct-search input::placeholder {
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-search:focus-within {
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* ---- Alerts ---- */
+.local-coursetransfer .ct-alert {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.local-coursetransfer .ct-alert p {
+    margin: 0;
+}
+
+.local-coursetransfer .ct-alert .ct-alert-icon {
+    flex: none;
+    margin-top: 1px;
+}
+
+.local-coursetransfer .ct-alert--info {
+    background: var(--teal-50);
+    color: var(--teal-800);
+}
+
+.local-coursetransfer .ct-alert--success {
+    background: var(--success-50);
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-alert--danger {
+    background: var(--danger-50);
+    border: 1px solid #f0cfca;
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-alert--warning {
+    background: var(--warning-50);
+    color: var(--warning-700);
+}
+
+/* ---- Step indicator (wizard) ---- */
+.local-coursetransfer .ct-steps {
+    display: flex;
+    align-items: flex-start;
+    background: var(--surface-alt);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+}
+
+.local-coursetransfer .ct-steps .ct-step {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.local-coursetransfer .ct-steps .ct-step:last-child {
+    flex: none;
+}
+
+.local-coursetransfer .ct-steps .ct-step-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    width: 78px;
+}
+
+.local-coursetransfer .ct-steps .ct-step-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.local-coursetransfer .ct-steps .ct-step-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-strong);
+    text-align: center;
+}
+
+.local-coursetransfer .ct-steps .ct-step-connector {
+    flex: 1;
+    height: 2px;
+    background: var(--border-default);
+    margin-top: -19px;
+}
+
+.local-coursetransfer .ct-steps .ct-step--done .ct-step-marker,
+.local-coursetransfer .ct-steps .ct-step--current .ct-step-marker {
+    background: var(--color-primary);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-steps .ct-step--done .ct-step-connector {
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-steps .ct-step--pending .ct-step-marker {
+    background: var(--neutral-0);
+    border: 2px solid var(--border-strong);
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-steps .ct-step--pending .ct-step-label {
+    color: var(--text-subtle);
+}
+
+/* ---- Remote site card ---- */
+.local-coursetransfer .ct-sitecard {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-sitecard--offline {
+    opacity: 0.65;
+}
+
+.local-coursetransfer .ct-sitecard-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--teal-50);
+    color: var(--teal-600);
+}
+
+.local-coursetransfer .ct-sitecard--offline .ct-sitecard-icon {
+    background: var(--neutral-100);
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-sitecard-name {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 15.5px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-sitecard .ct-sitecard-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.local-coursetransfer .ct-sitecard .ct-sitecard-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    flex: none;
+}
+
+.local-coursetransfer .ct-sitecard .ct-sitecard-status--ok {
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-sitecard .ct-sitecard-status--ko {
+    color: var(--danger-500);
+}
+
+/* ---- Health panel ---- */
+.local-coursetransfer .ct-health {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.local-coursetransfer .ct-health .ct-health-item {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 12px 11px;
+    text-align: center;
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-health .ct-health-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--radius-pill);
+    display: inline-block;
+    margin-bottom: 7px;
+}
+
+.local-coursetransfer .ct-health .ct-health-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-health .ct-health-value {
+    font-size: 11px;
+}
+
+.local-coursetransfer .ct-health .ct-health-item--ok .ct-health-dot {
+    background: var(--success-500);
+}
+
+.local-coursetransfer .ct-health .ct-health-item--ok .ct-health-value {
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-health .ct-health-item--warn .ct-health-dot {
+    background: var(--warning-500);
+}
+
+.local-coursetransfer .ct-health .ct-health-item--warn .ct-health-value {
+    color: var(--warning-700);
+}
+
+.local-coursetransfer .ct-health .ct-health-item--ko .ct-health-dot {
+    background: var(--danger-500);
+}
+
+.local-coursetransfer .ct-health .ct-health-item--ko .ct-health-value {
+    color: var(--danger-500);
+}
+
+/* ---- Error block (cause + suggested action + retry) ---- */
+.local-coursetransfer .ct-error-block {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    background: var(--danger-50);
+    border-radius: var(--radius-sm);
+    padding: 13px 15px;
+}
+
+.local-coursetransfer .ct-error-block .ct-error-icon {
+    flex: none;
+    margin-top: 1px;
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-error-block .ct-error-title {
+    margin: 0 0 3px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-error-block .ct-error-body {
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--neutral-700);
+}
+
+.local-coursetransfer .ct-error-block .ct-error-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--danger-500);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-error-block .ct-error-action:hover {
+    text-decoration: underline;
+    color: var(--danger-500);
+}
+
+/* ---- Utilities ---- */
+.local-coursetransfer .ct-mt {
+    margin-top: 14px;
+}
+
+.local-coursetransfer .ct-mb {
+    margin-bottom: 18px;
+}
+
+/* ---- Page header ---- */
+.local-coursetransfer .ct-page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.local-coursetransfer .ct-page-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-page-lead {
+    margin: 6px 0 0;
+    font-size: 14.5px;
+    line-height: 1.5;
+    max-width: 620px;
+}
+
+/* ---- Shared footer navigation (back to settings / summary) ---- */
+.local-coursetransfer .ct-pagenav {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-btn--sm {
+    height: 38px;
+    padding: 0 16px;
+    font-size: 13.5px;
+}
+
+/* ---- Action banner ---- */
+.local-coursetransfer .ct-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.local-coursetransfer .ct-banner--success {
+    background: var(--success-50);
+    border: 1px solid #bfe6ce;
+    color: var(--success-500);
+}
+
+.local-coursetransfer .ct-banner--error {
+    background: var(--danger-50);
+    border: 1px solid #f0cfca;
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-banner span[data-region="banner-text"] {
+    flex: 1;
+}
+
+.local-coursetransfer .ct-banner button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: currentColor;
+    display: flex;
+    padding: 2px;
+}
+
+/* ---- Platform cards ---- */
+.local-coursetransfer .ct-platform-list {
+    display: grid;
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-platform-card {
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs, 0 1px 2px rgba(30, 30, 31, 0.06));
+    padding: 18px 20px;
+}
+
+.local-coursetransfer .ct-platform-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.local-coursetransfer .ct-platform-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-platform-titlerow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-platform-host {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    overflow-wrap: anywhere;
+}
+
+.local-coursetransfer .ct-platform-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-platform-lasttest {
+    font-size: 12px;
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-platform-pair {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 9px;
+}
+
+.local-coursetransfer .ct-platform-actions {
+    display: flex;
+    gap: 6px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-sitecard-icon--error {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-sitecard-icon--muted {
+    background: var(--neutral-100);
+    color: var(--text-subtle);
+}
+
+/* ---- Direction chips (origin = teal "traigo de", target = orange "envío a") ---- */
+.local-coursetransfer .ct-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+}
+
+.local-coursetransfer .ct-chip--origin {
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-chip--target {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-chip--off {
+    background: var(--neutral-50);
+    color: var(--text-subtle);
+}
+
+/* ---- Icon buttons ---- */
+.local-coursetransfer .ct-iconbtn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-default);
+    background: var(--neutral-0);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: border-color var(--dur-fast) var(--ease-standard),
+        color var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-iconbtn:hover {
+    border-color: var(--border-strong);
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-iconbtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.local-coursetransfer .ct-iconbtn--danger {
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-iconbtn--active {
+    border-color: var(--color-primary);
+    background: var(--orange-50);
+    color: var(--color-primary);
+}
+
+@keyframes ct-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.local-coursetransfer .ct-spin .fa {
+    animation: ct-spin 0.8s linear infinite;
+    transform-origin: center;
+}
+
+/* ---- FontAwesome sizing per context (Moodle icons rule, TIPGOODLE-352) ---- */
+.local-coursetransfer .fa {
+    line-height: 1;
+}
+
+.local-coursetransfer .ct-sitecard-icon .fa {
+    font-size: 19px;
+}
+
+.local-coursetransfer .ct-chip .fa {
+    font-size: 10px;
+}
+
+.local-coursetransfer .ct-iconbtn .fa {
+    font-size: 15px;
+}
+
+.local-coursetransfer .ct-btn .fa {
+    font-size: 14px;
+}
+
+.local-coursetransfer .ct-alert .ct-alert-icon,
+.local-coursetransfer .ct-error-block .ct-error-icon {
+    font-size: 16px;
+}
+
+.local-coursetransfer .ct-modal-icon .fa {
+    font-size: 19px;
+}
+
+.local-coursetransfer .ct-banner button .fa {
+    font-size: 15px;
+}
+
+.local-coursetransfer .ct-rolecard-check .fa {
+    font-size: 11px;
+}
+
+/* ---- Wizard ---- */
+.local-coursetransfer .ct-wizard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-wizard-steps {
+    border: 0;
+    border-bottom: 1px solid var(--divider);
+    border-radius: 0;
+    padding: 22px 24px;
+}
+
+.local-coursetransfer .ct-wizard .ct-step-cell {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-wizard-body {
+    padding: 30px 34px 8px;
+}
+
+.local-coursetransfer .ct-wizard-lead {
+    margin: 5px 0 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.local-coursetransfer .ct-wizard-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 30px 24px;
+}
+
+.local-coursetransfer .ct-wizard-stepnum {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* ---- Role selection cards (wizard step 1) ---- */
+.local-coursetransfer .ct-rolecards {
+    display: grid;
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-rolecard {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    text-align: left;
+    width: 100%;
+    background: var(--neutral-0);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 15px 17px;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-standard),
+        border-color var(--dur-fast) var(--ease-standard);
+}
+
+.local-coursetransfer .ct-rolecard:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.local-coursetransfer .ct-rolecard .ct-rolecard-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex: none;
+    margin-top: 1px;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-rolecard .ct-rolecard-check .fa {
+    visibility: hidden;
+}
+
+.local-coursetransfer .ct-rolecard-title {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-rolecard-desc {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.45;
+}
+
+.local-coursetransfer .ct-rolecard--origin[aria-pressed="true"] {
+    background: var(--teal-50);
+    border-color: var(--color-secondary);
+}
+
+.local-coursetransfer .ct-rolecard--origin[aria-pressed="true"] .ct-rolecard-check {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.local-coursetransfer .ct-rolecard--target[aria-pressed="true"] {
+    background: var(--orange-50);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-rolecard--target[aria-pressed="true"] .ct-rolecard-check {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-rolecard[aria-pressed="true"] .ct-rolecard-check .fa {
+    visibility: visible;
+}
+
+/* ---- Form fields ---- */
+.local-coursetransfer .ct-field {
+    margin-bottom: 20px;
+}
+
+.local-coursetransfer .ct-field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: 6px;
+}
+
+.local-coursetransfer .ct-field-help {
+    margin: 6px 2px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-field-row {
+    display: flex;
+    gap: 8px;
+}
+
+.local-coursetransfer .ct-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 46px;
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 0 14px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text-body);
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-input:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.local-coursetransfer .ct-field-row .ct-input {
+    flex: 1;
+    width: auto;
+}
+
+.local-coursetransfer .ct-field-row .ct-iconbtn {
+    width: 46px;
+    height: 46px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-input--mono {
+    font-family: ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+    letter-spacing: 0.02em;
+}
+
+.local-coursetransfer .ct-alert--neutral {
+    background: var(--surface-sunken);
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-alert--neutral strong {
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-btn--outline {
+    background: var(--orange-50);
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-btn--outline:hover {
+    background: var(--orange-100);
+    color: var(--color-primary-hover);
+}
+
+/* ---- Modal ---- */
+.local-coursetransfer .ct-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 30, 31, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1050;
+}
+
+.local-coursetransfer .ct-modal {
+    background: var(--neutral-0);
+    border-radius: 16px;
+    box-shadow: 0 28px 64px rgba(30, 30, 31, 0.14);
+    max-width: 460px;
+    width: 100%;
+    padding: 28px;
+}
+
+.local-coursetransfer .ct-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 14px;
+}
+
+.local-coursetransfer .ct-modal-header h2 {
+    margin: 0;
+}
+
+.local-coursetransfer .ct-modal-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    background: var(--danger-50);
+    color: var(--danger-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-modal-text {
+    margin: 0 0 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 22px;
+}
+
+/* ---- Wizard step states (set by AMD via data-state) ---- */
+.local-coursetransfer .ct-step[data-state="done"] .ct-step-marker,
+.local-coursetransfer .ct-step[data-state="current"] .ct-step-marker {
+    background: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-step[data-state="done"] .ct-step-connector {
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-step[data-state="pending"] .ct-step-marker {
+    background: var(--neutral-0);
+    border: 2px solid var(--border-strong);
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-step[data-state="pending"] .ct-step-label {
+    color: var(--text-subtle);
+}

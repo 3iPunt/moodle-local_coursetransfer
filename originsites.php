@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * Origin Sites.
+ * Origin Sites (legacy URL): redirects to the unified platforms page.
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -32,28 +32,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_coursetransfer\output\sites_page;
-
-require_once('../../config.php');
-
-global $PAGE, $OUTPUT, $USER;
-
-$title = get_string('setting_origin_sites_link', 'local_coursetransfer');
+require_once(__DIR__ . '/../../config.php');
 
 require_login();
 
-$PAGE->set_pagelayout('standard');
-$PAGE->set_context(context_system::instance());
-$PAGE->set_title($title);
-$PAGE->set_heading($title);
-$PAGE->set_url('/local/coursetransfer/originsites.php');
-
-$output = $PAGE->get_renderer('local_coursetransfer');
-
-echo $OUTPUT->header();
-
-if (is_siteadmin()) {
-    $page = new sites_page('origin');
-    echo $output->render($page);
-}
-echo $OUTPUT->footer();
+redirect(new moodle_url('/local/coursetransfer/sites.php'));

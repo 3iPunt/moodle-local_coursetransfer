@@ -146,7 +146,13 @@ class coursetransfer {
     public static function verify_target_site(string $targetsite): array {
         $res = new stdClass();
         $res->host = $targetsite;
-        $record = coursetransfer_sites::get_by_host('target', $targetsite);
+        try {
+            // Throws when the host is not registered: turn it into the
+            // structured 18001 error instead of leaking the raw exception.
+            $record = coursetransfer_sites::get_by_host('target', $targetsite);
+        } catch (moodle_exception $e) {
+            $record = false;
+        }
         if ($record && isset($record->token)) {
             $res->token = $record->token;
             $res->id = $record->id;
@@ -168,7 +174,7 @@ class coursetransfer {
                 'error' =>
                         [
                                 'code' => '18001',
-                                'msg' => 'Target site not founded',
+                                'msg' => get_string('site_not_found', 'local_coursetransfer'),
                         ],
             ];
         }

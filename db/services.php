@@ -293,6 +293,15 @@ $functions = [
             'loginrequired' => true,
     ],
 
+    'local_coursetransfer_site_check' => [
+            'classname' => sites_external::class,
+            'methodname' => 'site_check',
+            'description' => 'Site Check (test connection before saving)',
+            'type' => 'read',
+            'ajax' => true,
+            'loginrequired' => true,
+    ],
+
     'local_coursetransfer_site_test' => [
             'classname' => sites_external::class,
             'methodname' => 'site_test',
@@ -378,6 +387,7 @@ $services = [
             'local_coursetransfer_site_add',
             'local_coursetransfer_site_edit',
             'local_coursetransfer_site_remove',
+            'local_coursetransfer_site_check',
             'local_coursetransfer_site_test',
             'local_coursetransfer_site_origin_test',
             'local_coursetransfer_site_target_test',

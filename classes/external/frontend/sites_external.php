@@ -72,6 +72,7 @@ class sites_external extends external_api {
                 'type' => new external_value(PARAM_TEXT, 'Type: target or origin'),
                 'host' => new external_value(PARAM_RAW, 'Host Url'),
                 'token' => new external_value(PARAM_RAW, 'Host Token'),
+                'name' => new external_value(PARAM_TEXT, 'Platform name', VALUE_DEFAULT, ''),
             ]
         );
     }
@@ -82,23 +83,26 @@ class sites_external extends external_api {
      * @param string $type
      * @param string $host
      * @param string $token
+     * @param string $name
      * @return array
      * @throws invalid_parameter_exception
      * @throws coding_exception
      */
-    public static function site_add(string $type, string $host, string $token): array {
+    public static function site_add(string $type, string $host, string $token, string $name = ''): array {
         global $DB, $USER;
         $params = self::validate_parameters(
             self::site_add_parameters(), [
                 'type' => $type,
                 'host' => $host,
                 'token' => $token,
+                'name' => $name,
             ]
         );
 
         $type = $params['type'];
         $host = trim($params['host']);
         $token = trim($params['token']);
+        $name = trim($params['name']);
 
         $success = false;
         $errors = [];
@@ -123,6 +127,7 @@ class sites_external extends external_api {
         } else {
             try {
                 $object = new stdClass();
+                $object->name = $name;
                 $object->host = coursetransfer_sites::clean_host($host);
                 $object->token = $token;
                 $object->userid = $USER->id;
@@ -207,6 +212,7 @@ class sites_external extends external_api {
                     'id' => new external_value(PARAM_INT, 'Host ID'),
                     'host' => new external_value(PARAM_RAW, 'Host Url'),
                     'token' => new external_value(PARAM_RAW, 'Host Token'),
+                    'name' => new external_value(PARAM_TEXT, 'Platform name', VALUE_DEFAULT, ''),
                 ]
         );
     }
@@ -218,11 +224,12 @@ class sites_external extends external_api {
      * @param int $id
      * @param string $host
      * @param string $token
+     * @param string $name
      * @return array
      * @throws invalid_parameter_exception
      * @throws coding_exception
      */
-    public static function site_edit(string $type, int $id, string $host, string $token): array {
+    public static function site_edit(string $type, int $id, string $host, string $token, string $name = ''): array {
         global $DB, $USER;
         $params = self::validate_parameters(
             self::site_edit_parameters(), [
@@ -230,6 +237,7 @@ class sites_external extends external_api {
                 'id' => $id,
                 'host' => $host,
                 'token' => $token,
+                'name' => $name,
             ]
         );
 
@@ -237,6 +245,7 @@ class sites_external extends external_api {
         $id = $params['id'];
         $host = trim($params['host']);
         $token = trim($params['token']);
+        $name = trim($params['name']);
 
         $success = false;
         $errors = [];
@@ -267,6 +276,7 @@ class sites_external extends external_api {
             try {
                 $object = new stdClass();
                 $object->id = $id;
+                $object->name = $name;
                 $object->host = coursetransfer_sites::clean_host($host);
                 $object->token = $token;
                 $object->userid = $USER->id;
@@ -460,6 +470,7 @@ class sites_external extends external_api {
         $data = new stdClass();
         $data->id = $id;
 
+        $sitefound = false;
         if ($type !== 'target' && $type !== 'origin') {
             $errors[] = [
                 'code' => '18011',
@@ -468,6 +479,7 @@ class sites_external extends external_api {
         } else {
             try {
                 $site = coursetransfer::get_site_by_position($id, $type);
+                $sitefound = true;
                 $request = new request($site);
                 $res = ($type === 'origin')
                     ? $request->site_origin_test($USER)
@@ -497,6 +509,12 @@ class sites_external extends external_api {
         }
 
         $primary = !empty($errors) ? $errors[0] : ['code' => '', 'msg' => ''];
+
+        if ($sitefound) {
+            // Persist the outcome so the platforms page can show the last test result.
+            $errormsg = $success ? '' : trim($primary['code'] . ': ' . $primary['msg'], ': ');
+            coursetransfer_sites::save_test_result($type, $id, $success, $errormsg);
+        }
 
         return [
             'success' => $success,
@@ -532,6 +550,119 @@ class sites_external extends external_api {
                         'id' => new external_value(PARAM_INT, 'Site ID', VALUE_OPTIONAL),
                     ]
                 ),
+            ]
+        );
+    }
+
+    /**
+     * Site check parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function site_check_parameters(): external_function_parameters {
+        return new external_function_parameters(
+                [
+                    'type' => new external_value(PARAM_TEXT, 'Type: target or origin'),
+                    'host' => new external_value(PARAM_RAW, 'Host Url'),
+                    'token' => new external_value(PARAM_RAW, 'Host Token'),
+                ]
+        );
+    }
+
+    /**
+     * Site check: test a connection BEFORE the site is persisted.
+     *
+     * Same test as site_test but on raw host/token, so the platforms
+     * wizard can require a successful test prior to saving.
+     *
+     * @param string $type
+     * @param string $host
+     * @param string $token
+     * @return array
+     * @throws invalid_parameter_exception
+     * @throws coding_exception
+     */
+    public static function site_check(string $type, string $host, string $token): array {
+        global $USER;
+        $params = self::validate_parameters(
+            self::site_check_parameters(), [
+                'type' => $type,
+                'host' => $host,
+                'token' => $token,
+            ]
+        );
+
+        $type = $params['type'];
+        $host = trim($params['host']);
+        $token = trim($params['token']);
+
+        $success = false;
+        $errors = [];
+
+        if ($type !== 'target' && $type !== 'origin') {
+            $errors[] = [
+                'code' => '18011',
+                'msg' => get_string('type_invalid', 'local_coursetransfer'),
+            ];
+        } else if (!self::is_valid_url($host)) {
+            $errors[] = [
+                'code' => '18045',
+                'msg' => get_string('host_url_invalid', 'local_coursetransfer'),
+            ];
+        } else {
+            try {
+                $site = new stdClass();
+                $site->host = coursetransfer_sites::clean_host($host);
+                $site->token = $token;
+                $request = new request($site);
+                $res = ($type === 'origin')
+                    ? $request->site_origin_test($USER)
+                    : $request->site_target_test($USER);
+                if ($res->success) {
+                    $success = true;
+                } else {
+                    foreach ((array)$res->errors as $err) {
+                        $errors[] = [
+                            'code' => isset($err->code) ? (string)$err->code : '',
+                            'msg' => isset($err->msg) ? (string)$err->msg : '',
+                        ];
+                    }
+                    if (empty($errors)) {
+                        $errors[] = [
+                            'code' => '18012',
+                            'msg' => get_string('unknown_error', 'local_coursetransfer'),
+                        ];
+                    }
+                }
+            } catch (moodle_exception $e) {
+                $errors[] = [
+                    'code' => '18010',
+                    'msg' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return [
+            'success' => $success,
+            'errors' => $errors,
+        ];
+    }
+
+    /**
+     * Site check returns.
+     *
+     * @return external_single_structure
+     */
+    public static function site_check_returns(): external_single_structure {
+        return new external_single_structure(
+            [
+                'success' => new external_value(PARAM_BOOL, 'Was it a success?'),
+                'errors' => new external_multiple_structure(new external_single_structure(
+                    [
+                        'code' => new external_value(PARAM_TEXT, 'Code'),
+                        'msg' => new external_value(PARAM_RAW, 'Message'),
+                    ]
+                )),
             ]
         );
     }

@@ -33,13 +33,16 @@
  */
 
 /**
- *
  * XMLDB xmldb_local_coursetransfer_upgrade.
-
- * @param int $oldversion Old Version.
+ *
+ * @param $oldversion
  * @return bool
  * @throws ddl_exception
+ * @throws ddl_field_missing_exception
  * @throws ddl_table_missing_exception
+ * @throws downgrade_exception
+ * @throws moodle_exception
+ * @throws upgrade_exception
  */
 function xmldb_local_coursetransfer_upgrade($oldversion): bool {
     global $CFG, $DB;
@@ -135,6 +138,25 @@ function xmldb_local_coursetransfer_upgrade($oldversion): bool {
             $dbman->add_field($table, $field);
         }
         upgrade_plugin_savepoint(true, 2026061101, 'local', 'coursetransfer');
+    }
+
+    if ($oldversion < 2026072000) {
+        // Platform name and persisted connection test result on both site tables.
+        foreach (['local_coursetransfer_origin', 'local_coursetransfer_target'] as $tablename) {
+            $table = new xmldb_table($tablename);
+            $fields = [
+                new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'id'),
+                new xmldb_field('lasttest', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid'),
+                new xmldb_field('lastteststatus', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'lasttest'),
+                new xmldb_field('lasttesterror', XMLDB_TYPE_TEXT, null, null, null, null, null, 'lastteststatus'),
+            ];
+            foreach ($fields as $field) {
+                if (!$dbman->field_exists($table, $field)) {
+                    $dbman->add_field($table, $field);
+                }
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026072000, 'local', 'coursetransfer');
     }
 
     return true;

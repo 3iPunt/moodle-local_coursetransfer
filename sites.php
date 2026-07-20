@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * Target Sites (legacy URL): redirects to the unified platforms page.
+ * Paired platforms page: unified management of origin and target sites.
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -34,6 +34,30 @@
 
 require_once(__DIR__ . '/../../config.php');
 
-require_login();
+global $PAGE, $OUTPUT;
 
-redirect(new moodle_url('/local/coursetransfer/sites.php'));
+use local_coursetransfer\coursetransfer_sites;
+use local_coursetransfer\output\platforms_page;
+
+require_login();
+require_capability('moodle/site:config', context_system::instance());
+
+$title = get_string('platforms_title', 'local_coursetransfer');
+
+$PAGE->set_pagelayout('standard');
+$PAGE->set_context(context_system::instance());
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+$PAGE->set_url('/local/coursetransfer/sites.php');
+
+$platforms = coursetransfer_sites::get_platforms();
+$inuse = [];
+foreach ($platforms as $platform) {
+    $inuse[$platform->host] = coursetransfer_sites::is_in_use($platform->host);
+}
+
+$output = $PAGE->get_renderer('local_coursetransfer');
+
+echo $OUTPUT->header();
+echo $output->render(new platforms_page($platforms, $inuse));
+echo $OUTPUT->footer();
