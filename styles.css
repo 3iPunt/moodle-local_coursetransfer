@@ -86,27 +86,6 @@
 }
 
 /* ---- Typography helpers ---- */
-.local-coursetransfer .ct-eyebrow {
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-}
-
-.local-coursetransfer .ct-eyebrow--brand {
-    color: var(--color-primary);
-}
-
-.local-coursetransfer .ct-page-title {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 27px;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    color: var(--text-strong);
-}
-
 .local-coursetransfer .ct-section-title {
     font-family: var(--font-heading);
     font-weight: 700;
@@ -405,26 +384,6 @@
     margin-top: -19px;
 }
 
-.local-coursetransfer .ct-steps .ct-step--done .ct-step-marker,
-.local-coursetransfer .ct-steps .ct-step--current .ct-step-marker {
-    background: var(--color-primary);
-    color: var(--neutral-0);
-}
-
-.local-coursetransfer .ct-steps .ct-step--done .ct-step-connector {
-    background: var(--color-primary);
-}
-
-.local-coursetransfer .ct-steps .ct-step--pending .ct-step-marker {
-    background: var(--neutral-0);
-    border: 2px solid var(--border-strong);
-    color: var(--text-subtle);
-}
-
-.local-coursetransfer .ct-steps .ct-step--pending .ct-step-label {
-    color: var(--text-subtle);
-}
-
 /* ---- Remote site card ---- */
 .local-coursetransfer .ct-sitecard {
     display: flex;
@@ -527,63 +486,6 @@
 }
 
 .local-coursetransfer .ct-sitecard .ct-sitecard-status--ko {
-    color: var(--danger-500);
-}
-
-/* ---- Health panel ---- */
-.local-coursetransfer .ct-health {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 8px;
-}
-
-.local-coursetransfer .ct-health .ct-health-item {
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-sm);
-    padding: 12px 11px;
-    text-align: center;
-    background: var(--neutral-0);
-}
-
-.local-coursetransfer .ct-health .ct-health-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: var(--radius-pill);
-    display: inline-block;
-    margin-bottom: 7px;
-}
-
-.local-coursetransfer .ct-health .ct-health-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-strong);
-}
-
-.local-coursetransfer .ct-health .ct-health-value {
-    font-size: 11px;
-}
-
-.local-coursetransfer .ct-health .ct-health-item--ok .ct-health-dot {
-    background: var(--success-500);
-}
-
-.local-coursetransfer .ct-health .ct-health-item--ok .ct-health-value {
-    color: var(--success-500);
-}
-
-.local-coursetransfer .ct-health .ct-health-item--warn .ct-health-dot {
-    background: var(--warning-500);
-}
-
-.local-coursetransfer .ct-health .ct-health-item--warn .ct-health-value {
-    color: var(--warning-700);
-}
-
-.local-coursetransfer .ct-health .ct-health-item--ko .ct-health-dot {
-    background: var(--danger-500);
-}
-
-.local-coursetransfer .ct-health .ct-health-item--ko .ct-health-value {
     color: var(--danger-500);
 }
 
@@ -701,32 +603,6 @@
     line-height: 1.5;
     color: var(--text-muted);
     max-width: 640px;
-}
-
-/* Legacy alias kept for any header not yet migrated */
-.local-coursetransfer .ct-page-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 22px;
-}
-
-/* Tresipunt logo where a full brand mark fits (landing, done) */
-.local-coursetransfer .ct-logo {
-    height: 30px;
-    width: auto;
-}
-
-.local-coursetransfer .ct-page-header-text {
-    flex: 1;
-    min-width: 0;
-}
-
-.local-coursetransfer .ct-page-lead {
-    margin: 6px 0 0;
-    font-size: 14.5px;
-    line-height: 1.5;
-    max-width: 620px;
 }
 
 /* ---- Shared footer navigation (back to settings / summary) ---- */
@@ -1650,10 +1526,6 @@
     color: var(--warning-700);
 }
 
-.local-coursetransfer .ct-active-sep {
-    color: var(--border-strong);
-}
-
 /* Filters */
 .local-coursetransfer .ct-filters {
     padding: 16px 18px;
@@ -1930,19 +1802,6 @@
 }
 
 /* ---- Request detail ---- */
-.local-coursetransfer .ct-detail-head {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
-}
-
-.local-coursetransfer .ct-detail-title {
-    font-size: 24px;
-    margin: 0 0 12px;
-}
-
 .local-coursetransfer .ct-detail-links {
     display: flex;
     gap: 10px;
@@ -3314,12 +3173,6 @@
     flex: none;
 }
 
-/* Review: cross-cutting options grid — card cells (see base rule below). */
-.local-coursetransfer .ct-review-val--danger {
-    color: var(--danger-500);
-    font-weight: 600;
-}
-
 /* Review list rows: origin → destination + mode chip */
 .local-coursetransfer .ct-review-item {
     display: flex;
@@ -3366,15 +3219,6 @@
     color: var(--color-primary);
     margin-right: 0;
     flex: none;
-}
-
-.local-coursetransfer .ct-review-item-from {
-    font-size: 12px;
-    color: var(--text-subtle);
-    margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* Labelled key/value rows inside a review card (origin / destination). */
@@ -3841,25 +3685,6 @@
 
 .local-coursetransfer .ct-review-list {
     padding: 16px 20px;
-}
-
-.local-coursetransfer .ct-review-list-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text-strong);
-}
-
-.local-coursetransfer .ct-review-list-item + .ct-review-list-item {
-    margin-top: 8px;
-}
-
-.local-coursetransfer .ct-review-list-item .fa {
-    color: var(--color-primary);
-    font-size: 13px;
-    flex: none;
 }
 
 /* Review options as scannable cards: icon + label + value, one per option,
