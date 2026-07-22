@@ -76,15 +76,33 @@
                 <span class="ct-active-spacer"></span>
                 <span class="ct-active-id">#{{ id }}</span>
             </div>
+            {{! Request type + direction so the user knows what is happening. }}
+            <div class="ct-active-meta">
+                <span class="ct-active-type">{{ typelabel }}</span>
+                {{#isrestore}}
+                <span class="ct-dirtag {{#dirin}}ct-dirtag--origin{{/dirin}}{{^dirin}}ct-dirtag--target{{/dirin}}">{{#dirin}}{{#str}} exec_tag_from, local_coursetransfer {{/str}}{{/dirin}}{{^dirin}}{{#str}} exec_tag_to, local_coursetransfer {{/str}}{{/dirin}}</span>
+                {{/isrestore}}
+                {{#isremove}}
+                <span class="ct-dirtag ct-dirtag--danger">{{#str}} exec_tag_remove, local_coursetransfer {{/str}}</span>
+                {{/isremove}}
+                {{! URLs are never uppercased (layout norm): keep the site outside the tag. }}
+                <span class="ct-active-site">{{ site }}</span>
+            </div>
+            {{#scheduled}}
+            <div class="ct-active-sched">
+                <i class="fa fa-calendar-o" aria-hidden="true"></i>
+                <span>{{ scheduledtooltip }}</span>
+            </div>
+            {{/scheduled}}
             <div class="ct-segments">
                 {{#segments}}
-                <div class="ct-segment"><div class="ct-segment-fill" style="width: {{ width }}%"></div></div>
+                <div class="ct-segment ct-segment--{{ idx }}{{#active}} ct-segment--active{{/active}}">
+                    <div class="ct-segment-fill" style="width: {{ width }}%"></div>
+                </div>
                 {{/segments}}
             </div>
             <div class="ct-active-foot">
                 <span class="ct-active-caption {{#stuck}}ct-active-caption--stuck{{/stuck}}">{{ caption }}</span>
-                <span class="ct-active-sep">·</span>
-                <span class="ct-text-muted">{{ dirlabel }} {{ site }}</span>
                 <span class="ct-active-spacer"></span>
                 <a href="{{ detailurl }}" target="_blank" rel="noopener">{{#str}} exec_detail, local_coursetransfer {{/str}}</a>
             </div>
@@ -163,7 +181,10 @@
         {{#rows}}
         <div class="ct-log-row-wrap">
             <div class="ct-log-row">
-                <span><span class="ct-badge {{ badgeclass }}">{{ statuslabel }}</span></span>
+                <span>
+                    <span class="ct-badge {{ badgeclass }}">{{ statuslabel }}</span>
+                    {{#scheduled}}<i class="fa fa-calendar-o ct-sched-ic" title="{{ scheduledtooltip }}" aria-label="{{ scheduledtooltip }}"></i>{{/scheduled}}
+                </span>
                 <span class="ct-log-fromto">
                     {{#isrestore}}
                     <span class="ct-log-line">
@@ -188,8 +209,8 @@
                     <span class="ct-log-typedir">{{ typedir }}</span>
                 </span>
                 <span class="ct-log-site">{{ site }}</span>
-                <span>{{ size }}</span>
-                <span class="ct-text-muted">{{ date }}</span>
+                <span class="ct-log-size">{{ size }}</span>
+                <span class="ct-log-date ct-text-muted">{{ date }}</span>
                 <span class="ct-log-actions">
                     <a class="ct-iconbtn ct-iconbtn--xs" href="{{ detailurl }}" target="_blank" rel="noopener" title="{{#str}} exec_detail, local_coursetransfer {{/str}}" aria-label="{{#str}} exec_detail, local_coursetransfer {{/str}}">
                         <i class="fa fa-chevron-right" aria-hidden="true"></i>

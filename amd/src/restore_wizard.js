@@ -53,7 +53,39 @@ define([
         'rw_pageinfo', 'rw_noresults', 'rw_done_desc', 'rw_users_on', 'rw_users_off',
         'rw_submit_error', 'rw_review_selected', 'rw_review_from', 'rw_review_to',
         'rw_review_ifexists', 'rw_review_users', 'rw_mode_merge', 'rw_mode_replace',
-        'rw_kind_course', 'rw_kind_category', 'rw_more'
+        'rw_kind_course', 'rw_kind_category', 'rw_more',
+        'rw_results', 'rw_courses_pl', 'rw_categories_pl',
+        'rw_lbl_idnumber', 'rw_lbl_category',
+        'rw_sel_title_course', 'rw_sel_title_category',
+        'rw_sel_desc_course', 'rw_sel_desc_category',
+        'rw_col_size', 'rw_col_count',
+        // Step 2 "Destination per course".
+        'rw_dest_new', 'rw_dest_default_badge', 'rw_dest_cat_label',
+        'rw_dest_configure', 'rw_dest_collapse',
+        'rw_dest_inherited', 'rw_dest_existing', 'rw_dest_search_ph',
+        'rw_dest_no_results', 'rw_dest_pick_target', 'rw_dest_change',
+        'rw_exmode_merge', 'rw_exmode_merge_desc', 'rw_exmode_replace',
+        'rw_exmode_replace_desc', 'rw_exmode_confirm', 'rw_del_enrol',
+        'rw_del_groups', 'rw_tag_new', 'rw_tag_notarget', 'rw_tag_replace',
+        'rw_tag_merge', 'rw_bd_new', 'rw_bd_existing', 'rw_bd_replace',
+        'rw_recommended', 'rw_destructive',
+        'rw_review_new_in', 'rw_review_over', 'rw_review_removeorigin',
+        'rw_tag_unconfigured', 'rw_dest_unconfigured',
+        'rw_review_platform', 'rw_review_removeorigin_field',
+        'rw_review_schedule_field', 'rw_review_sched_now', 'rw_review_sched_at',
+        'rw_yes', 'rw_no',
+        // Persistent origin-site bar.
+        'rw_sitebar_from',
+        // Category listing extra columns.
+        'rw_lbl_subcats', 'rw_col_import', 'rw_cat_root', 'rw_cat_insub', 'rw_cat_breakdown',
+        // Step-2 labels swapped by type (course base + category variants).
+        'rw_dest_title', 'rw_dest_desc', 'rw_defcat_title', 'rw_defcat_desc',
+        'rw_users', 'rw_users_desc', 'rw_removeorigin', 'rw_removeorigin_desc',
+        'rw_removeorigin_confirm',
+        'rw_dest_title_cat', 'rw_dest_desc_cat', 'rw_defcat_title_cat', 'rw_defcat_desc_cat',
+        'rw_users_cat', 'rw_users_cat_desc', 'rw_removeorigin_cat', 'rw_removeorigin_cat_desc',
+        'rw_removeorigin_confirm_cat', 'rw_review_removeorigin_field_cat', 'rw_review_dest_cat',
+        'platforms_role_origin', 'platforms_role_target'
     ];
 
     var Wizard = {
@@ -70,6 +102,8 @@ define([
                 return;
             }
             this.logurl = this.$root.attr('data-logurl') || '#';
+            // Search page size comes from the plugin setting (default 5).
+            this.perpage = parseInt(this.$root.attr('data-pagesize'), 10) || PERPAGE;
             this.S = {};
             this.sites = [];
             this.items = [];
@@ -108,7 +142,13 @@ define([
                 destcat: 0,
                 mode: 'merge',
                 confirmdestroy: false,
-                includeusers: false
+                includeusers: false,
+                // Step 2 "Destination per course".
+                dest: {},
+                removeorigin: false,
+                removeoriginconfirm: false,
+                scheduleon: false,
+                scheduledate: ''
             };
         },
 
@@ -126,7 +166,8 @@ define([
                 self.goLanding();
             });
             $root.on('click', '[data-action="go-landing"]', function() {
-                self.goLanding();
+                // After an execution, reload so the "recent" list shows it.
+                window.location.reload();
             });
             $root.on('click', '[data-action="back"]', function() {
                 self.back();
@@ -153,8 +194,18 @@ define([
                     self.loadList();
                 }, SEARCHDEBOUNCE);
             });
-            $root.on('click', '[data-action="toggle-row"]', function() {
+            $root.on('click', '[data-action="toggle-row"]', function(e) {
+                // Clicking the grey #id link opens the remote page; don't select.
+                if ($(e.target).closest('[data-noselect]').length) {
+                    return;
+                }
                 self.toggleRow($(this));
+            });
+            $root.on('keydown', '[data-action="toggle-row"]', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    self.toggleRow($(this));
+                }
             });
             $root.on('click', '[data-action="toggle-page"]', function() {
                 self.togglePage();
@@ -163,6 +214,17 @@ define([
                 self.state.checked = {};
                 self.renderCounter();
                 self.renderRowsChecked();
+                self.renderPageBox();
+                self.refreshFooter();
+            });
+            // Remove a single item from the cart (works across pages).
+            $root.on('click', '[data-action="unpick"]', function(e) {
+                e.stopPropagation();
+                var id = $(this).attr('data-id');
+                delete self.state.checked[id];
+                self.renderCounter();
+                self.renderRowsChecked();
+                self.renderPageBox();
                 self.refreshFooter();
             });
             $root.on('click', '[data-action="prev"]', function() {
@@ -178,21 +240,129 @@ define([
                 }
             });
 
-            // Step 2.
-            $root.on('change', '[data-action="destcat"]', function() {
-                self.state.destcat = parseInt($(this).val(), 10) || 0;
+            // Step 2: default destination category.
+            $root.on('change', '[data-action="default-cat"]', function() {
+                self.onDefaultCat(parseInt($(this).val(), 10) || 0);
             });
-            $root.on('click', '[data-action="toggle-mode"]', function() {
-                self.toggleMode($(this).attr('data-mode'));
+
+            // Step 2: per-course destination cards.
+            $root.on('click', '[data-action="pick-new"]', function() {
+                self.setCardMode(self.cidOf($(this)), 'new');
             });
-            $root.on('click', '[data-action="toggle-confirm"]', function() {
-                self.state.confirmdestroy = !self.state.confirmdestroy;
-                $(this).attr('aria-checked', self.state.confirmdestroy ? 'true' : 'false');
-                self.refreshFooter();
+            $root.on('click', '[data-action="pick-existing"]', function() {
+                self.setCardMode(self.cidOf($(this)), 'existing');
             });
+            $root.on('change', '[data-action="card-cat"]', function() {
+                self.onCardCat(self.cidOf($(this)), parseInt($(this).val(), 10) || 0);
+            });
+            $root.on('input', '[data-action="target-search"]', function() {
+                var id = self.cidOf($(this));
+                var value = $(this).val();
+                if (!self.state.dest[id]) {
+                    return;
+                }
+                self.state.dest[id].search = value;
+                self.state.dest[id].open = true;
+                window.clearTimeout(self.dtsearchtimer);
+                self.dtsearchtimer = window.setTimeout(function() {
+                    self.doTargetSearch(id);
+                }, SEARCHDEBOUNCE);
+            });
+            $root.on('focusin', '[data-action="target-search"]', function() {
+                var id = self.cidOf($(this));
+                if (self.state.dest[id]) {
+                    self.state.dest[id].open = true;
+                    // Load the first courses so the user sees they can search.
+                    self.doTargetSearch(id);
+                }
+            });
+            $root.on('focusout', '[data-action="target-search"]', function() {
+                var id = self.cidOf($(this));
+                // Delay so a mousedown on a result can fire first.
+                window.setTimeout(function() {
+                    if (self.state.dest[id]) {
+                        self.state.dest[id].open = false;
+                        self.renderResults(id);
+                    }
+                }, 180);
+            });
+            $root.on('mousedown', '[data-action="pick-target"]', function(e) {
+                e.preventDefault();
+                self.pickTarget(self.cidOf($(this)), $(this));
+            });
+            $root.on('click', '[data-action="clear-target"]', function() {
+                self.clearTarget(self.cidOf($(this)));
+            });
+            $root.on('click', '[data-action="ex-mode"]', function() {
+                self.setExMode(self.cidOf($(this)), $(this).attr('data-mode'));
+            });
+            $root.on('click', '[data-action="toggle-replace-confirm"]', function() {
+                self.toggleReplaceConfirm(self.cidOf($(this)));
+            });
+            $root.on('click', '[data-action="toggle-delenrol"]', function() {
+                self.toggleDel(self.cidOf($(this)), 'delenrol', $(this));
+            });
+            $root.on('click', '[data-action="toggle-delgroups"]', function() {
+                self.toggleDel(self.cidOf($(this)), 'delgroups', $(this));
+            });
+
+            // Step 2: global options.
             $root.on('click', '[data-action="toggle-users"]', function() {
                 self.state.includeusers = !self.state.includeusers;
                 $(this).attr('aria-checked', self.state.includeusers ? 'true' : 'false');
+            });
+            $root.on('click', '[data-action="toggle-removeorigin"]', function() {
+                self.state.removeorigin = !self.state.removeorigin;
+                $(this).attr('aria-checked', self.state.removeorigin ? 'true' : 'false');
+                // Show the mandatory confirmation; reset it when turning off.
+                self.region('removeorigin-confirm').prop('hidden', !self.state.removeorigin);
+                if (!self.state.removeorigin) {
+                    self.state.removeoriginconfirm = false;
+                    self.$root.find('[data-action="toggle-removeorigin-confirm"]')
+                        .attr('aria-checked', 'false');
+                }
+                self.refreshFooter();
+            });
+            $root.on('click', '[data-action="toggle-removeorigin-confirm"]', function() {
+                self.state.removeoriginconfirm = !self.state.removeoriginconfirm;
+                $(this).attr('aria-checked', self.state.removeoriginconfirm ? 'true' : 'false');
+                self.refreshFooter();
+            });
+            $root.on('click', '[data-action="toggle-schedule"]', function() {
+                self.state.scheduleon = !self.state.scheduleon;
+                $(this).attr('aria-checked', self.state.scheduleon ? 'true' : 'false');
+                self.region('schedule-date').prop('hidden', !self.state.scheduleon);
+                if (!self.state.scheduleon) {
+                    self.state.scheduledate = '';
+                }
+            });
+            $root.on('change input', '[data-action="schedule-date"]', function() {
+                self.state.scheduledate = $(this).val() || '';
+            });
+            // Expand / collapse a course destination card.
+            $root.on('click', '[data-action="toggle-card"]', function() {
+                var id = $(this).closest('.ct-destcard').attr('data-cid');
+                if (id && self.state.dest[id]) {
+                    self.state.dest[id].expanded = !self.state.dest[id].expanded;
+                    self.replaceCard(id);
+                }
+            });
+            $root.on('keydown', '[data-action="toggle-card"]', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    $(this).trigger('click');
+                }
+            });
+
+            // A fixed-positioned target dropdown would drift on scroll/resize:
+            // close any open one so it never floats out of place.
+            $(window).on('scroll.ctrw resize.ctrw', function() {
+                Object.keys(self.state.dest || {}).forEach(function(id) {
+                    if (self.state.dest[id].open) {
+                        self.state.dest[id].open = false;
+                        self.renderResults(id);
+                    }
+                });
             });
 
             this.showView('landing');
@@ -227,7 +397,6 @@ define([
             this.resetState();
             this.state.view = 'wizard';
             this.showView('wizard');
-            this.syncStep2Controls();
             this.goStep(0);
             if (!this.sites.length) {
                 this.loadSites();
@@ -259,13 +428,30 @@ define([
                 var st = idx < n ? 'done' : (idx === n ? 'current' : 'pending');
                 $(this).attr('data-state', st);
             });
+            this.renderSitebar();
             if (n === 1) {
+                this.renderStep1Header();
                 this.loadList();
+            }
+            if (n === 2) {
+                this.initStep2();
             }
             if (n === 3) {
                 this.renderReview();
             }
             this.refreshFooter();
+        },
+
+        /**
+         * Show the persistent origin-site header on every step after the site
+         * is chosen (hidden on step 0, where the site is picked).
+         */
+        renderSitebar: function() {
+            var show = this.state.step > 0 && !!this.state.siteid;
+            this.region('sitebar').prop('hidden', !show);
+            if (show) {
+                this.region('sitebar-name').text(this.state.sitename || '');
+            }
         },
 
         /**
@@ -312,7 +498,31 @@ define([
                 return this.selectedIds().length > 0;
             }
             if (s.step === 2) {
-                return s.mode !== 'replace' || s.confirmdestroy;
+                // Destructive "delete origin" needs its explicit confirmation.
+                if (s.removeorigin && !s.removeoriginconfirm) {
+                    return false;
+                }
+                // Category type keeps the single-target behaviour and is always ready.
+                if (s.type !== 'course') {
+                    return true;
+                }
+                var self = this;
+                return this.selectedIds().every(function(id) {
+                    var d = self.state.dest[id];
+                    if (!d) {
+                        return false;
+                    }
+                    if (d.mode !== 'existing') {
+                        return true;
+                    }
+                    if (!d.targetid) {
+                        return false;
+                    }
+                    if (d.exmode === 'replace' && !d.confirm) {
+                        return false;
+                    }
+                    return true;
+                });
             }
             return true;
         },
@@ -385,19 +595,18 @@ define([
 
                 var $body = $('<span>').css({flex: 1, 'min-width': 0});
                 $body.append($('<span>').addClass('ct-sitecard-name').text(site.name));
+                if (site.host) {
+                    $body.append($('<span>').addClass('ct-sitecard-url').text(site.host));
+                }
                 $body.append($('<span>').addClass('ct-sitecard-status '
                     + (offline ? 'ct-sitecard-status--ko' : 'ct-sitecard-status--ok'))
-                    .text(site.status || site.host));
+                    .text(site.status || ''));
                 $card.append($body);
 
-                // Selected indicator (ct-sitecard has no aria-pressed style in
-                // the shared CSS, so we flag selection with a check + inline
-                // brand accents rather than touching styles.css).
-                $card.append($('<span>').addClass('ct-sitecard-check').css({
-                    width: '26px', height: '26px', 'border-radius': '999px',
-                    background: 'var(--color-primary)', color: '#fff', flex: 'none',
-                    display: 'none', 'align-items': 'center', 'justify-content': 'center'
-                }).append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
+                // Selected indicator: styled by .ct-sitecard-check in styles.css
+                // (shown when the card has aria-pressed="true").
+                $card.append($('<span>').addClass('ct-sitecard-check')
+                    .append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
 
                 $box.append($card);
             });
@@ -414,12 +623,8 @@ define([
             }
             this.state.siteid = parseInt($card.attr('data-siteid'), 10);
             this.state.sitename = $card.attr('data-sitename') || '';
-            this.region('sites').find('[data-action="toggle-origin"]').attr('aria-pressed', 'false')
-                .css({'border-color': '', background: ''})
-                .find('.ct-sitecard-check').css('display', 'none');
-            $card.attr('aria-pressed', 'true')
-                .css({'border-color': 'var(--color-primary)', background: 'var(--orange-50)'})
-                .find('.ct-sitecard-check').css('display', 'flex');
+            this.region('sites').find('[data-action="toggle-origin"]').attr('aria-pressed', 'false');
+            $card.attr('aria-pressed', 'true');
             // Changing the site invalidates any previous selection.
             this.state.checked = {};
             this.state.page = 0;
@@ -445,6 +650,28 @@ define([
         // ---- Step 1: origin listing ------------------------------------
 
         /**
+         * Set the selection-step heading and table column labels according to
+         * the chosen type (course / category) and the selected site.
+         */
+        renderStep1Header: function() {
+            var cat = this.state.type === 'category';
+            this.region('sel-title').text(cat
+                ? (this.S.rw_sel_title_category || '')
+                : (this.S.rw_sel_title_course || ''));
+            var desc = (cat ? this.S.rw_sel_desc_category : this.S.rw_sel_desc_course) || '';
+            this.region('sel-desc').text(desc.replace('{$a}', this.state.sitename || ''));
+            this.region('col-name').text(cat
+                ? (this.S.rw_kind_category || '')
+                : (this.S.rw_kind_course || ''));
+            this.region('col-meta').text(cat
+                ? (this.S.rw_col_import || '')
+                : (this.S.rw_col_size || ''));
+            // Category is single-select: no "select all" and no cart.
+            this.$root.find('[data-action="toggle-page"]')
+                .css('visibility', cat ? 'hidden' : '');
+        },
+
+        /**
          * Load a page of origin items via web service.
          */
         loadList: function() {
@@ -462,7 +689,7 @@ define([
                     siteid: this.state.siteid,
                     type: this.state.type,
                     page: this.state.page,
-                    perpage: PERPAGE,
+                    perpage: this.perpage,
                     query: this.state.search
                 }
             }])[0].then(function(resp) {
@@ -489,9 +716,12 @@ define([
             } else {
                 this.items.forEach(function(item) {
                     var on = !!self.state.checked[item.id];
-                    var $row = $('<button>')
-                        .attr('type', 'button')
+                    // A div (not a button) so we can nest a real link for the
+                    // remote #id without invalid markup; still keyboard-usable.
+                    var $row = $('<div>')
                         .addClass('ct-selrow')
+                        .attr('role', 'button')
+                        .attr('tabindex', '0')
                         .attr('data-action', 'toggle-row')
                         .attr('data-id', item.id)
                         .attr('data-name', item.name)
@@ -502,9 +732,38 @@ define([
                         .append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
 
                     var $body = $('<span>').addClass('ct-selrow-body');
-                    $body.append($('<span>').addClass('ct-selrow-name').text(item.name));
-                    if (item.sub) {
-                        $body.append($('<span>').addClass('ct-selrow-sub').text(item.sub));
+                    var $name = $('<span>').addClass('ct-selrow-name');
+                    // Layout norm: the name is truncated with an ellipsis, so
+                    // carry the full text (with breadcrumb for categories) in a
+                    // title tooltip.
+                    $name.attr('title', (self.state.type === 'category' && item.parent)
+                        ? (item.parent + ' › ' + item.name) : item.name);
+                    // Grey #id linking to the remote course/category. The click
+                    // opens the remote page without toggling the row selection.
+                    if (item.url) {
+                        $name.append($('<a>')
+                            .addClass('ct-selrow-id')
+                            .attr('href', item.url)
+                            .attr('target', '_blank')
+                            .attr('rel', 'noopener')
+                            .attr('data-noselect', '1')
+                            .text('#' + item.id));
+                        $name.append(document.createTextNode(' '));
+                    }
+                    // For categories, show the parent as a light-grey breadcrumb
+                    // inside the name: "Parent › Category name".
+                    if (self.state.type === 'category' && item.parent) {
+                        $name.append($('<span>').addClass('ct-selrow-parent')
+                            .text(item.parent + ' › '));
+                    }
+                    $name.append(document.createTextNode(item.name));
+                    $body.append($name);
+
+                    // Sub line: [ shortname ]  **IdNumber** value · **Categoría** value.
+                    // Labels are ours (bold); remote values are appended as text.
+                    var $sub = self.buildSubline(item);
+                    if ($sub) {
+                        $body.append($sub);
                     }
                     $row.append($body);
                     $row.append($('<span>').addClass('ct-selrow-meta').text(item.meta || ''));
@@ -515,6 +774,106 @@ define([
             this.renderPager();
             this.renderCounter();
             this.renderPageBox();
+            this.renderResultInfo();
+        },
+
+        /**
+         * Show "Showing N of TOTAL courses/categories you can access on SITE".
+         * TOTAL is what the origin returns for THIS user (equivalent-user auth),
+         * not every course on the remote site.
+         */
+        renderResultInfo: function() {
+            var s = this.state;
+            var $info = this.region('resultinfo');
+            var $note = this.$root.find('[data-region="resultnote"]');
+            if (!this.items.length) {
+                $info.text('');
+                $note.prop('hidden', true);
+                return;
+            }
+            var kind = s.type === 'category'
+                ? (this.S.rw_categories_pl || 'categories')
+                : (this.S.rw_courses_pl || 'courses');
+            var txt = (this.S.rw_results || '{$a->shown}/{$a->total}')
+                .replace('{$a->shown}', this.items.length)
+                .replace('{$a->total}', s.total || this.items.length)
+                .replace('{$a->kind}', kind)
+                .replace('{$a->site}', s.sitename || '');
+            $info.text(txt);
+            $note.prop('hidden', false);
+        },
+
+        /**
+         * Build the row sub-line with a grey shortname code and bold labels
+         * for idnumber / category. Remote values are added as text nodes.
+         *
+         * @param {Object} item
+         * @return {jQuery|null}
+         */
+        buildSubline: function(item) {
+            if (this.state.type === 'category') {
+                return this.buildCategorySubline(item);
+            }
+            var $sub = $('<span>').addClass('ct-selrow-sub');
+            var has = false;
+            if (item.shortname) {
+                $sub.append($('<span>').addClass('ct-meta-code').text('[ ' + item.shortname + ' ]'));
+                has = true;
+            }
+            if (item.idnumber) {
+                $sub.append($('<b>').addClass('ct-meta-lbl').text(this.S.rw_lbl_idnumber || 'IdNumber'));
+                $sub.append(document.createTextNode(' ' + item.idnumber));
+                has = true;
+            }
+            if (item.category) {
+                if (item.idnumber) {
+                    $sub.append($('<span>').addClass('ct-meta-sep').text(' · '));
+                }
+                $sub.append($('<b>').addClass('ct-meta-lbl').text(this.S.rw_lbl_category || 'Categoría'));
+                $sub.append(document.createTextNode(' ' + item.category));
+                // Category id in grey, so all origin identifiers are visible.
+                if (item.categoryid) {
+                    $sub.append($('<span>').addClass('ct-meta-id').text(' #' + item.categoryid));
+                }
+                has = true;
+            }
+            return has ? $sub : null;
+        },
+
+        /**
+         * Build the category row sub-line with bold labels (ours) and escaped
+         * remote values: IdNumber, parent category, number of subcategories and
+         * number of courses in subcategories. The course count is shown in the
+         * meta column.
+         *
+         * @param {Object} item
+         * @return {jQuery}
+         */
+        buildCategorySubline: function(item) {
+            var self = this;
+            var $sub = $('<span>').addClass('ct-selrow-sub');
+            var first = true;
+            var field = function(label, value) {
+                if (!first) {
+                    $sub.append($('<span>').addClass('ct-meta-sep').text(' · '));
+                }
+                $sub.append($('<b>').addClass('ct-meta-lbl').text(label));
+                $sub.append(document.createTextNode(' ' + value));
+                first = false;
+            };
+            if (item.idnumber) {
+                field(self.S.rw_lbl_idnumber || 'IdNumber', item.idnumber);
+            }
+            field(self.S.rw_lbl_subcats || 'Subcategories', item.subcats || 0);
+            // Breakdown of the courses that will be imported: those directly in
+            // the category root + those in its subcategories. The meta column
+            // shows the grand total; this explains where they come from.
+            var root = item.rootcourses || 0;
+            var insub = item.subcatcourses || 0;
+            var breakdown = root + ' ' + (self.S.rw_cat_root || 'in the root')
+                + ' · ' + insub + ' ' + (self.S.rw_cat_insub || 'in subcategories');
+            field(self.S.rw_cat_breakdown || 'Breakdown', breakdown);
+            return $sub;
         },
 
         /**
@@ -524,10 +883,17 @@ define([
          */
         toggleRow: function($row) {
             var id = $row.attr('data-id');
+            // Category restore targets a SINGLE origin category: selecting one
+            // replaces any previous selection.
+            var single = this.state.type === 'category';
             if (this.state.checked[id]) {
                 delete this.state.checked[id];
                 $row.attr('aria-pressed', 'false');
             } else {
+                if (single) {
+                    this.state.checked = {};
+                    this.region('rows').find('[data-action="toggle-row"]').attr('aria-pressed', 'false');
+                }
                 this.state.checked[id] = {
                     name: $row.attr('data-name'),
                     meta: $row.attr('data-meta')
@@ -617,6 +983,37 @@ define([
             this.region('sellabel').text(label);
             this.region('selcounter').toggleClass('ct-selcounter--active', count > 0);
             this.$root.find('[data-action="clear"]').prop('hidden', count === 0);
+            this.renderCart();
+        },
+
+        /**
+         * Render the "cart": a removable chip per selected item, kept visible
+         * across pages. Names come from state.checked (added as text).
+         */
+        renderCart: function() {
+            var self = this;
+            var $cart = this.region('cart').empty();
+            var ids = Object.keys(this.state.checked);
+            // Category is single-select: the cart of chips is redundant.
+            if (!ids.length || this.state.type === 'category') {
+                $cart.prop('hidden', true);
+                return;
+            }
+            $cart.prop('hidden', false);
+            ids.forEach(function(id) {
+                var info = self.state.checked[id];
+                var $chip = $('<span>').addClass('ct-cart-chip');
+                $chip.append($('<span>').addClass('ct-cart-chip-name')
+                    .text(info && info.name ? info.name : '#' + id));
+                $chip.append($('<button>')
+                    .attr('type', 'button')
+                    .addClass('ct-cart-chip-x')
+                    .attr('data-action', 'unpick')
+                    .attr('data-id', id)
+                    .attr('aria-label', (self.S.rw_clear || 'Remove'))
+                    .append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true')));
+                $cart.append($chip);
+            });
         },
 
         /**
@@ -637,37 +1034,725 @@ define([
             this.$root.find('[data-action="next-page"]').prop('disabled', s.page >= s.pages - 1);
         },
 
-        // ---- Step 2: destination / options -----------------------------
+        // ---- Step 2: destination per course ----------------------------
 
         /**
-         * Sync mode/confirm/users controls to the current state.
+         * Read the origin course id from the card that contains an element.
+         *
+         * @param {jQuery} $el
+         * @return {String}
          */
-        syncStep2Controls: function() {
-            this.toggleMode(this.state.mode);
-            this.$root.find('[data-action="toggle-users"]')
-                .attr('aria-checked', this.state.includeusers ? 'true' : 'false');
-            this.$root.find('[data-action="destcat"]').val(String(this.state.destcat));
+        cidOf: function($el) {
+            return $el.closest('.ct-destcard').attr('data-cid');
         },
 
         /**
-         * Choose the "already exists" mode.
+         * Build the list of destination-category options from the common
+         * select, so per-course selects reuse the same options.
          *
-         * @param {String} mode merge|replace
+         * @return {Object[]} [{value, label}]
          */
-        toggleMode: function(mode) {
-            this.state.mode = mode;
-            if (mode !== 'replace') {
-                this.state.confirmdestroy = false;
-            }
-            this.$root.find('.ct-modeopt').each(function() {
-                var on = $(this).attr('data-mode') === mode;
-                $(this).attr('aria-pressed', on ? 'true' : 'false');
-                $(this).find('[data-action="toggle-mode"]').attr('aria-pressed', on ? 'true' : 'false');
+        destOptionList: function() {
+            var opts = [];
+            this.$root.find('#ct-destcat option').each(function() {
+                opts.push({value: $(this).attr('value'), label: $(this).text()});
             });
-            this.region('confirm').prop('hidden', mode !== 'replace');
-            this.$root.find('[data-action="toggle-confirm"]')
-                .attr('aria-checked', this.state.confirmdestroy ? 'true' : 'false');
+            return opts;
+        },
+
+        /**
+         * Seed / prune the per-course destination state and render the step.
+         */
+        initStep2: function() {
+            var self = this;
+            var s = this.state;
+            var ids = this.selectedIds().map(String);
+
+            // Swap the step-2 labels for the chosen type (course vs category).
+            this.applyStep2Labels();
+
+            // Drop config for courses no longer selected.
+            Object.keys(this.state.dest).forEach(function(id) {
+                if (ids.indexOf(id) < 0) {
+                    delete self.state.dest[id];
+                }
+            });
+            // Seed newly selected courses with sensible defaults.
+            ids.forEach(function(id) {
+                if (!self.state.dest[id]) {
+                    self.state.dest[id] = {
+                        mode: 'new',
+                        categorytarget: s.destcat,
+                        inherited: true,
+                        targetid: 0,
+                        targetname: '',
+                        targetsub: '',
+                        exmode: 'merge',
+                        confirm: false,
+                        delenrol: false,
+                        delgroups: false,
+                        search: '',
+                        results: [],
+                        open: false,
+                        expanded: false
+                    };
+                }
+            });
+
+            // Sync the common select and global switches to the state.
+            this.$root.find('#ct-destcat').val(String(s.destcat));
+            this.$root.find('[data-action="toggle-users"]')
+                .attr('aria-checked', s.includeusers ? 'true' : 'false');
+            this.$root.find('[data-action="toggle-removeorigin"]')
+                .attr('aria-checked', s.removeorigin ? 'true' : 'false');
+            this.region('removeorigin-confirm').prop('hidden', !s.removeorigin);
+            this.$root.find('[data-action="toggle-removeorigin-confirm"]')
+                .attr('aria-checked', s.removeoriginconfirm ? 'true' : 'false');
+            this.$root.find('[data-action="toggle-schedule"]')
+                .attr('aria-checked', s.scheduleon ? 'true' : 'false');
+            this.region('schedule-date').prop('hidden', !s.scheduleon);
+
+            this.renderDestCards();
+            this.renderBreakdown();
+        },
+
+        /**
+         * Swap the step-2 texts depending on the restore type. For a category
+         * restore the destination category is the single target where the
+         * origin category courses are created, "delete origin" refers to the
+         * category, and there is no per-course merge/replace.
+         */
+        applyStep2Labels: function() {
+            var cat = this.state.type === 'category';
+            var pick = function(base, catval) {
+                return cat ? catval : base;
+            };
+            this.region('dest-title').text(pick(this.S.rw_dest_title, this.S.rw_dest_title_cat) || '');
+            this.region('dest-desc').text(pick(this.S.rw_dest_desc, this.S.rw_dest_desc_cat) || '');
+            this.region('defcat-title').text(pick(this.S.rw_defcat_title, this.S.rw_defcat_title_cat) || '');
+            this.region('defcat-desc').text(pick(this.S.rw_defcat_desc, this.S.rw_defcat_desc_cat) || '');
+            this.region('users-title').text(pick(this.S.rw_users, this.S.rw_users_cat) || '');
+            this.region('users-desc').text(pick(this.S.rw_users_desc, this.S.rw_users_cat_desc) || '');
+            this.region('removeorigin-title').text(pick(this.S.rw_removeorigin, this.S.rw_removeorigin_cat) || '');
+            this.region('removeorigin-desc').text(pick(this.S.rw_removeorigin_desc, this.S.rw_removeorigin_cat_desc) || '');
+            this.region('removeorigin-confirm-text')
+                .text(pick(this.S.rw_removeorigin_confirm, this.S.rw_removeorigin_confirm_cat) || '');
+        },
+
+        /**
+         * Change the default destination category and propagate it to every
+         * course card that still inherits it.
+         *
+         * @param {Number} cat
+         */
+        onDefaultCat: function(cat) {
+            var self = this;
+            this.state.destcat = cat;
+            Object.keys(this.state.dest).forEach(function(id) {
+                var d = self.state.dest[id];
+                if (d.inherited) {
+                    d.categorytarget = cat;
+                }
+            });
+            this.renderDestCards();
+            this.renderBreakdown();
             this.refreshFooter();
+        },
+
+        /**
+         * Render every per-course card (course type only).
+         */
+        renderDestCards: function() {
+            var self = this;
+            var $box = this.region('dest-cards').empty();
+            if (this.state.type !== 'course') {
+                this.region('dest-warning').prop('hidden', true);
+                return;
+            }
+            this.selectedIds().forEach(function(id) {
+                $box.append(self.buildCard(id));
+            });
+            // Warn about courses that are not fully configured yet.
+            var pending = this.selectedIds().filter(function(id) {
+                return !self.cardReady(id);
+            }).length;
+            var $w = this.region('dest-warning');
+            if (pending > 0) {
+                this.$root.find('[data-region="dest-warning-text"]')
+                    .text((this.S.rw_dest_unconfigured || '{$a}').replace('{$a}', pending));
+                $w.prop('hidden', false);
+            } else {
+                $w.prop('hidden', true);
+            }
+        },
+
+        /**
+         * Rebuild a single card in place (keeps the rest untouched).
+         *
+         * @param {String} id
+         */
+        replaceCard: function(id) {
+            var $old = this.$root.find('.ct-destcard[data-cid="' + id + '"]');
+            if ($old.length) {
+                $old.replaceWith(this.buildCard(id));
+            }
+        },
+
+        /**
+         * Build a course destination card. Remote values are text nodes.
+         *
+         * @param {String} id
+         * @return {jQuery}
+         */
+        /**
+         * Whether a course card is fully configured (mirrors canProceed).
+         *
+         * @param {String} id
+         * @return {Boolean}
+         */
+        cardReady: function(id) {
+            var d = this.state.dest[id] || {mode: 'new'};
+            if (d.mode !== 'existing') {
+                return true;
+            }
+            if (!d.targetid) {
+                return false;
+            }
+            return d.exmode !== 'replace' || !!d.confirm;
+        },
+
+        buildCard: function(id) {
+            var d = this.state.dest[id] || {};
+            var info = this.state.checked[id] || {};
+            var isNew = d.mode !== 'existing';
+            var isExisting = d.mode === 'existing';
+            var hasTarget = isExisting && !!d.targetid;
+            var isReplace = d.exmode === 'replace';
+            var ready = this.cardReady(id);
+            var expanded = !!d.expanded;
+
+            // Card status tag. Not-ready cards read as "unconfigured" (warn).
+            var tagText;
+            var tagClass;
+            if (!ready) {
+                tagText = this.S.rw_tag_unconfigured || 'Not configured';
+                tagClass = 'ct-destcard-tag--warn';
+            } else if (isNew) {
+                tagText = this.S.rw_tag_new || 'New';
+                tagClass = 'ct-destcard-tag--new';
+            } else if (isReplace) {
+                tagText = this.S.rw_tag_replace || 'Replaces';
+                tagClass = 'ct-destcard-tag--danger';
+            } else {
+                tagText = this.S.rw_tag_merge || 'Merges';
+                tagClass = 'ct-destcard-tag--merge';
+            }
+
+            var cardClass = 'ct-destcard';
+            if (!ready) {
+                cardClass += ' ct-destcard--warn';
+            } else if (isExisting && isReplace) {
+                cardClass += ' ct-destcard--danger';
+            }
+            if (expanded) {
+                cardClass += ' ct-destcard--open';
+            }
+
+            var $card = $('<div>').addClass(cardClass).attr('data-cid', id);
+
+            // Header (click to expand/collapse).
+            var $head = $('<div>').addClass('ct-destcard-head')
+                .attr('data-action', 'toggle-card').attr('role', 'button').attr('tabindex', '0');
+            $head.append($('<span>').addClass('ct-destcard-cid').text('#' + id));
+            var $hinfo = $('<div>').addClass('ct-destcard-info');
+            $hinfo.append($('<div>').addClass('ct-destcard-name').text(info.name || ('#' + id)));
+            if (info.meta) {
+                $hinfo.append($('<div>').addClass('ct-destcard-sub').text(info.meta));
+            }
+            $head.append($hinfo);
+            $head.append($('<span>').addClass('ct-destcard-tag ' + tagClass).text(tagText));
+            // Explicit call-to-action so the user sees the card is expandable
+            // and where to configure the destination. Collapsed => "Configure",
+            // expanded => "Collapse".
+            $head.append($('<span>').addClass('ct-destcard-cta')
+                .text(expanded ? (this.S.rw_dest_collapse || 'Collapse') : (this.S.rw_dest_configure || 'Configure')));
+            $head.append($('<i>').addClass('fa fa-chevron-' + (expanded ? 'up' : 'down') + ' ct-destcard-chevron')
+                .attr('aria-hidden', 'true'));
+            $card.append($head);
+
+            // Body (only when expanded).
+            if (expanded) {
+                var $body = $('<div>').addClass('ct-destcard-body');
+                $body.append(this.buildNewOption(d, isNew));
+                $body.append(this.buildExistingOption(id, d, isExisting, hasTarget));
+                $card.append($body);
+            }
+
+            return $card;
+        },
+
+        /**
+         * Build the "create new course" option block.
+         *
+         * @param {Object} d
+         * @param {Boolean} isNew
+         * @return {jQuery}
+         */
+        buildNewOption: function(d, isNew) {
+            var $opt = $('<div>').addClass('ct-destopt').attr('aria-pressed', isNew ? 'true' : 'false');
+            var $btn = $('<button>').attr('type', 'button').addClass('ct-destopt-btn')
+                .attr('data-action', 'pick-new').attr('aria-pressed', isNew ? 'true' : 'false');
+            $btn.append($('<span>').addClass('ct-radio'));
+            $btn.append($('<span>').addClass('ct-destopt-label').text(this.S.rw_dest_new || 'Create a new course'));
+            $btn.append($('<span>').addClass('ct-badge-default').text(this.S.rw_dest_default_badge || 'DEFAULT'));
+            $opt.append($btn);
+
+            if (isNew) {
+                var $extra = $('<div>').addClass('ct-destopt-extra');
+                $extra.append($('<label>').addClass('ct-destopt-cat-label')
+                    .text(this.S.rw_dest_cat_label || 'Destination category'));
+                var $sel = $('<select>').addClass('ct-input').attr('data-action', 'card-cat');
+                var cat = String(d.categorytarget || 0);
+                this.destOptionList().forEach(function(o) {
+                    var $o = $('<option>').attr('value', o.value).text(o.label);
+                    if (o.value === cat) {
+                        $o.attr('selected', 'selected');
+                    }
+                    $sel.append($o);
+                });
+                $extra.append($sel);
+                if (d.inherited) {
+                    var $note = $('<div>').addClass('ct-inherit-note');
+                    $note.append($('<i>').addClass('fa fa-link').attr('aria-hidden', 'true'));
+                    $note.append(document.createTextNode(' ' + (this.S.rw_dest_inherited || 'Inherits the default destination')));
+                    $extra.append($note);
+                }
+                $opt.append($extra);
+            }
+            return $opt;
+        },
+
+        /**
+         * Build the "restore over an existing course" option block.
+         *
+         * @param {String} id
+         * @param {Object} d
+         * @param {Boolean} isExisting
+         * @param {Boolean} hasTarget
+         * @return {jQuery}
+         */
+        buildExistingOption: function(id, d, isExisting, hasTarget) {
+            var self = this;
+            var $opt = $('<div>').addClass('ct-destopt').attr('aria-pressed', isExisting ? 'true' : 'false');
+            var $btn = $('<button>').attr('type', 'button').addClass('ct-destopt-btn')
+                .attr('data-action', 'pick-existing').attr('aria-pressed', isExisting ? 'true' : 'false');
+            $btn.append($('<span>').addClass('ct-radio'));
+            $btn.append($('<span>').addClass('ct-destopt-label')
+                .text(this.S.rw_dest_existing || 'Restore over an existing course'));
+            $opt.append($btn);
+
+            if (!isExisting) {
+                return $opt;
+            }
+
+            var $extra = $('<div>').addClass('ct-destopt-extra');
+
+            if (!hasTarget) {
+                // Search box + dropdown + warning.
+                var $wrap = $('<div>').addClass('ct-target-search');
+                var $search = $('<div>').addClass('ct-search');
+                $search.append($('<i>').addClass('fa fa-search').attr('aria-hidden', 'true'));
+                $search.append($('<input>').attr('type', 'text').attr('data-action', 'target-search')
+                    .attr('placeholder', this.S.rw_dest_search_ph || 'Search…').val(d.search || ''));
+                $wrap.append($search);
+                $wrap.append($('<div>').addClass('ct-target-dropdown').attr('data-region', 'results').prop('hidden', true));
+                var $warn = $('<div>').addClass('ct-pick-warn');
+                $warn.append($('<i>').addClass('fa fa-exclamation-triangle').attr('aria-hidden', 'true'));
+                var warntext = this.S.rw_dest_pick_target || 'Choose the destination course to continue';
+                $warn.append(document.createTextNode(' ' + warntext));
+                $wrap.append($warn);
+                $extra.append($wrap);
+            } else {
+                // Chosen target.
+                var $chosen = $('<div>').addClass('ct-target-chosen');
+                $chosen.append($('<span>').addClass('ct-target-chosen-check')
+                    .append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
+                var $cbody = $('<div>').addClass('ct-target-chosen-body');
+                $cbody.append($('<div>').addClass('ct-target-chosen-name').text(d.targetname || ''));
+                var chosensub = '#' + d.targetid + (d.targetsub ? (' · ' + d.targetsub) : '');
+                $cbody.append($('<div>').addClass('ct-target-chosen-sub').text(chosensub));
+                $chosen.append($cbody);
+                $chosen.append($('<button>').attr('type', 'button').addClass('ct-target-change')
+                    .attr('data-action', 'clear-target').text(this.S.rw_dest_change || 'Change'));
+                $extra.append($chosen);
+
+                // "If it exists" modes (reuses the ct-modeopt component).
+                $extra.append(this.buildExModes(d));
+
+                // Deletion options (only when replacing).
+                if (d.exmode === 'replace') {
+                    $extra.append(this.buildDelOptions(d));
+                }
+            }
+
+            $opt.append($extra);
+
+            // Populate the dropdown if it should be visible.
+            if (!hasTarget) {
+                window.setTimeout(function() {
+                    self.renderResults(id);
+                }, 0);
+            }
+            return $opt;
+        },
+
+        /**
+         * Build the merge/replace selector for an existing target.
+         *
+         * @param {Object} d
+         * @return {jQuery}
+         */
+        buildExModes: function(d) {
+            var self = this;
+            var $box = $('<div>').addClass('ct-exmodes');
+            var modes = [
+                {id: 'merge', title: this.S.rw_exmode_merge || 'Merge content',
+                    desc: this.S.rw_exmode_merge_desc || '', danger: false},
+                {id: 'replace', title: this.S.rw_exmode_replace || 'Replace content',
+                    desc: this.S.rw_exmode_replace_desc || '', danger: true}
+            ];
+            modes.forEach(function(m) {
+                var on = d.exmode === m.id;
+                var $opt = $('<div>').addClass('ct-modeopt' + (m.danger ? ' ct-modeopt--danger' : ''))
+                    .attr('aria-pressed', on ? 'true' : 'false');
+                var $btn = $('<button>').attr('type', 'button').addClass('ct-modeopt-btn')
+                    .attr('data-action', 'ex-mode').attr('data-mode', m.id).attr('aria-pressed', on ? 'true' : 'false');
+                $btn.append($('<span>').addClass('ct-radio'));
+                var $txt = $('<span>');
+                var $title = $('<span>').addClass('ct-modeopt-title').text(m.title);
+                if (!m.danger) {
+                    $title.append($('<span>').addClass('ct-tag-rec').text(self.S.rw_recommended || 'RECOMMENDED'));
+                } else {
+                    $title.append($('<span>').addClass('ct-tag-danger').text(self.S.rw_destructive || 'DESTRUCTIVE'));
+                }
+                $txt.append($title);
+                $txt.append($('<span>').addClass('ct-modeopt-desc').text(m.desc));
+                $btn.append($txt);
+                $opt.append($btn);
+
+                // Destructive confirmation checkbox.
+                if (m.danger && on) {
+                    var $confirm = $('<div>').addClass('ct-modeopt-confirm');
+                    var confirmtpl = self.S.rw_exmode_confirm || 'I understand…';
+                    var $cbtn = $('<button>').attr('type', 'button').addClass('ct-modeopt-confirm-btn')
+                        .attr('data-action', 'toggle-replace-confirm')
+                        .attr('aria-checked', d.confirm ? 'true' : 'false');
+                    $cbtn.append($('<span>').addClass('ct-modeopt-confirm-box')
+                        .append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
+                    // Target name is injected as text (never HTML).
+                    $cbtn.append($('<span>').text(confirmtpl.replace('{$a}', d.targetname || '')));
+                    $confirm.append($cbtn);
+                    $opt.append($confirm);
+                }
+                $box.append($opt);
+            });
+            return $box;
+        },
+
+        /**
+         * Build the "remove enrolments / groups" checkboxes.
+         *
+         * @param {Object} d
+         * @return {jQuery}
+         */
+        buildDelOptions: function(d) {
+            var $box = $('<div>').addClass('ct-delopts');
+            var rows = [
+                {action: 'toggle-delenrol', on: d.delenrol, label: this.S.rw_del_enrol || 'Remove enrolments'},
+                {action: 'toggle-delgroups', on: d.delgroups, label: this.S.rw_del_groups || 'Remove groups'}
+            ];
+            rows.forEach(function(r) {
+                var $btn = $('<button>').attr('type', 'button').addClass('ct-delcheck')
+                    .attr('role', 'checkbox').attr('data-action', r.action)
+                    .attr('aria-checked', r.on ? 'true' : 'false');
+                $btn.append($('<span>').addClass('ct-checkbox')
+                    .append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true')));
+                $btn.append($('<span>').addClass('ct-delcheck-label').text(r.label));
+                $box.append($btn);
+            });
+            return $box;
+        },
+
+        /**
+         * Render the search-results dropdown of a card (text nodes only).
+         *
+         * @param {String} id
+         */
+        renderResults: function(id) {
+            var self = this;
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            var $card = this.$root.find('.ct-destcard[data-cid="' + id + '"]');
+            var $dd = $card.find('[data-region="results"]');
+            if (!$dd.length) {
+                return;
+            }
+            $dd.empty();
+            if (!d.open) {
+                $dd.prop('hidden', true);
+                return;
+            }
+            $dd.prop('hidden', false);
+            // Fixed positioning: anchor to the input so overflow:hidden on any
+            // ancestor cannot clip the dropdown.
+            var $input = $card.find('[data-action="target-search"]');
+            if ($input.length) {
+                var rect = $input[0].getBoundingClientRect();
+                $dd.css({top: (rect.bottom + 4) + 'px', left: rect.left + 'px', width: rect.width + 'px'});
+            }
+            if (!d.results.length) {
+                $dd.append($('<div>').addClass('ct-target-empty')
+                    .text(self.S.rw_dest_no_results || 'No results.'));
+                return;
+            }
+            d.results.forEach(function(r) {
+                var sub = self.targetSub(r);
+                var $b = $('<button>').attr('type', 'button').addClass('ct-target-result')
+                    .attr('data-action', 'pick-target')
+                    .attr('data-tid', r.id)
+                    .attr('data-tname', r.fullname || '')
+                    .attr('data-tsub', sub);
+                $b.append($('<span>').addClass('ct-target-result-cid').text('#' + r.id));
+                var $bd = $('<span>').addClass('ct-target-result-body');
+                $bd.append($('<span>').addClass('ct-target-result-name').text(r.fullname || ''));
+                if (sub) {
+                    $bd.append($('<span>').addClass('ct-target-result-sub').text(sub));
+                }
+                $b.append($bd);
+                $dd.append($b);
+            });
+        },
+
+        /**
+         * Compose the "shortname · idnumber" sub-line for a target result.
+         *
+         * @param {Object} r
+         * @return {String}
+         */
+        targetSub: function(r) {
+            var parts = [];
+            if (r.shortname) {
+                parts.push(r.shortname);
+            }
+            if (r.idnumber) {
+                parts.push(r.idnumber);
+            }
+            return parts.join(' · ');
+        },
+
+        /**
+         * Query the destination site for candidate target courses.
+         *
+         * @param {String} id
+         */
+        doTargetSearch: function(id) {
+            var self = this;
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            // Empty text is allowed: the WS returns the first courses so the
+            // user sees a starting list and understands they can search.
+            var text = (d.search || '').trim();
+            Ajax.call([{
+                methodname: 'local_coursetransfer_dest_search_course_name',
+                args: {text: text}
+            }])[0].then(function(resp) {
+                d.results = (resp && resp.data) ? resp.data : [];
+                d.open = true;
+                self.renderResults(id);
+                return resp;
+            }).catch(function() {
+                d.results = [];
+                self.renderResults(id);
+            });
+        },
+
+        /**
+         * Switch a card between "new" and "existing".
+         *
+         * @param {String} id
+         * @param {String} mode
+         */
+        setCardMode: function(id, mode) {
+            if (!this.state.dest[id]) {
+                return;
+            }
+            this.state.dest[id].mode = mode;
+            this.replaceCard(id);
+            this.renderBreakdown();
+            this.refreshFooter();
+        },
+
+        /**
+         * Set the destination category of a single card (stops inheriting).
+         *
+         * @param {String} id
+         * @param {Number} cat
+         */
+        onCardCat: function(id, cat) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d.categorytarget = cat;
+            d.inherited = false;
+            this.replaceCard(id);
+        },
+
+        /**
+         * Set the chosen existing target from a result button.
+         *
+         * @param {String} id
+         * @param {jQuery} $btn
+         */
+        pickTarget: function(id, $btn) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d.targetid = parseInt($btn.attr('data-tid'), 10) || 0;
+            d.targetname = $btn.attr('data-tname') || '';
+            d.targetsub = $btn.attr('data-tsub') || '';
+            d.open = false;
+            d.results = [];
+            this.replaceCard(id);
+            this.renderBreakdown();
+            this.refreshFooter();
+        },
+
+        /**
+         * Clear the chosen target and reset its mode-related flags.
+         *
+         * @param {String} id
+         */
+        clearTarget: function(id) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d.targetid = 0;
+            d.targetname = '';
+            d.targetsub = '';
+            d.search = '';
+            d.results = [];
+            d.open = false;
+            d.exmode = 'merge';
+            d.confirm = false;
+            d.delenrol = false;
+            d.delgroups = false;
+            this.replaceCard(id);
+            this.renderBreakdown();
+            this.refreshFooter();
+        },
+
+        /**
+         * Choose merge/replace for an existing target.
+         *
+         * @param {String} id
+         * @param {String} mode
+         */
+        setExMode: function(id, mode) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d.exmode = mode;
+            if (mode !== 'replace') {
+                d.confirm = false;
+                d.delenrol = false;
+                d.delgroups = false;
+            }
+            this.replaceCard(id);
+            this.renderBreakdown();
+            this.refreshFooter();
+        },
+
+        /**
+         * Toggle the destructive-replace confirmation of a card.
+         *
+         * @param {String} id
+         */
+        toggleReplaceConfirm: function(id) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d.confirm = !d.confirm;
+            this.replaceCard(id);
+            this.refreshFooter();
+        },
+
+        /**
+         * Toggle one of the deletion checkboxes of a card.
+         *
+         * @param {String} id
+         * @param {String} key delenrol|delgroups
+         * @param {jQuery} $btn
+         */
+        toggleDel: function(id, key, $btn) {
+            var d = this.state.dest[id];
+            if (!d) {
+                return;
+            }
+            d[key] = !d[key];
+            $btn.attr('aria-checked', d[key] ? 'true' : 'false');
+        },
+
+        /**
+         * Render the "N new / N over existing / N replace" chips.
+         */
+        renderBreakdown: function() {
+            var self = this;
+            var $bd = this.region('breakdown');
+            if (this.state.type !== 'course') {
+                $bd.prop('hidden', true).empty();
+                return;
+            }
+            var ids = this.selectedIds().map(String);
+            if (!ids.length) {
+                $bd.prop('hidden', true).empty();
+                return;
+            }
+            var nnew = 0;
+            var nexisting = 0;
+            var nreplace = 0;
+            ids.forEach(function(id) {
+                var d = self.state.dest[id] || {};
+                if (d.mode === 'existing') {
+                    nexisting += 1;
+                    if (d.exmode === 'replace') {
+                        nreplace += 1;
+                    }
+                } else {
+                    nnew += 1;
+                }
+            });
+            var chip = function(tpl, n, cls) {
+                return $('<span>').addClass('ct-chip ' + cls).text((tpl || '{$a}').replace('{$a}', n));
+            };
+            $bd.empty().prop('hidden', false);
+            if (nnew > 0) {
+                $bd.append(chip(self.S.rw_bd_new, nnew, 'ct-chip--new'));
+            }
+            if (nexisting > 0) {
+                $bd.append(chip(self.S.rw_bd_existing, nexisting, 'ct-chip--existing'));
+            }
+            if (nreplace > 0) {
+                $bd.append(chip(self.S.rw_bd_replace, nreplace, 'ct-chip--replace'));
+            }
         },
 
         // ---- Step 3: review --------------------------------------------
@@ -675,14 +1760,184 @@ define([
         /**
          * Build the review summary (values injected as text).
          */
+        /**
+         * Human label of a destination category id (from the common select).
+         *
+         * @param {Number} catid
+         * @return {String}
+         */
+        catLabel: function(catid) {
+            var $opt = this.$root.find('#ct-destcat option[value="' + catid + '"]');
+            return $opt.length ? $opt.text() : ('#' + catid);
+        },
+
+        /**
+         * Resolved destination text for a course in the review list:
+         * "→ new in <category>" or "→ over <course> (merge|replace)".
+         *
+         * @param {Number|String} id origin course id
+         * @return {String}
+         */
+        destText: function(id) {
+            var d = this.state.dest[id] || {mode: 'new'};
+            if (d.mode === 'existing') {
+                var m = d.exmode === 'replace'
+                    ? (this.S.rw_exmode_replace || 'Replace')
+                    : (this.S.rw_exmode_merge || 'Merge');
+                var name = d.targetname || ('#' + d.targetid);
+                return (this.S.rw_review_over || '→ {$a}').replace('{$a}', name) + ' (' + m + ')';
+            }
+            return (this.S.rw_review_new_in || '→ {$a}').replace('{$a}', this.catLabel(d.categorytarget));
+        },
+
+        /**
+         * A review row: origin course name + destination line + mode chip.
+         *
+         * @param {String} id origin course id
+         * @param {Boolean} iscat
+         * @return {jQuery}
+         */
+        buildReviewItem: function(id, iscat) {
+            var info = this.state.checked[id] || {};
+            var d = this.state.dest[id] || {mode: 'new'};
+            var $row = $('<div>').addClass('ct-review-item');
+
+            var self = this;
+            var $body = $('<div>').addClass('ct-review-item-body');
+            $body.append($('<div>').addClass('ct-review-item-name').text(info.name || ('#' + id)));
+            // Destination line, labelled with the canonical direction term
+            // ("Envío a") in the target colour so origin→destination is clear.
+            var destLine = function(destname) {
+                var $d = $('<div>').addClass('ct-review-item-dest');
+                $d.append($('<i>').addClass('fa fa-long-arrow-right').attr('aria-hidden', 'true'));
+                $d.append($('<span>').addClass('ct-review-env ct-review-env--target')
+                    .text(self.S.platforms_role_target || 'To'));
+                $d.append(document.createTextNode(' ' + destname));
+                return $d;
+            };
+            if (!iscat) {
+                var isexisting = d.mode === 'existing';
+                var destname = isexisting
+                    ? (d.targetname || ('#' + d.targetid))
+                    : this.catLabel(d.categorytarget);
+                $body.append(destLine(destname));
+            } else {
+                // Category: destination is the single target category.
+                $body.append(destLine(this.catLabel(this.state.destcat)));
+            }
+            $row.append($body);
+
+            if (!iscat) {
+                var chipclass;
+                var chiptext;
+                if (d.mode !== 'existing') {
+                    chipclass = 'ct-chip--new';
+                    chiptext = this.S.rw_tag_new || 'New';
+                } else if (d.exmode === 'replace') {
+                    chipclass = 'ct-chip--replace';
+                    chiptext = this.S.rw_exmode_replace || 'Replace';
+                } else {
+                    chipclass = 'ct-chip--existing';
+                    chiptext = this.S.rw_exmode_merge || 'Merge';
+                }
+                $row.append($('<span>').addClass('ct-chip ' + chipclass).text(chiptext));
+            }
+            return $row;
+        },
+
+        /**
+         * Cross-cutting options summary as a homogeneous field grid:
+         * origin platform, category mode (category type), include users,
+         * delete origin, scheduling.
+         *
+         * @param {Boolean} iscat
+         * @return {jQuery}
+         */
+        buildGlobalsGrid: function(iscat) {
+            var s = this.state;
+            var self = this;
+            var $grid = $('<div>').addClass('ct-review-grid ct-review-grid--wrap ct-mt');
+            // Each option as a scannable card: icon + label + value. State
+            // ('danger'|'ok') colours icon and value.
+            var cell = function(icon, label, value, state) {
+                var $c = $('<div>').addClass('ct-review-grid-cell');
+                var istate = state ? (' ct-review-cell-icon--' + state) : '';
+                $c.append($('<span>').addClass('ct-review-cell-icon' + istate)
+                    .append($('<i>').addClass('fa ' + icon).attr('aria-hidden', 'true')));
+                var $b = $('<div>').addClass('ct-review-cell-body');
+                $b.append($('<div>').addClass('ct-review-cell-lbl').text(label));
+                // Only ok/danger colour the value text; "off" just mutes the icon.
+                var vstate = (state === 'ok' || state === 'danger') ? (' ct-review-cell-val--' + state) : '';
+                $b.append($('<div>').addClass('ct-review-cell-val' + vstate).text(value));
+                $c.append($b);
+                $grid.append($c);
+            };
+
+            cell('fa-globe', self.S.rw_review_platform || 'Origin platform', s.sitename || '—');
+            // Category restore has no merge/replace concept (it always creates
+            // new courses), so the "if it exists" field is course-only.
+            cell('fa-users', self.S.rw_review_users || 'Users and groups',
+                s.includeusers ? (self.S.rw_users_on || 'Yes') : (self.S.rw_users_off || 'No'),
+                s.includeusers ? 'ok' : 'off');
+            var removeoriginlabel = iscat
+                ? (self.S.rw_review_removeorigin_field_cat || 'Delete origin category')
+                : (self.S.rw_review_removeorigin_field || 'Delete origin');
+            cell('fa-trash', removeoriginlabel,
+                s.removeorigin ? (self.S.rw_yes || 'Yes') : (self.S.rw_no || 'No'),
+                s.removeorigin ? 'danger' : 'off');
+            var sched = (s.scheduleon && s.scheduledate)
+                ? (self.S.rw_review_sched_at || 'Scheduled: {$a}').replace('{$a}', self.formatSchedule(s.scheduledate))
+                : (self.S.rw_review_sched_now || 'Immediate');
+            cell('fa-clock-o', self.S.rw_review_schedule_field || 'Execution', sched);
+            return $grid;
+        },
+
+        /**
+         * Human-friendly local datetime label for the schedule value.
+         *
+         * @param {String} value datetime-local string
+         * @return {String}
+         */
+        formatSchedule: function(value) {
+            var t = Date.parse(value);
+            if (!t) {
+                return value;
+            }
+            var d = new Date(t);
+            var pad = function(n) {
+                return (n < 10 ? '0' : '') + n;
+            };
+            return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear()
+                + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        },
+
         renderReview: function() {
             var s = this.state;
+            var self = this;
             var items = this.selectedIds();
             var count = items.length;
-            var kindlabel = s.type === 'category'
+            var iscat = s.type === 'category';
+            var kindlabel = iscat
                 ? (this.S.rw_kind_category || 'Category')
                 : (this.S.rw_kind_course || 'Course');
-            var destlabel = this.$root.find('[data-action="destcat"] option:selected').text();
+
+            // Per-course destination breakdown (course type only).
+            var nnew = 0;
+            var nexisting = 0;
+            var nreplace = 0;
+            if (!iscat) {
+                items.forEach(function(id) {
+                    var d = self.state.dest[id] || {mode: 'new'};
+                    if (d.mode === 'existing') {
+                        nexisting++;
+                        if (d.exmode === 'replace') {
+                            nreplace++;
+                        }
+                    } else {
+                        nnew++;
+                    }
+                });
+            }
 
             var $review = this.region('review').empty();
 
@@ -693,47 +1948,68 @@ define([
             var $hbody = $('<div>').addClass('ct-review-hero-body');
             $hbody.append($('<div>').addClass('ct-review-eyebrow').text(this.S.rw_review_selected || ''));
             $hbody.append($('<div>').addClass('ct-review-headline').text(count + ' · ' + kindlabel));
-            $hbody.append($('<div>').addClass('ct-review-sub')
-                .text((this.S.rw_review_from || '') + ' ' + s.sitename + ' → ' + destlabel));
+            // Origin platform in the origin colour (teal), consistent everywhere.
+            var $hsub = $('<div>').addClass('ct-review-sub');
+            $hsub.append(document.createTextNode((this.S.rw_review_from || '') + ' '));
+            $hsub.append($('<span>').addClass('ct-review-env ct-review-env--origin').text(s.sitename || ''));
+            $hbody.append($hsub);
             $hero.append($hbody);
             $hero.append($('<span>').addClass('ct-review-count').text(count));
             $review.append($hero);
 
-            // Selected list (up to 5).
+            // Per-item list: origin course → destination + mode chip.
             var $list = $('<div>').addClass('ct-review-list');
-            var self = this;
-            items.slice(0, 5).forEach(function(id) {
-                var info = self.state.checked[id];
-                var $it = $('<div>').addClass('ct-review-list-item');
-                $it.append($('<i>').addClass('fa fa-check').attr('aria-hidden', 'true'));
-                $it.append($('<span>').css({flex: 1, 'min-width': 0}).text(info.name));
-                if (info.meta) {
-                    $it.append($('<span>').addClass('ct-text-muted').text(info.meta));
-                }
-                $list.append($it);
+            items.slice(0, 8).forEach(function(id) {
+                $list.append(self.buildReviewItem(id, iscat));
             });
-            if (count > 5) {
-                $list.append($('<div>').addClass('ct-text-muted')
-                    .text((this.S.rw_more || '+{$a}').replace('{$a}', count - 5)));
+            if (count > 8) {
+                $list.append($('<div>').addClass('ct-review-more ct-text-muted')
+                    .text((this.S.rw_more || '+{$a}').replace('{$a}', count - 8)));
             }
             $review.append($list);
 
-            // Grid: mode + users.
-            var $grid = $('<div>').addClass('ct-review-grid');
-            var $c1 = $('<div>').addClass('ct-review-grid-cell');
-            $c1.append($('<div>').addClass('ct-text-muted').text(this.S.rw_review_ifexists || ''));
-            $c1.append($('<div>').text(s.mode === 'replace'
-                ? (this.S.rw_mode_replace || 'Replace')
-                : (this.S.rw_mode_merge || 'Merge')));
-            var $c2 = $('<div>').addClass('ct-review-grid-cell');
-            $c2.append($('<div>').addClass('ct-text-muted').text(this.S.rw_review_users || ''));
-            $c2.append($('<div>').text(s.includeusers
-                ? (this.S.rw_users_on || 'Yes')
-                : (this.S.rw_users_off || 'No')));
-            $grid.append($c1).append($c2);
-            $review.append($grid);
+            // Breakdown (course only) — only meaningful with several courses;
+            // for a single course the item's own chip already says it. Shown as
+            // a labelled row ("Reparto: …") so the numbers are understandable.
+            if (!iscat && count > 1) {
+                var $bd = $('<div>').addClass('ct-breakdown ct-mt');
+                $bd.append($('<span>').addClass('ct-breakdown-lbl').text(this.S.rw_cat_breakdown || 'Breakdown'));
+                if (nnew > 0) {
+                    $bd.append($('<span>').addClass('ct-chip ct-chip--new')
+                        .text((this.S.rw_bd_new || '{$a}').replace('{$a}', nnew)));
+                }
+                if (nexisting > 0) {
+                    $bd.append($('<span>').addClass('ct-chip ct-chip--existing')
+                        .text((this.S.rw_bd_existing || '{$a}').replace('{$a}', nexisting)));
+                }
+                if (nreplace > 0) {
+                    $bd.append($('<span>').addClass('ct-chip ct-chip--replace')
+                        .text((this.S.rw_bd_replace || '{$a}').replace('{$a}', nreplace)));
+                }
+                $review.append($bd);
+            }
 
-            this.region('review-danger').prop('hidden', s.mode !== 'replace');
+            // Cross-cutting options summary (homogeneous field grid).
+            $review.append(this.buildGlobalsGrid(iscat));
+
+            var anyreplace = iscat ? (s.mode === 'replace') : (nreplace > 0);
+            this.region('review-danger').prop('hidden', !anyreplace);
+
+            // Destructive: origins will be deleted after restoring.
+            var $ro = this.region('review-removeorigin');
+            if (s.removeorigin) {
+                var kind = s.type === 'category'
+                    ? (this.S.rw_categories_pl || '')
+                    : (this.S.rw_courses_pl || '');
+                var txt = (this.S.rw_review_removeorigin || '{$a->count} {$a->kind} — {$a->site}')
+                    .replace('{$a->count}', this.selectedIds().length)
+                    .replace('{$a->kind}', kind)
+                    .replace('{$a->site}', s.sitename || '');
+                this.$root.find('[data-region="review-removeorigin-text"]').text(txt);
+                $ro.prop('hidden', false);
+            } else {
+                $ro.prop('hidden', true);
+            }
         },
 
         // ---- Submit -----------------------------------------------------
@@ -747,18 +2023,43 @@ define([
             var $primary = this.$root.find('[data-action="primary"]');
             $primary.prop('disabled', true);
 
+            // Build the per-course destination config from the step-2 cards.
+            var destcat = s.destcat;
+            var courses = [];
+            var catids = [];
+            if (s.type === 'category') {
+                catids = this.selectedIds();
+            } else {
+                courses = this.selectedIds().map(function(id) {
+                    var d = self.state.dest[id] || {};
+                    var existing = d.mode === 'existing';
+                    var replace = existing && d.exmode === 'replace';
+                    return {
+                        origincourseid: id,
+                        targetid: existing ? (d.targetid || 0) : 0,
+                        categorytarget: existing ? 0 : (d.categorytarget || 0),
+                        mode: d.exmode || 'merge',
+                        removeenrols: replace ? !!d.delenrol : false,
+                        removegroups: replace ? !!d.delgroups : false
+                    };
+                });
+            }
+
+            // Deferred execution: the WS expects an epoch in milliseconds (0 = now).
+            var schedule = (s.scheduleon && s.scheduledate) ? (Date.parse(s.scheduledate) || 0) : 0;
+
             Ajax.call([{
                 methodname: 'local_coursetransfer_restore_wizard_submit',
                 args: {
                     siteid: s.siteid,
                     type: s.type,
-                    ids: this.selectedIds(),
-                    targetcatid: s.destcat,
-                    mode: s.mode,
-                    removeenrols: false,
-                    removegroups: false,
+                    courses: courses,
+                    catids: catids,
+                    targetcatid: destcat,
+                    catmode: (s.mode === 'replace') ? 'replace' : 'merge',
                     includeusers: s.includeusers,
-                    schedule: 0
+                    removeorigin: !!s.removeorigin,
+                    schedule: schedule
                 }
             }])[0].then(function(resp) {
                 if (resp && resp.success) {

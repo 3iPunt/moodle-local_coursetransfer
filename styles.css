@@ -274,6 +274,7 @@
 .local-coursetransfer .ct-btn--disabled {
     background: var(--neutral-300);
     color: var(--neutral-0);
+    border-color: transparent;
     opacity: 0.7;
     cursor: not-allowed;
     box-shadow: none;
@@ -456,12 +457,51 @@
     color: var(--text-subtle);
 }
 
+.local-coursetransfer .ct-sitecard {
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+}
+
+.local-coursetransfer .ct-sitecard[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--orange-50);
+}
+
+.local-coursetransfer .ct-sitecard[disabled] {
+    cursor: not-allowed;
+}
+
 .local-coursetransfer .ct-sitecard-name {
     display: block;
     font-family: var(--font-heading);
     font-weight: 700;
     font-size: 15.5px;
     color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-sitecard-url {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+    overflow-wrap: anywhere;
+}
+
+.local-coursetransfer .ct-sitecard-check {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    background: var(--color-primary);
+    color: var(--neutral-0);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-sitecard[aria-pressed="true"] .ct-sitecard-check {
+    display: flex;
 }
 
 .local-coursetransfer .ct-sitecard .ct-sitecard-status {
@@ -606,6 +646,8 @@
     display: flex;
     align-items: center;
     gap: 18px;
+    /* Breathing room from the Moodle navbar/secondary nav above. */
+    margin-top: 24px;
     margin-bottom: 24px;
 }
 
@@ -618,14 +660,15 @@
 }
 
 .local-coursetransfer .ct-page-icon {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 15px;
     flex: none;
-    background: #f1f1f1;
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: rgba(99, 99, 99, 0.2) 0 2px 8px 0;
 }
 
 .local-coursetransfer .ct-page-icon img {
@@ -838,6 +881,208 @@
 .local-coursetransfer .ct-chip--off {
     background: var(--neutral-50);
     color: var(--text-subtle);
+}
+
+/* ---- Persistent origin-site header (teal "traigo de" direction) ---- */
+.local-coursetransfer .ct-sitebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: var(--teal-50);
+    border: 1.5px solid var(--teal-200);
+}
+
+.local-coursetransfer .ct-sitebar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--teal-500);
+    color: #fff;
+    font-size: 13px;
+    flex: 0 0 auto;
+}
+
+.local-coursetransfer .ct-sitebar-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--teal-700);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+}
+
+.local-coursetransfer .ct-sitebar-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-800);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   Remove (delete) assistant — danger-themed reuse of the wizard.
+   Scoping --color-primary to danger inside .ct-remove recolours the shared
+   components (buttons, step markers, checkboxes, selected states) red, so the
+   whole destructive flow reads as dangerous without duplicating components.
+   ============================================================ */
+.local-coursetransfer .ct-remove {
+    --color-primary: var(--danger-500);
+    --color-primary-hover: #c9342a;
+    --color-primary-press: #b02d24;
+}
+
+.local-coursetransfer .ct-startcard--danger {
+    border-color: #f0cfca;
+    border-left: 4px solid var(--danger-500);
+}
+
+.local-coursetransfer .ct-startcard--danger .ct-startcard-icon {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-wizard--danger {
+    border-color: #f0cfca;
+    border-top: 3px solid var(--danger-500);
+}
+
+.local-coursetransfer .ct-sitebar--danger {
+    background: var(--danger-50);
+    border-color: #f0cfca;
+}
+
+.local-coursetransfer .ct-sitebar--danger .ct-sitebar-icon {
+    background: var(--danger-500);
+}
+
+.local-coursetransfer .ct-sitebar--danger .ct-sitebar-label,
+.local-coursetransfer .ct-sitebar--danger .ct-sitebar-name {
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-selcounter--danger.ct-selcounter--active {
+    background: var(--danger-50);
+    border-color: #f0cfca;
+}
+
+.local-coursetransfer .ct-done-icon--danger {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+/* Destructive confirmation card (step "Confirmar"). */
+.local-coursetransfer .ct-removecard {
+    border: 1.5px solid var(--danger-500);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--danger-50);
+}
+
+.local-coursetransfer .ct-removecard-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0cfca;
+}
+
+.local-coursetransfer .ct-removecard-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--neutral-0);
+    color: var(--danger-500);
+    font-size: 20px;
+}
+
+.local-coursetransfer .ct-removecard-eyebrow {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--danger-500);
+    margin-bottom: 2px;
+}
+
+.local-coursetransfer .ct-removecard-site {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-removecard-count {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 30px;
+    color: var(--danger-500);
+    line-height: 1;
+    flex: none;
+}
+
+.local-coursetransfer .ct-removecard-body {
+    background: var(--neutral-0);
+    padding: 16px 20px;
+}
+
+.local-coursetransfer .ct-removecard-listlbl {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 11px;
+}
+
+.local-coursetransfer .ct-removecard-list {
+    display: grid;
+    gap: 8px;
+}
+
+.local-coursetransfer .ct-removecard-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.local-coursetransfer .ct-removecard-item .fa {
+    color: var(--danger-500);
+    font-size: 13px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-removecard-item-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-removecard-item-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: none;
+}
+
+.local-coursetransfer .ct-removecard-more {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    padding-left: 23px;
 }
 
 /* ---- Icon buttons ---- */
@@ -1280,6 +1525,57 @@
     color: var(--text-subtle);
 }
 
+/* Active card meta: request type + direction so the user knows what runs. */
+.local-coursetransfer .ct-active-meta {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.local-coursetransfer .ct-active-type {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Scheduled (deferred) task indicator — amber, "pending" reading. */
+.local-coursetransfer .ct-sched-ic {
+    color: var(--warning-700);
+    font-size: 12.5px;
+    margin-left: 6px;
+    cursor: help;
+}
+
+.local-coursetransfer .ct-active-sched {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 9px 12px;
+    background: var(--warning-50);
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--warning-700);
+}
+
+.local-coursetransfer .ct-active-sched .fa {
+    flex: none;
+}
+
+/* Site URL next to the direction tag: normal case (never uppercased). */
+.local-coursetransfer .ct-active-site {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    text-transform: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .local-coursetransfer .ct-segments {
     display: flex;
     gap: 5px;
@@ -1298,6 +1594,43 @@
     height: 100%;
     border-radius: 4px;
     background: var(--color-primary);
+    transition: width .3s ease;
+}
+
+/* Progressive tone per phase: each segment a shade darker as it advances. */
+.local-coursetransfer .ct-segment--0 .ct-segment-fill {
+    background: #fb7a53;
+}
+
+.local-coursetransfer .ct-segment--1 .ct-segment-fill {
+    background: var(--orange-500);
+}
+
+.local-coursetransfer .ct-segment--2 .ct-segment-fill {
+    background: var(--orange-600);
+}
+
+.local-coursetransfer .ct-segment--3 .ct-segment-fill {
+    background: var(--orange-700);
+}
+
+.local-coursetransfer .ct-segment--4 .ct-segment-fill {
+    background: #7f1b04;
+}
+
+/* Current phase: the track gently pulses so it reads as active even when its
+   live percentage is 0 (e.g. the backup phase, which reports no progress). */
+.local-coursetransfer .ct-segment--active {
+    animation: ct-segment-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ct-segment-pulse {
+    0%, 100% {
+        background: var(--neutral-100);
+    }
+    50% {
+        background: var(--orange-100);
+    }
 }
 
 .local-coursetransfer .ct-active-foot {
@@ -1408,10 +1741,23 @@
 .local-coursetransfer .ct-log-head,
 .local-coursetransfer .ct-log-row {
     display: grid;
-    grid-template-columns: 120px 1.7fr 1fr 76px 116px 32px;
+    grid-template-columns: 104px 1.7fr 1fr 66px 100px 32px;
     gap: 12px;
     padding: 11px 16px;
     align-items: center;
+}
+
+/* Compact status badge inside the log table so the status column is narrow. */
+.local-coursetransfer .ct-log .ct-badge {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+/* Date and size in a smaller, quieter type. */
+.local-coursetransfer .ct-log-size,
+.local-coursetransfer .ct-log-date {
+    font-size: 11px;
 }
 
 .local-coursetransfer .ct-log-head {
@@ -1625,6 +1971,7 @@
     grid-template-columns: 300px 1fr;
     gap: 16px;
     align-items: start;
+    margin-top: 1rem;
 }
 
 @media (max-width: 720px) {
@@ -1922,6 +2269,241 @@
     padding: 2px 8px;
 }
 
+/* Interactive section/activity tree (teacher content selection).
+   The section head and each activity row are real buttons so the whole row
+   toggles its checkbox; keyboard focus is handled by the browser. */
+.local-coursetransfer .ct-sectree-head,
+.local-coursetransfer .ct-sectree-act {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+.local-coursetransfer .ct-sectree-head {
+    background: var(--surface-alt);
+    transition: var(--transition-control);
+}
+
+.local-coursetransfer .ct-sectree-act:hover,
+.local-coursetransfer .ct-sectree-head:hover {
+    background: var(--surface-sunken);
+}
+
+.local-coursetransfer .ct-sectree-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex: none;
+}
+
+/* Tri-state (partial) section checkbox: a minus bar instead of a tick. */
+.local-coursetransfer .ct-sectree-check--some {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Per-activity checkbox (square, like the section one but a touch smaller). */
+.local-coursetransfer .ct-sectree-actcheck {
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    flex: none;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-sectree-actcheck--on {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-sectree-actcheck .fa {
+    font-size: 9.5px;
+}
+
+/* Type icon of an activity (neutral chip, next to its checkbox). */
+.local-coursetransfer .ct-sectree-acticon {
+    width: 18px;
+    flex: none;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* "Bring the whole course" master toggle above the tree. */
+.local-coursetransfer .ct-selmaster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: var(--surface-brand-subtle, var(--orange-50));
+    border: 1.5px solid var(--color-primary-border, var(--orange-200));
+    border-radius: var(--radius-sm);
+    padding: 13px 15px;
+    cursor: pointer;
+    margin-bottom: 14px;
+    font: inherit;
+}
+
+.local-coursetransfer .ct-selmaster-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex: none;
+    border: 2px solid var(--border-strong);
+    background: var(--neutral-0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-selmaster-box--on,
+.local-coursetransfer .ct-selmaster-box--some {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-selmaster-label {
+    flex: 1;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-selmaster-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-primary);
+    flex: none;
+}
+
+/* Step "Review": three headline stats about the chosen course. */
+.local-coursetransfer .ct-revstats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--border-default);
+    border-top: none;
+}
+
+.local-coursetransfer .ct-revstat {
+    padding: 18px 22px;
+    border-right: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-revstat:last-child {
+    border-right: none;
+}
+
+.local-coursetransfer .ct-revstat-num {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--text-strong);
+    line-height: 1;
+}
+
+.local-coursetransfer .ct-revstat-label {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* Review header card (course name + category + origin). */
+.local-coursetransfer .ct-revhead {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 22px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.local-coursetransfer .ct-revhead-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange-50);
+    color: var(--color-primary);
+    font-size: 22px;
+}
+
+.local-coursetransfer .ct-revhead-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-revhead-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Step "Content": summary field rows (label + value). */
+.local-coursetransfer .ct-tsummary {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    margin-top: 16px;
+    background: var(--surface-alt);
+}
+
+.local-coursetransfer .ct-tsummary-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.local-coursetransfer .ct-tsummary-row {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    margin-bottom: 9px;
+}
+
+.local-coursetransfer .ct-tsummary-row:last-child {
+    margin-bottom: 0;
+}
+
+.local-coursetransfer .ct-tsummary-label {
+    width: 96px;
+    flex: none;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-tsummary-value {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-tsummary-value--danger {
+    color: var(--danger-500);
+}
+
 /* ============================================================
    Restore wizard (admin + teacher, TIPGOODLE-352)
    ============================================================ */
@@ -1975,6 +2557,35 @@
 }
 
 /* Recent restorations list */
+.local-coursetransfer .ct-recent {
+    margin-top: 40px;
+}
+
+/* Small text link (e.g. "Ver detalle" in recent cards) */
+.local-coursetransfer .ct-link-sm {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Result count above the selection table */
+.local-coursetransfer .ct-result-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px 10px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-result-info .fa {
+    color: var(--text-subtle);
+    cursor: help;
+}
+
+.local-coursetransfer .ct-result-info:empty {
+    display: none;
+}
+
 .local-coursetransfer .ct-recent-head {
     display: flex;
     align-items: baseline;
@@ -2077,6 +2688,56 @@
     padding: 0;
 }
 
+/* Selection "cart": removable chips of everything selected (across pages) */
+.local-coursetransfer .ct-cart {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.local-coursetransfer .ct-cart-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--orange-50);
+    color: var(--orange-700);
+    border: 1px solid var(--color-primary-border);
+    border-radius: var(--radius-pill);
+    padding: 4px 4px 4px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    max-width: 260px;
+}
+
+.local-coursetransfer .ct-cart-chip-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-cart-chip-x {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--orange-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-pill);
+    flex: none;
+}
+
+.local-coursetransfer .ct-cart-chip-x:hover {
+    background: var(--orange-100);
+}
+
+.local-coursetransfer .ct-cart-chip-x .fa {
+    font-size: 12px;
+}
+
 /* Selection list */
 .local-coursetransfer .ct-seltable {
     border: 1px solid var(--border-default);
@@ -2176,11 +2837,53 @@
     color: var(--text-strong);
 }
 
+/* Grey #id link to the remote course/category (does not steal focus from
+   the course name). */
+.local-coursetransfer .ct-selrow-id {
+    color: var(--text-subtle);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-selrow-id:hover {
+    color: var(--text-link);
+    text-decoration: underline;
+}
+
 .local-coursetransfer .ct-selrow-sub {
     display: block;
     font-size: 12px;
     color: var(--text-muted);
-    margin-top: 2px;
+    margin-top: 3px;
+}
+
+/* Parent-category breadcrumb inside a category name: light grey, not bold. */
+.local-coursetransfer .ct-selrow-name .ct-selrow-parent {
+    color: var(--text-subtle);
+    font-weight: 400;
+}
+
+/* Metadata sub-line: grey shortname code + bold labels */
+.local-coursetransfer .ct-meta-code {
+    color: var(--text-subtle);
+    font-family: ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+    margin-right: 8px;
+}
+
+.local-coursetransfer .ct-meta-lbl {
+    font-weight: 600;
+    color: var(--text-body);
+    margin-right: 3px;
+}
+
+.local-coursetransfer .ct-meta-sep {
+    color: var(--border-strong);
+    margin: 0 4px;
+}
+
+/* Grey secondary id (e.g. the category id next to its name). */
+.local-coursetransfer .ct-meta-id {
+    color: var(--text-subtle);
 }
 
 .local-coursetransfer .ct-selrow-meta {
@@ -2188,6 +2891,15 @@
     flex: none;
     font-size: 12.5px;
     color: var(--text-muted);
+    text-align: right;
+}
+
+/* Layout norm: long names are truncated with an ellipsis (and carry a title
+   tooltip with the full text) so the row height stays stable. */
+.local-coursetransfer .ct-selrow-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .local-coursetransfer .ct-selempty {
@@ -2200,12 +2912,15 @@
 .local-coursetransfer .ct-selpager {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 14px;
     margin-top: 14px;
 }
 
 .local-coursetransfer .ct-selpager-info {
-    flex: 1;
+    flex: none;
+    min-width: 54px;
+    text-align: center;
     font-size: 12.5px;
     color: var(--text-muted);
 }
@@ -2274,6 +2989,19 @@
 }
 
 .local-coursetransfer .ct-modeopt[aria-pressed="true"] .ct-radio::after {
+    display: block;
+}
+
+/* Single-select course row: the leading radio reflects the pressed row. */
+.local-coursetransfer .ct-selrow--radio {
+    align-items: center;
+}
+
+.local-coursetransfer .ct-selrow--radio[aria-pressed="true"] .ct-radio {
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-selrow--radio[aria-pressed="true"] .ct-radio::after {
     display: block;
 }
 
@@ -2411,6 +3139,642 @@
     left: 23px;
 }
 
+.local-coursetransfer .ct-switchrow--danger .ct-rolecard-title {
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-switchrow .ct-schedule-input {
+    max-width: 260px;
+}
+
+/* ---- Step 2: destination per course ---- */
+
+/* Common adjustment (default destination category) */
+.local-coursetransfer .ct-common {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+
+.local-coursetransfer .ct-common-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--teal-50);
+    color: var(--teal-600);
+}
+
+.local-coursetransfer .ct-common-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-common-title {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-strong);
+    margin: 0;
+}
+
+.local-coursetransfer .ct-common-desc {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.local-coursetransfer .ct-common-select {
+    width: 260px;
+    flex: none;
+    height: 44px;
+}
+
+/* Breakdown chips */
+.local-coursetransfer .ct-breakdown {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+/* Leading label so the breakdown chips read as "Reparto: N nuevos · …". */
+.local-coursetransfer .ct-breakdown-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-right: 2px;
+}
+
+.local-coursetransfer .ct-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 4px 11px;
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+}
+
+.local-coursetransfer .ct-chip::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+.local-coursetransfer .ct-chip--new {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-chip--existing {
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-chip--replace {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+/* Per-course cards container */
+.local-coursetransfer .ct-destcards {
+    display: grid;
+    gap: 12px;
+    /* No inner scroll: the list grows and the page scrolls. A max-height +
+       overflow here also clipped the target-search dropdown. */
+    padding: 2px;
+}
+
+.local-coursetransfer .ct-destcard {
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-md);
+    /* visible (not hidden) so the target-search dropdown can overflow. */
+    overflow: visible;
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-destcard--warn {
+    border-color: var(--warning-500);
+}
+
+.local-coursetransfer .ct-destcard--danger {
+    border-color: #f0cfca;
+}
+
+.local-coursetransfer .ct-destcard-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    background: var(--surface-alt);
+    /* Match the card radius now that the card no longer clips (overflow). */
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-destcard--open .ct-destcard-head {
+    border-bottom: 1px solid var(--divider);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.local-coursetransfer .ct-destcard-head:hover {
+    background: var(--neutral-100);
+}
+
+.local-coursetransfer .ct-destcard-chevron {
+    color: var(--text-subtle);
+    font-size: 13px;
+    flex: none;
+}
+
+/* Call-to-action on the card head so the user sees it expands to configure. */
+.local-coursetransfer .ct-destcard-cta {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    flex: none;
+}
+
+/* Review: cross-cutting options grid — card cells (see base rule below). */
+.local-coursetransfer .ct-review-val--danger {
+    color: var(--danger-500);
+    font-weight: 600;
+}
+
+/* Review list rows: origin → destination + mode chip */
+.local-coursetransfer .ct-review-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-review-item + .ct-review-item {
+    margin-top: 10px;
+}
+
+.local-coursetransfer .ct-review-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-review-item-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-review-item-dest {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-review-item-dest .fa {
+    color: var(--color-primary);
+    margin-right: 0;
+    flex: none;
+}
+
+.local-coursetransfer .ct-review-item-from {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Labelled key/value rows inside a review card (origin / destination). */
+.local-coursetransfer .ct-review-kv {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.local-coursetransfer .ct-review-kv + .ct-review-kv {
+    margin-top: 6px;
+}
+
+.local-coursetransfer .ct-review-kv-lbl {
+    flex: none;
+    width: 68px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-review-kv-val {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Environment (site/platform) shown inside a direction value, coloured by
+   direction: origin = teal ("Traigo de"), target = orange ("Envío a"). */
+.local-coursetransfer .ct-review-env {
+    font-weight: 600;
+}
+
+.local-coursetransfer .ct-review-env--origin {
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-review-env--target {
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-review-env-sep {
+    color: var(--border-strong);
+    font-weight: 400;
+    margin: 0 2px;
+}
+
+.local-coursetransfer .ct-review-item .ct-chip {
+    flex: none;
+}
+
+.local-coursetransfer .ct-review-more {
+    font-size: 12.5px;
+    padding: 4px 14px;
+}
+
+.local-coursetransfer .ct-destcard-cid {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 11.5px;
+    color: var(--color-primary);
+    background: var(--orange-50);
+    border-radius: 6px;
+    padding: 3px 8px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-destcard-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-destcard-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-destcard-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+.local-coursetransfer .ct-destcard-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-destcard-tag--new {
+    background: var(--orange-50);
+    color: var(--orange-700);
+}
+
+.local-coursetransfer .ct-destcard-tag--warn {
+    background: var(--warning-50);
+    color: var(--warning-500);
+}
+
+.local-coursetransfer .ct-destcard-tag--danger {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-destcard-tag--merge {
+    background: var(--teal-50);
+    color: var(--teal-700);
+}
+
+.local-coursetransfer .ct-destcard-body {
+    padding: 14px 16px;
+    display: grid;
+    gap: 10px;
+}
+
+/* Destination option (radio row: new / existing) */
+.local-coursetransfer .ct-destopt {
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--neutral-0);
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-destopt[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--orange-50);
+}
+
+.local-coursetransfer .ct-destopt-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 12px 15px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-destopt-btn .ct-radio {
+    margin-top: 0;
+}
+
+.local-coursetransfer .ct-destopt[aria-pressed="true"] .ct-radio {
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-destopt[aria-pressed="true"] .ct-radio::after {
+    display: block;
+}
+
+.local-coursetransfer .ct-destopt-label {
+    flex: 1;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-badge-default {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--text-subtle);
+    background: var(--neutral-100);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-destopt-extra {
+    padding: 0 15px 14px 47px;
+    display: grid;
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-destopt-cat-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: -6px;
+}
+
+.local-coursetransfer .ct-destopt-extra .ct-input {
+    height: 42px;
+    font-size: 13.5px;
+}
+
+.local-coursetransfer .ct-inherit-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: -6px;
+    font-size: 11.5px;
+    color: var(--text-subtle);
+}
+
+/* Target search box + dropdown */
+.local-coursetransfer .ct-target-search {
+    position: relative;
+}
+
+.local-coursetransfer .ct-target-dropdown {
+    /* Fixed + JS-positioned so no ancestor overflow/stacking context can clip
+       it (the wizard card, step body, etc. all use overflow:hidden). */
+    position: fixed;
+    z-index: 1100;
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    max-height: 240px;
+    overflow: auto;
+}
+
+.local-coursetransfer .ct-target-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: var(--neutral-0);
+    border: none;
+    border-bottom: 1px solid var(--divider);
+    padding: 10px 13px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-target-result:hover {
+    background: var(--surface-alt);
+}
+
+.local-coursetransfer .ct-target-result-cid {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--neutral-100);
+    border-radius: 5px;
+    padding: 2px 7px;
+    flex: none;
+}
+
+.local-coursetransfer .ct-target-result-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-target-result-name {
+    display: block;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-target-result-sub {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-target-empty {
+    padding: 14px 13px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.local-coursetransfer .ct-pick-warn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--warning-500);
+}
+
+/* Chosen target */
+.local-coursetransfer .ct-target-chosen {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+}
+
+.local-coursetransfer .ct-target-chosen-check {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    background: var(--teal-50);
+    color: var(--teal-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-target-chosen-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-target-chosen-name {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.local-coursetransfer .ct-target-chosen-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-target-change {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--color-primary);
+    padding: 0;
+    flex: none;
+}
+
+/* "If it exists" modes inside a card */
+.local-coursetransfer .ct-exmodes {
+    display: grid;
+    gap: 8px;
+}
+
+/* Deletion checkboxes (replace only) */
+.local-coursetransfer .ct-delopts {
+    display: grid;
+    gap: 8px;
+}
+
+.local-coursetransfer .ct-delcheck {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    text-align: left;
+    width: 100%;
+    background: var(--neutral-0);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-delcheck .ct-checkbox {
+    width: 19px;
+    height: 19px;
+    border-radius: 5px;
+}
+
+.local-coursetransfer .ct-delcheck[aria-checked="true"] .ct-checkbox {
+    background: var(--danger-500);
+    border-color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-delcheck[aria-checked="true"] .ct-checkbox .fa {
+    visibility: visible;
+}
+
+.local-coursetransfer .ct-delcheck-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-body);
+}
+
 /* Review summary */
 .local-coursetransfer .ct-review {
     border: 1px solid var(--border-default);
@@ -2498,18 +3862,98 @@
     flex: none;
 }
 
+/* Review options as scannable cards: icon + label + value, one per option,
+   destructive/positive states shown by colour (Nielsen: recognition over
+   recall, visibility of system status, consistency). Responsive auto-fit. */
 .local-coursetransfer .ct-review-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-top: 1px solid var(--divider);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin: 1rem;
 }
 
 .local-coursetransfer .ct-review-grid-cell {
-    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--neutral-0);
 }
 
-.local-coursetransfer .ct-review-grid-cell:first-child {
-    border-right: 1px solid var(--divider);
+.local-coursetransfer .ct-review-cell-icon {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--neutral-50);
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.local-coursetransfer .ct-review-cell-icon--danger {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-review-cell-icon--ok {
+    background: var(--teal-50);
+    color: var(--teal-600);
+}
+
+/* "Off" state: the option is disabled/negated — muted icon crossed out with a
+   diagonal strike, so the state reads at a glance (e.g. trash = NOT deleted,
+   users = NOT copied). Works for any icon without needing a "-slash" variant. */
+.local-coursetransfer .ct-review-cell-icon--off {
+    background: var(--neutral-50);
+    color: var(--neutral-300);
+}
+
+.local-coursetransfer .ct-review-cell-icon--off::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--neutral-400);
+    transform: translateX(-50%) rotate(45deg);
+    border-radius: 2px;
+}
+
+.local-coursetransfer .ct-review-cell-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-review-cell-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-bottom: 3px;
+}
+
+.local-coursetransfer .ct-review-cell-val {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-strong);
+    word-break: break-word;
+}
+
+.local-coursetransfer .ct-review-cell-val--danger {
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-review-cell-val--ok {
+    color: var(--success-500);
 }
 
 /* Done screen */
@@ -2543,6 +3987,139 @@
     margin-top: 24px;
 }
 
+/* Radio card (course/category choice, step 0) */
+.local-coursetransfer .ct-radiocard {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+    background: var(--neutral-0);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 15px 16px;
+    cursor: pointer;
+}
+
+.local-coursetransfer .ct-radiocard[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--orange-50);
+}
+
+.local-coursetransfer .ct-radiocard-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-pill);
+    flex: none;
+    margin-top: 1px;
+    border: 2px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-radiocard[aria-pressed="true"] .ct-radiocard-radio {
+    border-color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-radiocard-radio::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    display: none;
+}
+
+.local-coursetransfer .ct-radiocard[aria-pressed="true"] .ct-radiocard-radio::after {
+    display: block;
+}
+
+.local-coursetransfer .ct-radiocard-title {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-radiocard-desc {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.45;
+}
+
+/* Step heading inside the wizard body */
+.local-coursetransfer .ct-step-lead {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Done: mini progress steps */
+.local-coursetransfer .ct-done-progress {
+    display: flex;
+    gap: 0;
+    max-width: 500px;
+    margin: 26px auto 8px;
+}
+
+.local-coursetransfer .ct-done-progress-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.local-coursetransfer .ct-done-progress-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange-50);
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary-border);
+}
+
+.local-coursetransfer .ct-done-progress-dot span {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+}
+
+.local-coursetransfer .ct-done-progress-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 130px;
+}
+
+.local-coursetransfer .ct-done-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin: 0 0 20px;
+}
+
+/* Mandatory confirmation for "delete origin courses" (destructive).
+   Reuses the ct-modeopt-confirm-btn/box pattern (same as Replace mode). */
+.local-coursetransfer .ct-removeorigin-confirm {
+    background: var(--danger-50);
+    border: 1px solid #f0cfca;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 8px;
+}
+
 /* ---- Wizard step states (set by AMD via data-state) ---- */
 .local-coursetransfer .ct-step[data-state="done"] .ct-step-marker,
 .local-coursetransfer .ct-step[data-state="current"] .ct-step-marker {
@@ -2563,4 +4140,676 @@
 
 .local-coursetransfer .ct-step[data-state="pending"] .ct-step-label {
     color: var(--text-subtle);
+}
+
+/* ================================================================
+   Summary screen (index_page): hero + token star block + checks +
+   how-to-connect + quick links + confirm modal.
+   ================================================================ */
+
+.local-coursetransfer.ct-wide {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ---- Hero with the big logo ---- */
+.local-coursetransfer .ct-idx-hero {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 8px 4px 24px;
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-idx-logo {
+    height: 72px;
+    width: auto;
+    max-width: 260px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.local-coursetransfer .ct-idx-hero-text {
+    min-width: 0;
+    flex: 1 1 320px;
+}
+
+.local-coursetransfer .ct-hero-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    margin-bottom: 4px;
+}
+
+/* ---- Token star block ---- */
+.local-coursetransfer .ct-token-card {
+    background:
+        linear-gradient(180deg, rgba(248, 64, 21, 0.05), rgba(248, 64, 21, 0) 60%),
+        var(--neutral-0);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-brand);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.local-coursetransfer .ct-token-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.local-coursetransfer .ct-token-head-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: var(--neutral-0);
+    font-size: 20px;
+}
+
+.local-coursetransfer .ct-token-title {
+    margin: 0 0 2px;
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-token-desc {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.local-coursetransfer .ct-token-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-token-field {
+    flex: 1 1 320px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+}
+
+.local-coursetransfer .ct-token-field > .fa {
+    color: var(--text-subtle);
+    flex: 0 0 auto;
+}
+
+.local-coursetransfer .ct-token-field input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 12px 0;
+    font-family: monospace;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: var(--text-strong);
+    outline: none;
+}
+
+.local-coursetransfer .ct-token-reveal {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-subtle);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.local-coursetransfer .ct-token-reveal:hover {
+    color: var(--text-strong);
+    background: rgba(30, 30, 31, 0.06);
+}
+
+.local-coursetransfer .ct-token-reveal[aria-pressed="true"] {
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-token-copy {
+    flex: 0 0 auto;
+}
+
+.local-coursetransfer .ct-token-copy--done {
+    background: var(--success-500);
+    border-color: var(--success-500);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-token-copy--done:hover {
+    background: var(--success-500);
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-token-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-token-meta .fa {
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-meta-sep {
+    color: var(--border-strong);
+}
+
+.local-coursetransfer .ct-token-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.local-coursetransfer .ct-token-actions--end {
+    justify-content: flex-end;
+}
+
+.local-coursetransfer .ct-btn--danger-outline {
+    background: var(--neutral-0);
+    border: 1px solid var(--danger-500);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-btn--danger-outline:hover {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+/* No token yet */
+.local-coursetransfer .ct-token-empty {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    background: var(--warning-50);
+    border: 1px dashed var(--warning-500);
+    border-radius: var(--radius-sm);
+    flex-wrap: wrap;
+}
+
+.local-coursetransfer .ct-token-empty-icon {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--warning-500);
+    color: var(--neutral-0);
+    font-size: 18px;
+}
+
+.local-coursetransfer .ct-token-empty-body {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-token-empty-title {
+    font-weight: 700;
+    color: var(--text-strong);
+    margin-bottom: 2px;
+}
+
+.local-coursetransfer .ct-token-empty-desc {
+    font-size: 13px;
+    color: var(--text-body);
+    line-height: 1.5;
+}
+
+/* ---- Generic section wrapper on this screen ---- */
+.local-coursetransfer .ct-idx-section {
+    margin-bottom: 28px;
+}
+
+.local-coursetransfer .ct-idx-h2 {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 0 0 14px;
+}
+
+.local-coursetransfer .ct-idx-sublabel {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 18px 0 10px;
+}
+
+/* ---- Integration status checks ---- */
+.local-coursetransfer .ct-checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-left-width: 4px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.local-coursetransfer .ct-check-icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+}
+
+.local-coursetransfer .ct-check-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.local-coursetransfer .ct-check-label {
+    font-weight: 600;
+    color: var(--text-strong);
+    font-size: 14px;
+}
+
+.local-coursetransfer .ct-check-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.local-coursetransfer .ct-check-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+.local-coursetransfer .ct-check-action {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(248, 64, 21, 0.1);
+    color: var(--color-primary);
+    font-size: 13px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.local-coursetransfer .ct-check-action:hover {
+    background: var(--color-primary);
+    color: var(--neutral-0);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-check--ok {
+    border-left-color: var(--success-500);
+}
+.local-coursetransfer .ct-check--ok .ct-check-icon {
+    background: var(--success-50);
+    color: var(--success-500);
+}
+.local-coursetransfer .ct-check--ok .ct-check-dot {
+    background: var(--success-500);
+}
+
+.local-coursetransfer .ct-check--warn {
+    border-left-color: var(--warning-500);
+}
+.local-coursetransfer .ct-check--warn .ct-check-icon {
+    background: var(--warning-50);
+    color: var(--warning-500);
+}
+.local-coursetransfer .ct-check--warn .ct-check-dot {
+    background: var(--warning-500);
+}
+
+.local-coursetransfer .ct-check--error {
+    border-left-color: var(--danger-500);
+}
+.local-coursetransfer .ct-check--error .ct-check-icon {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+.local-coursetransfer .ct-check--error .ct-check-dot {
+    background: var(--danger-500);
+}
+
+/* ---- How to connect (collapsible) ---- */
+.local-coursetransfer .ct-idx-how {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--neutral-0);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.local-coursetransfer .ct-idx-how-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 16px 18px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+}
+
+.local-coursetransfer .ct-idx-how-icon {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 166, 176, 0.12);
+    color: var(--color-secondary);
+    font-size: 17px;
+}
+
+.local-coursetransfer .ct-idx-how-title {
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-idx-how-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-idx-how-chevron {
+    flex: 0 0 auto;
+    color: var(--text-subtle);
+    transition: transform 0.2s ease;
+}
+
+.local-coursetransfer .ct-idx-how--open .ct-idx-how-chevron {
+    transform: rotate(180deg);
+}
+
+.local-coursetransfer .ct-idx-how-body {
+    padding: 4px 18px 18px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.local-coursetransfer .ct-idx-how-diagram {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+}
+
+.local-coursetransfer .ct-idx-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-idx-node-badge {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--neutral-0);
+}
+
+.local-coursetransfer .ct-idx-node-badge--a {
+    background: var(--color-primary);
+}
+
+.local-coursetransfer .ct-idx-node-badge--b {
+    background: var(--color-secondary);
+}
+
+.local-coursetransfer .ct-idx-node--this {
+    border-color: var(--color-primary);
+    background: rgba(248, 64, 21, 0.06);
+}
+
+.local-coursetransfer .ct-idx-how-flow {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.local-coursetransfer .ct-idx-node-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-idx-steps {
+    margin: 6px 0 14px;
+    padding-left: 20px;
+}
+
+.local-coursetransfer .ct-idx-steps li {
+    margin-bottom: 8px;
+    color: var(--text-body);
+    line-height: 1.5;
+}
+
+/* ---- Quick links ---- */
+.local-coursetransfer .ct-quicklinks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.local-coursetransfer .ct-quicklinks--2 {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.local-coursetransfer .ct-quicklink {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--neutral-0);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.local-coursetransfer .ct-quicklink:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.local-coursetransfer .ct-quicklink-icon {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: rgba(248, 64, 21, 0.1);
+    color: var(--color-primary);
+    font-size: 16px;
+}
+
+.local-coursetransfer .ct-quicklink-icon--muted {
+    background: var(--surface-sunken);
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-quicklink-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.local-coursetransfer .ct-quicklink-title {
+    font-weight: 600;
+    color: var(--text-strong);
+    font-size: 14px;
+}
+
+.local-coursetransfer .ct-quicklink-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-quicklink .fa-external-link {
+    color: var(--text-subtle);
+    flex: 0 0 auto;
+}
+
+/* ---- Confirm modal ---- */
+.local-coursetransfer .ct-idx-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.local-coursetransfer .ct-idx-modal[hidden] {
+    display: none;
+}
+
+.local-coursetransfer .ct-idx-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(30, 30, 31, 0.5);
+}
+
+.local-coursetransfer .ct-idx-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: var(--neutral-0);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 24px;
+}
+
+.local-coursetransfer .ct-idx-modal-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.local-coursetransfer .ct-idx-modal-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 20px;
+}
+
+.local-coursetransfer .ct-idx-modal-icon--primary {
+    background: rgba(248, 64, 21, 0.1);
+    color: var(--color-primary);
+}
+
+.local-coursetransfer .ct-idx-modal-icon--danger {
+    background: var(--danger-50);
+    color: var(--danger-500);
+}
+
+.local-coursetransfer .ct-idx-modal-title {
+    margin: 0 0 4px;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-idx-modal-body {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-body);
+    line-height: 1.5;
+}
+
+.local-coursetransfer .ct-idx-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }

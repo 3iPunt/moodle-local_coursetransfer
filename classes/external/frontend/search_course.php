@@ -97,6 +97,9 @@ class search_course extends external_api {
                 $c = new stdClass();
                 $c->id = $course->id;
                 $c->fullname = $course->fullname;
+                // Additive fields for the restore wizard destination search.
+                $c->shortname = isset($course->shortname) ? (string)$course->shortname : '';
+                $c->idnumber = isset($course->idnumber) ? (string)$course->idnumber : '';
                 $data[] = $c;
             }
             $success = true;
@@ -133,7 +136,9 @@ class search_course extends external_api {
                 'data' => new external_multiple_structure(new external_single_structure(
                     [
                         'id' => new external_value(PARAM_INT, 'Coursename ID'),
-                        'fullname' => new external_value(PARAM_TEXT, 'Fullname')
+                        'fullname' => new external_value(PARAM_TEXT, 'Fullname'),
+                        'shortname' => new external_value(PARAM_TEXT, 'Course short name', VALUE_OPTIONAL),
+                        'idnumber' => new external_value(PARAM_RAW, 'Course ID number', VALUE_OPTIONAL),
                     ]),
                 ),
             ]

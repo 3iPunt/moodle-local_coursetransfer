@@ -130,6 +130,48 @@ class user {
         return $token;
     }
 
+    /**
+     * Revoke (delete) the permanent token(s) of the service user for this
+     * plugin's web service. After this the site is no longer reachable by other
+     * platforms until a token is created again.
+     *
+     * @param int $userid
+     * @return bool true if at least one token was removed
+     * @throws dml_exception
+     */
+    public static function revoke_token(int $userid): bool {
+        global $DB;
+        $externalserviceid = $DB->get_field('external_services', 'id',
+                ['component' => 'local_coursetransfer']);
+        if (!$externalserviceid) {
+            return false;
+        }
+        $existed = $DB->record_exists('external_tokens', [
+                'userid' => $userid,
+                'tokentype' => EXTERNAL_TOKEN_PERMANENT,
+                'externalserviceid' => $externalserviceid,
+        ]);
+        $DB->delete_records('external_tokens', [
+                'userid' => $userid,
+                'tokentype' => EXTERNAL_TOKEN_PERMANENT,
+                'externalserviceid' => $externalserviceid,
+        ]);
+        return $existed;
+    }
+
+    /**
+     * Regenerate the token: revoke the current one and create a fresh one.
+     *
+     * @param int $userid
+     * @return string|null the new token
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    public static function regenerate_token(int $userid): ?string {
+        self::revoke_token($userid);
+        return self::create_token($userid);
+    }
+
 
     /**
      * Create User.

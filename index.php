@@ -46,8 +46,10 @@ $title = get_string('summary', 'local_coursetransfer');
 
 if (is_siteadmin()) {
     $PAGE->set_context(context_system::instance());
+    $PAGE->set_pagelayout('standard');
     $PAGE->set_title($title);
-    $PAGE->set_heading($title);
+    // The page renders its own hero heading; clear the theme one.
+    $PAGE->set_heading('');
     $PAGE->set_url('/local/coursetransfer/index.php');
     $output = $PAGE->get_renderer('local_coursetransfer');
     echo $OUTPUT->header();

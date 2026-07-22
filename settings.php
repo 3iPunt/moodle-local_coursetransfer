@@ -84,6 +84,11 @@ if ($hassiteconfig) {
         get_string('request_timeout_desc', 'local_coursetransfer'),
             20, PARAM_INT));
 
+    $settings->add(new admin_setting_configtext('local_coursetransfer/pagesize',
+        get_string('setting_pagesize', 'local_coursetransfer'),
+        get_string('setting_pagesize_desc', 'local_coursetransfer'),
+            5, PARAM_INT));
+
     $settings->add(new admin_setting_configduration('local_coursetransfer/clean_adhoc_faildelay',
         get_string('clean_adhoc_faildelay', 'local_coursetransfer'),
         get_string('clean_adhoc_faildelay_desc', 'local_coursetransfer'),

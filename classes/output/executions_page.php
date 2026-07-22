@@ -177,15 +177,26 @@ class executions_page implements renderable, templatable {
             $pct = min(100, (int)$request->restored);
         }
 
+        // One segment per phase: 0% until that phase starts, its live % while it
+        // is the current phase, 100% once finished. Each segment carries its
+        // index so the template can tint it progressively darker as it advances,
+        // and an "active" flag so the current phase pulses even at 0% (e.g. the
+        // backup phase, where no live percentage is available).
         $item->segments = [];
         for ($i = 0; $i < 5; $i++) {
-            $width = 0;
             if ($i < $phase) {
                 $width = 100;
             } else if ($i === $phase) {
-                $width = $pct > 0 ? $pct : 45;
+                $width = $pct;
+            } else {
+                $width = 0;
             }
-            $item->segments[] = (object)['width' => $width];
+            $item->segments[] = (object)[
+                'width' => $width,
+                'idx' => $i,
+                'active' => ($i === $phase),
+                'done' => ($i < $phase),
+            ];
         }
 
         if ($status === coursetransfer_request::STATUS_DOWNLOAD && !empty($request->origin_backup_size)) {
@@ -274,6 +285,18 @@ class executions_page implements renderable, templatable {
         $item->site = $request->siteurl;
         $item->date = userdate((int)$request->timemodified,
                 get_string('strftimedatetimeshort', 'langconfig'));
+
+        // Deferred execution: a pending scheduled task (future run time) so the
+        // user can see it will run later. origin_schedule_datetime is a unix ts.
+        $sched = (int)($request->origin_schedule_datetime ?? 0);
+        $item->scheduled = $sched > 0 && $sched > time();
+        $item->scheduledwhen = $item->scheduled
+                ? userdate($sched, get_string('strftimedatetime', 'langconfig'))
+                : '';
+        $item->scheduledtooltip = $item->scheduled
+                ? get_string('exec_scheduled', 'local_coursetransfer', $item->scheduledwhen)
+                : '';
+        $item->scheduledlabel = get_string('exec_scheduled_label', 'local_coursetransfer');
 
         // Origin / destination names and links.
         $iscategory = in_array($type, [coursetransfer_request::TYPE_CATEGORY,

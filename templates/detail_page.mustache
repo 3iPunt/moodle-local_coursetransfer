@@ -49,7 +49,7 @@
         {{#originurl}}
         <a class="ct-btn ct-btn--sm ct-linkbtn ct-linkbtn--origin" href="{{ originurl }}" target="_blank" rel="noopener">
             <i class="fa fa-book" aria-hidden="true"></i>
-            {{#str}} exec_open_origin, local_coursetransfer {{/str}}
+            {{ openoriginlabel }}
             <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
         {{/originurl}}
@@ -61,6 +61,13 @@
         </a>
         {{/desturl}}
     </div>
+
+    {{#scheduled}}
+    <div class="ct-alert ct-alert--warning ct-mt">
+        <i class="fa fa-calendar-o ct-alert-icon" aria-hidden="true"></i>
+        <p>{{ scheduledtext }}</p>
+    </div>
+    {{/scheduled}}
 
     <div class="ct-detail-grid">
         <div class="ct-card ct-timeline-card">

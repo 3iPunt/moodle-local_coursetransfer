@@ -118,6 +118,16 @@ class detail_page implements renderable, templatable {
                 ? rtrim($r->siteurl, '/') . $originpath . $originid
                 : (new moodle_url($originpath . $originid))->out(false);
         }
+        // Origin link label: for a delete request the target IS what gets
+        // deleted, so read "Course/Category to delete" instead of "origin".
+        $isremove = in_array($type, [coursetransfer_request::TYPE_REMOVE_COURSE,
+                coursetransfer_request::TYPE_REMOVE_CATEGORY], true);
+        if ($isremove) {
+            $data->openoriginlabel = get_string($iscategory ? 'exec_g_removecat' : 'exec_g_removecourse',
+                    'local_coursetransfer');
+        } else {
+            $data->openoriginlabel = get_string('exec_open_origin', 'local_coursetransfer');
+        }
         $data->desturl = '';
         if ($isrestore && !empty($r->target_course_id)) {
             $data->desturl = $dirin
@@ -127,6 +137,15 @@ class detail_page implements renderable, templatable {
 
         $data->timeline = $this->build_timeline($shortname, $r);
         $data->groups = $this->build_groups($r, $type, $dirin);
+
+        // Pending scheduled (deferred) execution: highlight it so the user sees
+        // this task has not run yet and when it will.
+        $sched = (int)($r->origin_schedule_datetime ?? 0);
+        $data->scheduled = $sched > 0 && $sched > time();
+        $data->scheduledtext = $data->scheduled
+                ? get_string('exec_scheduled', 'local_coursetransfer',
+                        userdate($sched, get_string('strftimedatetime', 'langconfig')))
+                : '';
 
         // Error block.
         $data->haserror = in_array((int)$r->status, [coursetransfer_request::STATUS_ERROR,
@@ -262,11 +281,18 @@ class detail_page implements renderable, templatable {
                     $size($r->origin_backup_size_estimated)),
         ];
 
+        // For remove requests the origin course/category IS what gets deleted,
+        // so label those groups "… to delete" instead of "origin …".
+        $isremove = in_array($type, [coursetransfer_request::TYPE_REMOVE_COURSE,
+                coursetransfer_request::TYPE_REMOVE_CATEGORY], true);
+        $coursetitle = get_string($isremove ? 'exec_g_removecourse' : 'exec_g_origincourse', 'local_coursetransfer');
+        $cattitle = get_string($isremove ? 'exec_g_removecat' : 'exec_g_origincat', 'local_coursetransfer');
+
         return [
             $this->group(get_string('exec_g_general', 'local_coursetransfer'), $general),
             $this->group(get_string('exec_g_remote', 'local_coursetransfer'), $remote),
-            $this->group(get_string('exec_g_origincourse', 'local_coursetransfer'), $origincourse),
-            $this->group(get_string('exec_g_origincat', 'local_coursetransfer'), $origincat),
+            $this->group($coursetitle, $origincourse),
+            $this->group($cattitle, $origincat),
             $this->group(get_string('exec_g_dest', 'local_coursetransfer'), $dest),
             $this->group(get_string('exec_g_config', 'local_coursetransfer'), $config),
             $this->group(get_string('exec_g_backup', 'local_coursetransfer'), $backup),

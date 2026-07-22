@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * Admin restore assistant page (Tresipunt redesign).
+ * Teacher course restore assistant page (Tresipunt redesign).
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -35,7 +35,7 @@
 namespace local_coursetransfer\output;
 
 use coding_exception;
-use core_course_category;
+use context_course;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use moodle_url;
@@ -45,17 +45,17 @@ use stdClass;
 use templatable;
 
 /**
- * restore_admin_page
+ * restore_course_page
  *
- * Single-page assistant (landing + 4-step wizard + done) for the ADMIN
- * (system context) remote restore flow. It is a SPA-lite: the server only
- * renders the shell and the pieces that are known up front (destination
- * categories, recent restorations); everything dynamic (sites, origin
- * listing, submit) is driven by AMD through the restore_wizard web services.
+ * Single-page assistant (landing + 5-step wizard + done) for the TEACHER
+ * course restore flow (course context). The teacher brings a remote course —
+ * or just some of its sections/activities — into the CURRENT course.
  *
- * MVC: this renderable takes no request input and performs no direct $DB
- * access; it delegates to model helpers (coursetransfer_request,
- * core_course_category).
+ * As with restore_admin_page it is a SPA-lite: the server renders the shell
+ * and the pieces known up front (the current course's recent restorations and
+ * the teacher's merge/replace capabilities); everything dynamic (sites, origin
+ * listing, sections, submit) is driven by AMD through the restore_wizard web
+ * services.
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -63,10 +63,22 @@ use templatable;
  * @author     3IPUNT <contacte@tresipunt.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_admin_page implements renderable, templatable {
+class restore_course_page implements renderable, templatable {
 
-    /** @var int How many recent restorations to show on the landing. */
+    /** @var int How many recent restorations of this course to show. */
     const RECENT_LIMIT = 5;
+
+    /** @var stdClass The destination (current) course. */
+    protected stdClass $course;
+
+    /**
+     * Constructor.
+     *
+     * @param stdClass $course The destination (current) course.
+     */
+    public function __construct(stdClass $course) {
+        $this->course = $course;
+    }
 
     /**
      * Export for template.
@@ -76,20 +88,31 @@ class restore_admin_page implements renderable, templatable {
      * @throws coding_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
+        global $USER;
+
+        $context = context_course::instance($this->course->id);
+
         $data = new stdClass();
+        $data->headertitle = get_string('rct_title', 'local_coursetransfer');
+        $data->headerdesc = get_string('rct_lead', 'local_coursetransfer');
 
-        $data->headertitle = get_string('rw_title', 'local_coursetransfer');
-        $data->headerdesc = get_string('rw_lead', 'local_coursetransfer');
+        $data->courseid = (int)$this->course->id;
+        $data->coursename = format_string($this->course->fullname,
+                true, ['context' => $context]);
 
-        $data->back = (new moodle_url('/admin/settings.php',
-                ['section' => 'local_coursetransfer']))->out(false);
-        $data->summaryurl = (new moodle_url('/local/coursetransfer/index.php'))->out(false);
-        $data->logurl = (new moodle_url('/local/coursetransfer/logs.php'))->out(false);
+        // Which restore modes over the current course the teacher may use.
+        // Mirrors the legacy flow: merge and empty-and-restore are separate
+        // rights. Only the allowed ones are offered by the wizard.
+        $data->canmerge = coursetransfer::can_target_restore_merge($USER, $context);
+        $data->canreplace = coursetransfer::can_target_restore_content_remove($USER, $context);
 
         // Search page size (plugin setting, default 5).
         $data->pagesize = max(1, (int)(get_config('local_coursetransfer', 'pagesize') ?: 5));
 
-        $data->destcategories = $this->export_destcategories();
+        $data->courseurl = (new moodle_url('/course/view.php', ['id' => $this->course->id]))->out(false);
+        $data->logurl = (new moodle_url('/local/coursetransfer/origin_restore_course.php',
+                ['id' => $this->course->id]))->out(false);
+
         $data->recent = $this->export_recent();
         $data->hasrecent = !empty($data->recent);
 
@@ -97,88 +120,45 @@ class restore_admin_page implements renderable, templatable {
     }
 
     /**
-     * Local destination categories for the step 2 <select>.
-     *
-     * Option 0 = default category (first available). Uses the course
-     * category model with the create capability so only categories where
-     * the admin may create courses are offered.
-     *
-     * @return array [{value, label}]
-     */
-    protected function export_destcategories(): array {
-        $options = [(object)[
-            'value' => 0,
-            'label' => get_string('rw_defaultcat', 'local_coursetransfer'),
-        ]];
-        $list = core_course_category::make_categories_list('moodle/course:create');
-        foreach ($list as $id => $name) {
-            $options[] = (object)[
-                'value' => (int)$id,
-                'label' => $name,
-            ];
-        }
-        return $options;
-    }
-
-    /**
-     * Recent restorations (course + category requests initiated from here),
+     * Recent restorations INTO this course (direction request, type course),
      * newest first, capped at RECENT_LIMIT.
-     *
-     * NOTE: coursetransfer_request::get_executions() does not filter by
-     * launching user, so this is the site-wide recent restore activity, not
-     * strictly "my" restorations. That is acceptable for the admin landing;
-     * a per-user filter would require a model change (out of scope here).
      *
      * @return array
      * @throws coding_exception
      */
     protected function export_recent(): array {
-        // Restores are the course (type 0) and category (type 1) request rows.
-        $rows = array_merge(
-                coursetransfer_request::get_executions(['type' => coursetransfer_request::TYPE_COURSE], 0, self::RECENT_LIMIT),
-                coursetransfer_request::get_executions(['type' => coursetransfer_request::TYPE_CATEGORY], 0, self::RECENT_LIMIT)
-        );
-        // Only requests initiated from this site (we pull the content in).
-        $rows = array_filter($rows, static function($r) {
-            return (int)$r->direction === coursetransfer_request::DIRECTION_REQUEST;
+        $rows = coursetransfer_request::get_executions(
+                ['type' => coursetransfer_request::TYPE_COURSE], 0, 100);
+        // Only restorations pulled INTO this course.
+        $rows = array_filter($rows, function($r) {
+            return (int)$r->direction === coursetransfer_request::DIRECTION_REQUEST
+                    && (int)$r->target_course_id === (int)$this->course->id;
         });
-        // Newest first, then cap.
         usort($rows, static function($a, $b) {
             return (int)$b->timemodified <=> (int)$a->timemodified;
         });
         $rows = array_slice($rows, 0, self::RECENT_LIMIT);
 
         $recent = [];
-        $logurl = (new moodle_url('/local/coursetransfer/logs.php'))->out(false);
         foreach ($rows as $r) {
-            $recent[] = $this->map_recent($r, $logurl);
+            $recent[] = $this->map_recent($r);
         }
         return $recent;
     }
 
     /**
-     * Map a request row to the recent card context, reusing the executions
-     * badge/status conventions.
+     * Map a request row to the recent card context.
      *
      * @param stdClass $r
-     * @param string $logurl
      * @return stdClass
      * @throws coding_exception
      */
-    protected function map_recent(stdClass $r, string $logurl): stdClass {
+    protected function map_recent(stdClass $r): stdClass {
         $status = (int)$r->status;
         $shortname = coursetransfer::STATUS[$status]['shortname'] ?? 'not_started';
 
-        $iscategory = (int)$r->type === coursetransfer_request::TYPE_CATEGORY;
-        $name = $iscategory ? (string)$r->origin_category_name : (string)$r->origin_course_fullname;
-        $name = trim($name) !== '' ? $name : '—';
-
-        $dest = '';
-        if (!empty($r->targetcoursename)) {
-            $dest = $r->targetcoursename;
-        } else if (!empty($r->target_course_id)) {
-            $dest = '#' . (int)$r->target_course_id;
-        }
+        $name = trim((string)$r->origin_course_fullname) !== ''
+                ? $r->origin_course_fullname : '—';
 
         $iserror = $status === coursetransfer_request::STATUS_ERROR
                 || $status === coursetransfer_request::STATUS_INCOMPLETED;
@@ -198,14 +178,11 @@ class restore_admin_page implements renderable, templatable {
             'badgeclass' => 'ct-badge--' . str_replace('_', '-', $shortname),
             'summary' => $name,
             'site' => $r->siteurl,
-            'dest' => $dest,
-            'hasdest' => $dest !== '',
             'date' => userdate((int)$r->timemodified,
                     get_string('strftimedatetimeshort', 'langconfig')),
             'iserror' => $iserror,
             'errcause' => $errcause,
             'erraction' => $erraction,
-            'logurl' => $logurl,
             'detailurl' => (new moodle_url('/local/coursetransfer/log.php', ['id' => (int)$r->id]))->out(false),
         ];
     }
