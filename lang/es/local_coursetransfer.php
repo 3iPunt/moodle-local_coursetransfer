@@ -42,6 +42,10 @@ $string['setting_origin_field_search_user_desc'] = 'Campo a utilizar para la bú
 $string['origin_restore_course'] = 'Restaurar curso en remoto';
 $string['origin_course_id_require'] = "Origin Course ID es obligatorio: --origin_course_id=12";
 $string['site_url_required'] = "Site URL es obligatorio: --site_url=https://origen.dominio";
+$string['cli_ws_user_missing'] = "El usuario de servicio web aún no existe. Ejecuta antes el postinstall/reparación del plugin (Administración del sitio > Extensiones > Course Transfer > Resumen).";
+$string['cli_schedule_invalid'] = "La fecha programada no es válida: usa 0 (lo antes posible) o un timestamp UNIX dentro de los próximos 30 días.";
+$string['cli_scheduler_time'] = "Hora programada: {\$a}";
+$string['cli_logs_truncated'] = "Se han encontrado más de 200 resultados; afina los filtros.";
 $string['origin_category_id_require'] = "Origin Category ID es obligatorio: --origin_category_id=12";
 $string['categoryid_require'] = "Category ID es obligatorio";
 $string['courseid_require'] = "Course ID es obligatorio";

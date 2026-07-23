@@ -35,7 +35,6 @@ namespace local_coursetransfer\factory;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
-require_once($CFG->libdir . '/externallib.php');
 
 use coding_exception;
 use context_system;
@@ -95,12 +94,12 @@ class user {
         global $DB;
         $token = null;
         $user = \core_user::get_user($userid);
-        $externalserviceid = $DB->get_field('external_services',
-                'id', ['component' => 'local_coursetransfer']);
+        $service = $DB->get_record('external_services',
+                ['component' => 'local_coursetransfer']);
 
-        if ($externalserviceid) {
+        if ($service) {
             $userauthorized = new stdClass();
-            $userauthorized->externalserviceid = $externalserviceid;
+            $userauthorized->externalserviceid = $service->id;
             $userauthorized->userid = $user->id;
             $userauthorized->iprestriction = '';
             $userauthorized->validuntil = '';
@@ -110,7 +109,7 @@ class user {
             $usertokens = $DB->get_records('external_tokens', [
                     'userid' => $user->id,
                     'tokentype' => EXTERNAL_TOKEN_PERMANENT,
-                    'externalserviceid' => $externalserviceid,
+                    'externalserviceid' => $service->id,
             ]);
 
             if ($usertokens) {
@@ -120,7 +119,9 @@ class user {
             }
             if ($token === null) {
                 try {
-                    $token = external_generate_token(EXTERNAL_TOKEN_PERMANENT, $externalserviceid,
+                    // Moodle 4.5: external_generate_token() (lib/externallib.php) is
+                    // deprecated; use the namespaced util which takes the service object.
+                    $token = \core_external\util::generate_token(EXTERNAL_TOKEN_PERMANENT, $service,
                             $user->id, context_system::instance());
                 } catch (moodle_exception $e) {
                     debugging("Can't generate Token!!", serialize($e));

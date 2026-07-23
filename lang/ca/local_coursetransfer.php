@@ -42,6 +42,10 @@ $string['setting_origin_field_search_user_desc'] = "Camp a utilitzar per cercar 
 $string['origin_restore_course'] = "Restaurar curs en remot";
 $string['origin_course_id_require'] = "Origin Course ID és obligatori: --origin_course_id=12";
 $string['site_url_required'] = "Site URL és obligatori: --site_url=https://origen.domini";
+$string['cli_ws_user_missing'] = "L'usuari de servei web encara no existeix. Executa abans el postinstal·lació/reparació del connector (Administració del lloc > Connectors > Course Transfer > Resum).";
+$string['cli_schedule_invalid'] = "La data programada no és vàlida: fes servir 0 (com més aviat millor) o un timestamp UNIX dins dels propers 30 dies.";
+$string['cli_scheduler_time'] = "Hora programada: {\$a}";
+$string['cli_logs_truncated'] = "S'han trobat més de 200 resultats; afina els filtres.";
 $string['origin_category_id_require'] = "Origin Category ID és obligatori: --origin_category_id=12";
 $string['categoryid_require'] = "Category ID és obligatori";
 $string['courseid_require'] = "Course ID és obligatori";

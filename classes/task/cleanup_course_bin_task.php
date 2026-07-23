@@ -44,7 +44,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->dirroot . '/course/externallib.php');
 
 /**
  * cleanup course bin task

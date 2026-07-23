@@ -36,7 +36,6 @@ use local_coursetransfer\output\index_page;
 
 require(__DIR__.'/../../config.php');
 global $CFG, $DB, $PAGE, $OUTPUT;
-require($CFG->libdir . '/externallib.php');
 
 require_login();
 

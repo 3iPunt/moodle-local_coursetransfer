@@ -42,6 +42,10 @@ $string['setting_origin_field_search_user_desc'] = "Campo que se utilizará para
 $string['origin_restore_course'] = "Restaurar curso remoto";
 $string['origin_course_id_require'] = "O ID do curso de orixe é necesario: --origin_course_id=12";
 $string['site_url_required'] = "O URL do sitio é necesario: --site_url=https://origin.domain";
+$string['cli_ws_user_missing'] = "O usuario do servizo web aínda non existe. Executa antes o postinstall/reparación do complemento (Administración do sitio > Complementos > Course Transfer > Resumo).";
+$string['cli_schedule_invalid'] = "A data programada non é válida: usa 0 (canto antes) ou un timestamp UNIX dentro dos próximos 30 días.";
+$string['cli_scheduler_time'] = "Hora programada: {\$a}";
+$string['cli_logs_truncated'] = "Atopáronse máis de 200 resultados; afina os filtros.";
 $string['origin_category_id_require'] = "Requírese o ID da categoría de orixe: --origin_category_id=12";
 $string['categoryid_require'] = "Requírese o ID de categoría";
 $string['courseid_require'] = "O ID do curso é necesario";

@@ -42,6 +42,10 @@ $string['setting_origin_field_search_user_desc'] = "Sorburuko gunean erabiltzail
 $string['origin_restore_course'] = "Berreskuratu urruneko ikastaroa";
 $string['origin_course_id_require'] = "Jatorrizko Ikastaroaren IDa beharrezkoa da: --origin_course_id=12";
 $string['site_url_required'] = "Gunearen URLa beharrezkoa da: --site_url=https://origin.domain";
+$string['cli_ws_user_missing'] = "Web zerbitzuaren erabiltzailea ez dago oraindik. Exekutatu lehenik pluginaren postinstall/konponketa (Gunearen administrazioa > Pluginak > Course Transfer > Laburpena).";
+$string['cli_schedule_invalid'] = "Programatutako data ez da baliozkoa: erabili 0 (lehenbailehen) edo hurrengo 30 egunetako UNIX timestamp bat.";
+$string['cli_scheduler_time'] = "Programatutako ordua: {\$a}";
+$string['cli_logs_truncated'] = "200 emaitza baino gehiago aurkitu dira; findu iragazkiak.";
 $string['origin_category_id_require'] = "Jatorri-kategoriaren IDa beharrezkoa da: --origin_category_id=12";
 $string['categoryid_require'] = "Kategoriaren IDa beharrezkoa da";
 $string['courseid_require'] = "Ikastaroaren IDa beharrezkoa da";
