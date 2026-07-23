@@ -165,6 +165,10 @@ class detail_page implements renderable, templatable {
         // Request content (sections + activities).
         $data->sections = $this->build_sections($r);
         $data->hassections = !empty($data->sections);
+
+        // Related scheduled/adhoc tasks (shown inline here instead of a separate page).
+        $data->tasks = $this->build_tasks((int)$r->id);
+        $data->hastasks = !empty($data->tasks);
         return $data;
     }
 
@@ -329,6 +333,26 @@ class detail_page implements renderable, templatable {
             $sections[] = $item;
         }
         return $sections;
+    }
+
+    /**
+     * Related scheduled/adhoc tasks for this request, formatted for the template.
+     *
+     * @param int $requestid
+     * @return stdClass[]
+     */
+    protected function build_tasks(int $requestid): array {
+        $tasks = [];
+        foreach (coursetransfer_request::get_related_adhoc_tasks($requestid) as $task) {
+            $shortclass = ltrim(strrchr($task->classname, '\\'), '\\') ?: $task->classname;
+            $tasks[] = (object)[
+                'classname' => $shortclass,
+                'faildelay' => (int)$task->faildelay,
+                'nextrun' => $task->nextruntime ? userdate($task->nextruntime) : '-',
+                'timecreated' => !empty($task->timecreated) ? userdate($task->timecreated) : '-',
+            ];
+        }
+        return $tasks;
     }
 
     /**

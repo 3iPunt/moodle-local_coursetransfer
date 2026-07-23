@@ -77,6 +77,9 @@ require_once($CFG->dirroot . '/local/coursetransfer/classes/task/create_backup_c
  */
 class coursetransfer {
 
+    /** @var int Maximum category subtree depth walked/recreated (guards against cycles). */
+    const MAX_TREE_DEPTH = 25;
+
     /** @var string[] Fields User */
     const FIELDS_USER = ['username', 'email', 'userid', 'idnumber'];
 
@@ -254,66 +257,56 @@ class coursetransfer {
     }
 
     /**
-     * Get Backup Size Estimated
+     * Get the estimated backup size of a course, in bytes.
+     *
+     * Approximation of the backup payload: the storage footprint of the course files
+     * (course context + all descendant module/block contexts). Files are deduplicated by
+     * contenthash (mirroring how Moodle stores files on disk and pools them inside the
+     * .mbz), and backup/automated-backup fileareas are excluded. It ignores DB/XML content
+     * and compression, so it will not match the real .mbz size exactly; it is meant as an
+     * orientation before selecting a course. The real size is recorded after the backup
+     * completes (see create_backup_course_task).
      *
      * @param int $courseid
-     * @return int
+     * @return int Estimated size in bytes.
      * @throws dml_exception
      * @throws moodle_exception
      */
     public static function get_backup_size_estimated_int(int $courseid): int {
         global $DB;
         $context = context_course::instance($courseid);
-        $results = $DB->get_records('files', ['contextid' => $context->id]);
-        $filesize = 0;
-        foreach ($results as $result) {
-            if ($result->filearea !== 'backup') {
-                $filesize += $result->filesize;
-            }
-        }
-        $modinfo = get_fast_modinfo($courseid);
-        foreach ($modinfo->get_cms() as $cm) {
-            $context = context_module::instance($cm->id);
-            $results = $DB->get_records('files', ['contextid' => $context->id]);
-            foreach ($results as $result) {
-                if ($result->filearea !== 'backup') {
-                    $filesize += $result->filesize;
-                }
-            }
-        }
-        return $filesize;
+        // Cover the course context and every descendant context (modules, blocks) in a
+        // single query, deduplicating identical files by contenthash.
+        $sql = "SELECT COALESCE(SUM(sub.filesize), 0)
+                  FROM (
+                        SELECT DISTINCT f.contenthash, f.filesize
+                          FROM {files} f
+                          JOIN {context} ctx ON ctx.id = f.contextid
+                         WHERE (ctx.id = :ctxid OR " . $DB->sql_like('ctx.path', ':ctxpath') . ")
+                           AND f.filename <> '.'
+                           AND f.filearea NOT IN ('backup', 'automated')
+                       ) sub";
+        $params = [
+            'ctxid' => $context->id,
+            'ctxpath' => $context->path . '/%',
+        ];
+        return (int) $DB->get_field_sql($sql, $params);
     }
 
     /**
-     * Get Backup Size Estimated
+     * Get the estimated backup size of a course, formatted in MB.
+     *
+     * Thin formatting wrapper around {@see get_backup_size_estimated_int()}.
      *
      * @param int $courseid
-     * @return string
+     * @return string Estimated size in MB (e.g. "12,345"), or "0" when empty.
      * @throws dml_exception
      * @throws moodle_exception
      */
     public static function get_backup_size_estimated(int $courseid): string {
-        global $DB;
-        $context = context_course::instance($courseid);
-        $results = $DB->get_records('files', ['contextid' => $context->id]);
-        $filesize = 0;
-        foreach ($results as $result) {
-            if ($result->filearea !== 'backup') {
-                $filesize += $result->filesize;
-            }
-        }
-        $modinfo = get_fast_modinfo($courseid);
-        foreach ($modinfo->get_cms() as $cm) {
-            $context = context_module::instance($cm->id);
-            $results = $DB->get_records('files', ['contextid' => $context->id]);
-            foreach ($results as $result) {
-                if ($result->filearea !== 'backup') {
-                    $filesize += $result->filesize;
-                }
-            }
-        }
+        $filesize = self::get_backup_size_estimated_int($courseid);
         if ($filesize === 0) {
-            return 0;
+            return '0';
         }
         return number_format($filesize / 1000000, 3, ',', ' ');
     }
@@ -827,6 +820,171 @@ class coursetransfer {
     }
 
     /**
+     * Restore a category preserving its subcategory tree.
+     *
+     * Like restore_category(), but pulls the full subtree via
+     * origin_get_category_detail_tree and recreates the nested subcategories +
+     * their courses on the target site, preserving the hierarchy.
+     *
+     * @param stdClass $user
+     * @param stdClass $site
+     * @param int $targetcategoryid Target category id (0 = create a new top-level category).
+     * @param int $origincategoryid
+     * @param configuration_category $configuration
+     * @return array
+     */
+    public static function restore_category_tree(
+            stdClass $user, stdClass $site, int $targetcategoryid, int $origincategoryid,
+            configuration_category $configuration): array {
+        $errors = [];
+        try {
+            // 1. Category Request DB.
+            $requestobject = coursetransfer_request::set_request_restore_category(
+                    $site, $targetcategoryid, $origincategoryid, '', $configuration, $user
+            );
+            $request = new request($site);
+            $res = $request->origin_get_category_detail_tree($origincategoryid, $user);
+            if (!$res->success) {
+                return [
+                        'success' => false,
+                        'errors' => $res->errors,
+                        'data' => ['requestid' => $requestobject->id],
+                ];
+            }
+            // The tree WS returns its payload as a JSON string.
+            $data = is_string($res->data) ? json_decode($res->data) : $res->data;
+            if (!isset($data->name)) {
+                $errors[] = ['code' => '11002', 'msg' => 'Name not found in response data'];
+                return [
+                        'success' => false,
+                        'errors' => $errors,
+                        'data' => ['requestid' => $requestobject->id],
+                ];
+            }
+
+            // 2. Root category: create (0) or update.
+            $origincategoryname = $data->name;
+            $origincategoryidnumber = $data->idnumber ?? '';
+            $origincategordesc = $data->description ?? '';
+            if ($targetcategoryid === 0) {
+                $targetcategoryid = category::create($origincategoryname, $origincategoryidnumber, $origincategordesc);
+            } else {
+                category::update($targetcategoryid, $origincategoryname, $origincategoryidnumber, $origincategordesc);
+            }
+            $requestobject->origin_category_name = $origincategoryname;
+            coursetransfer_request::insert_or_update($requestobject, $requestobject->id);
+
+            // 3. Recreate the tree: root courses + nested subcategories.
+            $success = true;
+            $catcourserequests = [];
+            foreach (($data->courses ?? []) as $course) {
+                $success = self::restore_tree_course(
+                        $course, $user, $site, $targetcategoryid, $configuration,
+                        $requestobject, $catcourserequests, $errors) && $success;
+            }
+            foreach (($data->categories ?? []) as $cat) {
+                $success = self::restore_tree_category(
+                        $cat, $user, $site, $targetcategoryid, $configuration,
+                        $requestobject, $catcourserequests, $errors) && $success;
+            }
+
+            return [
+                    'success' => $success,
+                    'errors' => $errors,
+                    'data' => ['requestid' => $requestobject->id],
+            ];
+        } catch (moodle_exception $e) {
+            $errors[] = ['code' => '11001', 'msg' => $e->getMessage()];
+            return ['success' => false, 'errors' => $errors];
+        }
+    }
+
+    /**
+     * Recreate a subcategory (and its whole subtree) under a parent category.
+     *
+     * @param stdClass $cat
+     * @param stdClass $user
+     * @param stdClass $site
+     * @param int $parentid
+     * @param configuration_category $configuration
+     * @param stdClass $requestobject
+     * @param array $catcourserequests
+     * @param array $errors
+     * @return bool
+     */
+    protected static function restore_tree_category(
+            stdClass $cat, stdClass $user, stdClass $site, int $parentid,
+            configuration_category $configuration, stdClass $requestobject,
+            array &$catcourserequests, array &$errors, int $depth = 0): bool {
+        // Defensive guard against a pathologically deep (or crafted) tree.
+        if ($depth > self::MAX_TREE_DEPTH) {
+            $errors[] = ['code' => '11004', 'msg' => 'Maximum category tree depth exceeded'];
+            return false;
+        }
+        $name = $cat->name ?? '';
+        $idnumber = $cat->idnumber ?? '';
+        $desc = $cat->description ?? '';
+        $targetcategoryid = category::create($name, $idnumber, $desc, $parentid);
+        $success = true;
+        foreach (($cat->courses ?? []) as $course) {
+            $success = self::restore_tree_course(
+                    $course, $user, $site, $targetcategoryid, $configuration,
+                    $requestobject, $catcourserequests, $errors) && $success;
+        }
+        foreach (($cat->categories ?? []) as $child) {
+            $success = self::restore_tree_category(
+                    $child, $user, $site, $targetcategoryid, $configuration,
+                    $requestobject, $catcourserequests, $errors, $depth + 1) && $success;
+        }
+        return $success;
+    }
+
+    /**
+     * Create a course under a target category and enqueue its restore.
+     *
+     * @param stdClass $course
+     * @param stdClass $user
+     * @param stdClass $site
+     * @param int $targetcategoryid
+     * @param configuration_category $configuration
+     * @param stdClass $requestobject
+     * @param array $catcourserequests
+     * @param array $errors
+     * @return bool
+     */
+    protected static function restore_tree_course(
+            stdClass $course, stdClass $user, stdClass $site, int $targetcategoryid,
+            configuration_category $configuration, stdClass $requestobject,
+            array &$catcourserequests, array &$errors): bool {
+        try {
+            $configurationcourse = new configuration_course(
+                    $configuration->targettarget,
+                    $configuration->targetremoveenrols,
+                    $configuration->targetremovegroups,
+                    $configuration->originenrolusers,
+                    false,
+                    $configuration->nextruntime);
+            $targetcourseid = course::create(
+                    core_course_category::get($targetcategoryid),
+                    $course->fullname, $course->shortname . '_' . uniqid());
+            $courseres = self::restore_course_unity(
+                    $user, $site, $targetcourseid, (int)$course->id, $configurationcourse, [], $requestobject->id);
+            if (!$courseres['success']) {
+                $errors = array_merge($errors, $courseres['errors']);
+            }
+            if (isset($courseres['data']['requestid'])) {
+                $catcourserequests[] = $courseres['data']['requestid'];
+                $requestobject->origin_category_requests = json_encode($catcourserequests);
+                coursetransfer_request::insert_or_update($requestobject, $requestobject->id);
+            }
+            return (bool) $courseres['success'];
+        } catch (moodle_exception $e) {
+            $errors[] = ['code' => '11301', 'msg' => $e->getMessage()];
+            return false;
+        }
+    }
+
+    /**
      * Restore Course Unity.
      *
      * @param stdClass $user
@@ -1081,6 +1239,29 @@ class coursetransfer {
             $currentpage = max(0, $page);
             $startIndex = $currentpage * $perpage;
             $courses = array_slice($courses, $startIndex, $perpage);
+        }
+        return ['total' => $total, 'courses' => $courses];
+    }
+
+    /**
+     * Get courses of a user filtered by a list of ids.
+     *
+     * Note: the returned 'total' mirrors the historical UNIMOODLE behaviour and is
+     * kept as-is for backward compatibility with peers calling
+     * {@see \local_coursetransfer\external\backend\origin_course_external::origin_get_courses_by_ids()}.
+     *
+     * @param stdClass $user
+     * @param array $courseids
+     * @return array
+     */
+    public static function get_courses_user_by_ids(stdClass $user, array $courseids): array {
+        $total = 0;
+        $courses = [];
+        foreach ($courseids as $courseid) {
+            $course = get_course($courseid);
+            if (self::filter_course($course, $user, '')) {
+                $courses[] = $course;
+            }
         }
         return ['total' => $total, 'courses' => $courses];
     }

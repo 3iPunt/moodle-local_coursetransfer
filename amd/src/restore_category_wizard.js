@@ -40,8 +40,9 @@
 define([
     'jquery',
     'core/ajax',
-    'core/str'
-], function($, Ajax, Str) {
+    'core/str',
+    'core/templates'
+], function($, Ajax, Str, Templates) {
     "use strict";
 
     var PERPAGE = 5;
@@ -60,7 +61,9 @@ define([
         'rw_review_from', 'rw_review_selected', 'rw_review_dest_cat',
         'rw_review_removeorigin', 'rct_run', 'rcc_q_cat_desc',
         // Canonical direction terms (reused, not duplicated) + intro paragraph.
-        'platforms_role_origin', 'platforms_role_target', 'rcc_review_intro'
+        'platforms_role_origin', 'platforms_role_target', 'rcc_review_intro',
+        // Category subtree preview.
+        'rcc_tree_title', 'rcc_tree_empty', 'rcc_tree_error'
     ];
 
     var Wizard = {
@@ -749,6 +752,41 @@ define([
                 : (self.S.rw_review_sched_now || 'Immediate');
             cell('fa-clock-o', self.S.rw_review_schedule_field || 'Execution', sched);
             $review.append($grid);
+
+            // Subtree preview: the exact category hierarchy (subcategories + courses)
+            // that will be recreated on the target site.
+            var $treewrap = $('<div>').addClass('ct-tree-wrap ct-mt').attr('data-region', 'tree');
+            $treewrap.append($('<h3>').addClass('ct-tree-title')
+                .text(self.S.rcc_tree_title || 'Category tree to import'));
+            var $treebody = $('<div>').addClass('ct-tree-body');
+            $treebody.text(self.S.rw_loading || 'Loading…');
+            $treewrap.append($treebody);
+            $review.append($treewrap);
+            Ajax.call([{
+                methodname: 'local_coursetransfer_restore_wizard_get_category_tree',
+                args: {siteid: s.siteid, categoryid: s.catid}
+            }])[0].done(function(resp) {
+                var node = null;
+                if (resp.success && resp.tree) {
+                    try {
+                        node = JSON.parse(resp.tree);
+                    } catch (e) {
+                        node = null;
+                    }
+                }
+                if (!node) {
+                    $treebody.text(self.S.rcc_tree_empty || 'No subtree to show.');
+                    return;
+                }
+                Templates.render('local_coursetransfer/category_tree', node).then(function(html) {
+                    $treebody.empty().append(html);
+                    return html;
+                }).catch(function() {
+                    $treebody.text(self.S.rcc_tree_error || 'Could not load the tree.');
+                });
+            }).fail(function() {
+                $treebody.text(self.S.rcc_tree_error || 'Could not load the tree.');
+            });
 
             // Destructive: origin category will be deleted.
             var $ro = this.region('review-removeorigin');

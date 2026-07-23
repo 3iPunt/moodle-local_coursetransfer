@@ -94,6 +94,8 @@ $functions = [
         'loginrequired' => true,
     ],
 
+    // Returns the full category subtree (nested categories + courses); used by the restore
+    // wizard to render the category hierarchy and import preserving the tree structure.
     'local_coursetransfer_origin_get_category_detail_tree' => [
         'classname' => origin_category_external::class,
         'methodname' => 'origin_get_category_detail_tree',
@@ -274,6 +276,9 @@ $functions = [
             'loginrequired' => true,
     ],
 
+    // DEPRECATED since 2.0.0 (kept for backward compatibility with UNIMOODLE peers).
+    // Superseded by the restore wizard flow (origin_get_courses + origin_get_course_detail).
+    // Deprecation is signalled via origin_course_external::origin_get_courses_by_ids_is_deprecated().
     'local_coursetransfer_origin_get_courses_by_ids' => [
         'classname' => origin_course_external::class,
         'methodname' => 'origin_get_courses_by_ids',
@@ -314,6 +319,15 @@ $functions = [
         'classname' => restore_wizard_external::class,
         'methodname' => 'get_sections',
         'description' => 'Restore wizard: get sections/activities of an origin course (teacher flow)',
+        'type' => 'read',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+
+    'local_coursetransfer_restore_wizard_get_category_tree' => [
+        'classname' => restore_wizard_external::class,
+        'methodname' => 'get_category_tree',
+        'description' => 'Restore wizard: get the subtree (nested subcategories + courses) of an origin category',
         'type' => 'read',
         'ajax' => true,
         'loginrequired' => true,

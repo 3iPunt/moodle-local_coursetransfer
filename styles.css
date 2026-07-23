@@ -4638,3 +4638,85 @@
     gap: 10px;
     margin-top: 20px;
 }
+
+/* ---- Category subtree preview (restore wizards + request detail) ---- */
+.local-coursetransfer .ct-tree-wrap {
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    background: var(--surface-sunken);
+    padding: 14px 16px;
+}
+
+.local-coursetransfer .ct-tree-title {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-tree-body {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.local-coursetransfer .ct-tree,
+.local-coursetransfer .ct-tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Nested levels: indent + a subtle connector line down the left. */
+.local-coursetransfer .ct-tree .ct-tree {
+    margin-left: 10px;
+    padding-left: 14px;
+    border-left: 1px solid var(--border-strong);
+}
+
+.local-coursetransfer .ct-tree-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+    color: var(--text-body);
+}
+
+.local-coursetransfer .ct-tree-label > i {
+    width: 16px;
+    text-align: center;
+    flex: 0 0 auto;
+}
+
+/* Categories in the origin colour (teal), courses neutral. */
+.local-coursetransfer .ct-tree-label-cat {
+    color: var(--text-strong);
+    font-weight: 600;
+}
+
+.local-coursetransfer .ct-tree-label-cat > i {
+    color: var(--color-secondary);
+}
+
+.local-coursetransfer .ct-tree-label-course {
+    font-weight: 400;
+}
+
+.local-coursetransfer .ct-tree-label-course > i {
+    color: var(--text-subtle);
+}
+
+.local-coursetransfer .ct-tree-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-tree-id {
+    font-size: 12px;
+    color: var(--text-subtle);
+    background: var(--surface-alt);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 0 6px;
+    flex: 0 0 auto;
+}

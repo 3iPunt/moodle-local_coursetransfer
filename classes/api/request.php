@@ -163,6 +163,20 @@ class request {
     }
 
     /**
+     * Origin get courses by ids.
+     *
+     * @param array $courseids
+     * @param stdClass|null $user
+     * @return response
+     * @throws dml_exception
+     */
+    public function origin_get_courses_by_ids(array $courseids, stdClass $user = null): response {
+        $params = $this->get_request_params($user);
+        $params['courseids'] = json_encode($courseids);
+        return $this->req('local_coursetransfer_origin_get_courses_by_ids', $params);
+    }
+
+    /**
      * Origen Get course detail.
      *
      * @param int $courseid
@@ -188,6 +202,23 @@ class request {
         $params = $this->get_request_params($user);
         $params['categoryid'] = $categoryid;
         return $this->req('local_coursetransfer_origin_get_category_detail', $params);
+    }
+
+    /**
+     * Origin get category detail tree.
+     *
+     * Retrieves the full category subtree (nested categories + courses) from the origin,
+     * used by the restore wizard to preview and import preserving the hierarchy.
+     *
+     * @param int $categoryid
+     * @param stdClass|null $user
+     * @return response
+     * @throws dml_exception
+     */
+    public function origin_get_category_detail_tree(int $categoryid, stdClass $user = null): response {
+        $params = $this->get_request_params($user);
+        $params['categoryid'] = $categoryid;
+        return $this->req('local_coursetransfer_origin_get_category_detail_tree', $params);
     }
 
     /**

@@ -514,6 +514,96 @@ class restore_wizard_external extends external_api {
     }
 
     /**
+     * Get category tree parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_category_tree_parameters(): external_function_parameters {
+        return new external_function_parameters(
+            [
+                'siteid' => new external_value(PARAM_INT, 'Site position (origin record id)'),
+                'categoryid' => new external_value(PARAM_INT, 'Origin category id'),
+            ]
+        );
+    }
+
+    /**
+     * Get the full subtree (nested subcategories + courses) of an origin category.
+     *
+     * Wraps api\request::origin_get_category_detail_tree() so the restore wizard can
+     * preview the hierarchy that will be recreated on the target. Read-only preview:
+     * validated against the system context with the generic origin_restore capability.
+     *
+     * @param int $siteid
+     * @param int $categoryid
+     * @return array
+     * @throws restricted_context_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws required_capability_exception
+     */
+    public static function get_category_tree(int $siteid, int $categoryid): array {
+        global $USER;
+        $params = self::validate_parameters(
+            self::get_category_tree_parameters(), [
+                'siteid' => $siteid,
+                'categoryid' => $categoryid,
+            ]
+        );
+        $siteid = $params['siteid'];
+        $categoryid = $params['categoryid'];
+
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('local/coursetransfer:origin_restore', $context);
+
+        $errors = [];
+        $tree = '';
+
+        try {
+            $site = coursetransfer::get_site_by_position($siteid);
+            $request = new request($site);
+            $res = $request->origin_get_category_detail_tree($categoryid, $USER);
+            $success = (bool)$res->success;
+            if ($success) {
+                // origin_get_category_detail_tree returns its payload as a JSON string.
+                $tree = is_string($res->data) ? $res->data : json_encode($res->data);
+            } else {
+                $errors = $res->errors;
+            }
+        } catch (moodle_exception $e) {
+            $success = false;
+            $errors[] = ['code' => '30601', 'msg' => $e->getMessage()];
+        }
+
+        return [
+            'success' => $success,
+            'errors' => $errors,
+            'tree' => $tree,
+        ];
+    }
+
+    /**
+     * Get category tree returns.
+     *
+     * @return external_single_structure
+     */
+    public static function get_category_tree_returns(): external_single_structure {
+        return new external_single_structure(
+            [
+                'success' => new external_value(PARAM_BOOL, 'Was it a success?'),
+                'errors' => new external_multiple_structure(new external_single_structure(
+                    [
+                        'code' => new external_value(PARAM_TEXT, 'Code'),
+                        'msg' => new external_value(PARAM_RAW, 'Message'),
+                    ]
+                )),
+                'tree' => new external_value(PARAM_RAW, 'Category subtree as JSON', VALUE_OPTIONAL),
+            ]
+        );
+    }
+
+    /**
      * Submit parameters.
      *
      * @return external_function_parameters
@@ -664,7 +754,8 @@ class restore_wizard_external extends external_api {
                         try {
                             $config = new configuration_category(
                                     $targettarget, false, false, $includeusers, $removeorigin, $nextruntime);
-                            $res = coursetransfer::restore_category($USER, $site, $targetcatid, (int)$catid, $config);
+                            // Preserve the origin subcategory hierarchy on the target.
+                            $res = coursetransfer::restore_category_tree($USER, $site, $targetcatid, (int)$catid, $config);
                             $success = $success && (bool)$res['success'];
                             if (!empty($res['errors'])) {
                                 $errors = array_merge($errors, $res['errors']);
@@ -1013,7 +1104,8 @@ class restore_wizard_external extends external_api {
             $site = coursetransfer::get_site_by_position($siteid);
             $config = new configuration_category(
                     backup::TARGET_NEW_COURSE, false, false, $includeusers, $removeorigin, $nextruntime);
-            $res = coursetransfer::restore_category($USER, $site, $targetcatid, $origincatid, $config);
+            // Preserve the origin subcategory hierarchy on the target.
+            $res = coursetransfer::restore_category_tree($USER, $site, $targetcatid, $origincatid, $config);
             $success = (bool)$res['success'];
             if (!empty($res['errors'])) {
                 $errors = array_merge($errors, $res['errors']);
