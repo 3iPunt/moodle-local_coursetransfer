@@ -36,7 +36,9 @@ namespace local_coursetransfer\output;
 
 use coding_exception;
 use context_coursecat;
+use core\exception\moodle_exception;
 use core_course_category;
+use dml_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use moodle_url;
@@ -63,7 +65,7 @@ use templatable;
 class restore_category_page implements renderable, templatable {
 
     /** @var int How many recent restorations of this category to show. */
-    const RECENT_LIMIT = 5;
+    const int RECENT_LIMIT = 5;
 
     /** @var core_course_category The destination (current) category. */
     protected core_course_category $category;
@@ -83,6 +85,7 @@ class restore_category_page implements renderable, templatable {
      * @param renderer_base $output
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $context = context_coursecat::instance($this->category->id);
@@ -114,6 +117,7 @@ class restore_category_page implements renderable, templatable {
      *
      * @return array
      * @throws coding_exception
+     * @throws dml_exception
      */
     protected function export_recent(): array {
         $rows = coursetransfer_request::get_by_target_category_id($this->category->id);
@@ -136,6 +140,7 @@ class restore_category_page implements renderable, templatable {
      * @param stdClass $r
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     protected function map_recent(stdClass $r): stdClass {
         $status = (int)$r->status;

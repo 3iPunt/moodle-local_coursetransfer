@@ -58,7 +58,7 @@ class category {
      * Create
      *
      * @param string $name
-     * @param string $idnumber
+     * @param string|null $idnumber
      * @param string $description
      * @return int
      * @throws moodle_exception
@@ -81,7 +81,7 @@ class category {
      * @param string $description
      * @throws moodle_exception
      */
-    public static function update(int $id, string $name, string $idnumber, string $description = '') {
+    public static function update(int $id, string $name, string $idnumber, string $description = ''): void {
         $record = new stdClass();
         $record->id = $id;
         $record->name = $name;

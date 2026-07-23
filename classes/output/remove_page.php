@@ -36,8 +36,10 @@ namespace local_coursetransfer\output;
 
 use coding_exception;
 use context_system;
+use dml_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
+use moodle_exception;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -64,14 +66,14 @@ use templatable;
 class remove_page implements renderable, templatable {
 
     /** @var int How many recent deletions to show on the landing. */
-    const RECENT_LIMIT = 5;
+    const int RECENT_LIMIT = 5;
 
     /**
      * Export for template.
      *
      * @param renderer_base $output
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|dml_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $context = context_system::instance();
@@ -97,7 +99,7 @@ class remove_page implements renderable, templatable {
      * here), newest first, capped at RECENT_LIMIT.
      *
      * @return array
-     * @throws coding_exception
+     * @throws coding_exception|dml_exception
      */
     protected function export_recent(): array {
         $rows = array_merge(
@@ -126,7 +128,7 @@ class remove_page implements renderable, templatable {
      *
      * @param stdClass $r
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     protected function map_recent(stdClass $r): stdClass {
         $status = (int)$r->status;

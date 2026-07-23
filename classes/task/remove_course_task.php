@@ -35,7 +35,6 @@
 namespace local_coursetransfer\task;
 
 use local_coursetransfer\api\request;
-use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_remove;
 use local_coursetransfer\coursetransfer_request;
 use local_coursetransfer\coursetransfer_sites;
@@ -65,7 +64,7 @@ class remove_course_task extends \core\task\adhoc_task {
      * Execute.
      *
      */
-    public function execute() {
+    public function execute(): void {
 
         try {
 
@@ -123,6 +122,5 @@ class remove_course_task extends \core\task\adhoc_task {
         }
 
         $this->log_finish("Remove Course Remote Finishing...");
-
     }
 }

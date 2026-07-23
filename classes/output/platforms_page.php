@@ -35,6 +35,7 @@
 namespace local_coursetransfer\output;
 
 use coding_exception;
+use core\exception\moodle_exception;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -56,10 +57,10 @@ use templatable;
 class platforms_page implements renderable, templatable {
 
     /** @var stdClass[] Platforms (merged origin/target rows by host) */
-    protected $platforms;
+    protected array $platforms;
 
     /** @var bool[] Hosts with registered requests, keyed by host */
-    protected $inuse;
+    protected array $inuse;
 
     /**
      * Constructor.
@@ -78,6 +79,7 @@ class platforms_page implements renderable, templatable {
      * @param renderer_base $output
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $data = new stdClass();

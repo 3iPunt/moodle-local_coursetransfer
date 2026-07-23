@@ -59,7 +59,7 @@ class renderer extends plugin_renderer_base {
      * @return bool|string
      * @throws moodle_exception
      */
-    public function render_index_page(index_page $page) {
+    public function render_index_page(index_page $page): bool|string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('local_coursetransfer/index_page', $data);
     }
@@ -71,7 +71,7 @@ class renderer extends plugin_renderer_base {
      * @return bool|string
      * @throws moodle_exception
      */
-    public function render_activities_component(activities_component $component) {
+    public function render_activities_component(activities_component $component): bool|string {
         $data = $component->export_for_template($this);
         return parent::render_from_template('local_coursetransfer/tables/table_activities_component', $data);
     }
@@ -83,7 +83,7 @@ class renderer extends plugin_renderer_base {
      * @return bool|string
      * @throws moodle_exception
      */
-    public function render_configuration_component(configuration_component $component) {
+    public function render_configuration_component(configuration_component $component): bool|string {
         $data = $component->export_for_template($this);
         return parent::render_from_template('local_coursetransfer/tables/table_configuration_component', $data);
     }
@@ -97,7 +97,7 @@ class renderer extends plugin_renderer_base {
      * @return string|null
      */
     public function get_html_paging_bar(stdClass $paging, string $url, string $pageparam): ?string {
-        if (! $paging) {
+        if (!$paging) {
             return null;
         }
         $pagingbar = new paging_bar($paging->totalcount, $paging->page, $paging->perpage, $url, $pageparam);

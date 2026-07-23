@@ -323,5 +323,4 @@ class origin_course_external extends external_api {
             ]
         );
     }
-
 };

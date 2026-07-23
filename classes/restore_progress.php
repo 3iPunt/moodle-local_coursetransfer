@@ -33,6 +33,7 @@
 namespace local_coursetransfer;
 
 use core\progress\base;
+use dml_exception;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -48,13 +49,13 @@ defined('MOODLE_INTERNAL') || die;
 class restore_progress extends base {
 
     /** @var int Request id to update. */
-    protected $requestid;
+    protected int $requestid;
 
     /** @var int Timestamp of the next allowed DB write (throttle). */
-    protected $nextupdate = 0;
+    protected int $nextupdate = 0;
 
     /** @var int Minimum seconds between DB writes. */
-    protected $interval = 5;
+    protected int $interval = 5;
 
     /**
      * Constructor.
@@ -71,6 +72,7 @@ class restore_progress extends base {
      * last in-progress callback is not guaranteed to report the final value.
      *
      * @return void
+     * @throws dml_exception
      */
     protected function update_progress(): void {
         global $DB;
@@ -88,5 +90,4 @@ class restore_progress extends base {
         $DB->set_field('local_coursetransfer_request', 'restored', $pct, ['id' => $this->requestid]);
         $DB->set_field('local_coursetransfer_request', 'timemodified', $now, ['id' => $this->requestid]);
     }
-
 }

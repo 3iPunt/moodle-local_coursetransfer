@@ -53,7 +53,7 @@ use stdClass;
 class clean_adhoc_failed_task extends \core\task\scheduled_task {
 
     /** @var int Max FAIL Delay time in seconds */
-    const MAX_FAILDELAY = 60;
+    const int MAX_FAILDELAY = 60;
 
     // Use the logging trait to get some nice, juicy, logging.
     use \core\task\logging_trait;
@@ -73,7 +73,7 @@ class clean_adhoc_failed_task extends \core\task\scheduled_task {
      *
      * @throws dml_exception
      */
-    public function execute() {
+    public function execute(): void {
         global $DB;
         $this->log_start("Clean Adhoc Failed Task - Starting...");
 

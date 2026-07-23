@@ -34,7 +34,6 @@
 namespace local_coursetransfer\factory;
 
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
 
 use coding_exception;
 use context_system;
@@ -194,7 +193,6 @@ class user {
         $user->firstname = $firstname;
         $user->lastname = $lastname;
         $user->email = $email;
-        $user->username = $username;
         $user->description = $desc;
         $user->confirmed = 1;
         $user->mnethostid = 1;

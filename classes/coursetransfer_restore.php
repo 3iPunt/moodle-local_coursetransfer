@@ -35,20 +35,16 @@
 namespace local_coursetransfer;
 
 use backup;
-use backup_controller;
 use backup_general_helper;
-use base_plan_exception;
-use base_setting;
-use base_setting_exception;
-use cm_info;
+use core\task\manager;
 use dml_exception;
-use local_coursetransfer\task\create_backup_course_task;
 use local_coursetransfer\task\restore_course_task;
 use moodle_exception;
 use restore_controller;
-use section_info;
+use restore_controller_exception;
 use stdClass;
 use stored_file;
+use Throwable;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -81,7 +77,7 @@ class coursetransfer_restore {
         $resasynctask->set_custom_data(
                 ['requestid' => $request->id, 'fileid' => $file->get_id()]
         );
-        return \core\task\manager::queue_adhoc_task($resasynctask);
+        return manager::queue_adhoc_task($resasynctask);
     }
 
     /**
@@ -107,7 +103,7 @@ class coursetransfer_restore {
             $backuptmpdir = 'local_coursetransfer';
 
             if (!check_dir_exists($backuptmpdir, true, true)) {
-                throw new \restore_controller_exception('cannot_create_backup_temp_dir');
+                throw new restore_controller_exception('cannot_create_backup_temp_dir');
             }
 
             $filepath = restore_controller::get_tempdir_name($file->get_contextid(), $userid);
@@ -120,8 +116,8 @@ class coursetransfer_restore {
                 $keeprolesenrolments = true;
                 $keepgroupsgroupings = true;
             } else {
-                $keeprolesenrolments = $removeenrols === 1 ? false : true;
-                $keepgroupsgroupings = $removegroups === 1 ? false : true;
+                $keeprolesenrolments = !($removeenrols === 1);
+                $keepgroupsgroupings = !($removegroups === 1);
             }
 
             $restoreoptions = [
@@ -211,11 +207,11 @@ class coursetransfer_restore {
      * backup are NOT installed on this site (the most common cause of restore
      * failures such as 'not_specified_restore_task'). See LLAOMW-107.
      *
-     * @param \Throwable $e The exception/error thrown during the restore.
+     * @param Throwable $e The exception/error thrown during the restore.
      * @param string $filepath Extracted backup temp dir name (empty if not reached).
      * @return string
      */
-    private static function build_restore_error_message(\Throwable $e, string $filepath): string {
+    private static function build_restore_error_message(Throwable $e, string $filepath): string {
         global $CFG;
         $msg = get_class($e) . ': ' . $e->getMessage();
         if ($filepath !== '') {
@@ -225,7 +221,7 @@ class coursetransfer_restore {
             // restore tasks/steps the target code does not know about.
             try {
                 $info = backup_general_helper::get_backup_information($filepath);
-            } catch (\Throwable $ignored) {
+            } catch (Throwable $ignored) {
                 $info = null;
             }
             if ($info && !empty($info->moodle_version)) {
@@ -255,6 +251,7 @@ class coursetransfer_restore {
      *
      * @param string $filepath Extracted backup temp dir name.
      * @return string[] Module names missing on the target.
+     * @throws dml_exception
      */
     private static function get_missing_target_modules(string $filepath): array {
         global $DB;
@@ -275,5 +272,4 @@ class coursetransfer_restore {
         }
         return array_keys($missing);
     }
-
 }

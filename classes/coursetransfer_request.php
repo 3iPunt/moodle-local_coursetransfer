@@ -34,7 +34,9 @@
 
 namespace local_coursetransfer;
 
+use coding_exception;
 use core_course_category;
+use core_shutdown_manager;
 use dml_exception;
 use local_coursetransfer\models\configuration_category;
 use local_coursetransfer\models\configuration_course;
@@ -53,40 +55,52 @@ use stdClass;
 class coursetransfer_request {
 
     /** @var string Table */
-    const TABLE = 'local_coursetransfer_request';
+    const string TABLE = 'local_coursetransfer_request';
 
     /** @var int Type Course */
-    const TYPE_COURSE = 0;
+    const int TYPE_COURSE = 0;
+
     /** @var int Type Category */
-    const TYPE_CATEGORY = 1;
+    const int TYPE_CATEGORY = 1;
+
     /** @var int Type Remove Course */
-    const TYPE_REMOVE_COURSE = 2;
+    const int TYPE_REMOVE_COURSE = 2;
+
     /** @var int Type Remove Category */
-    const TYPE_REMOVE_CATEGORY = 3;
+    const int TYPE_REMOVE_CATEGORY = 3;
 
     /** @var int Direction Request */
-    const DIRECTION_REQUEST = 0;
+    const int DIRECTION_REQUEST = 0;
+
     /** @var int Direction Response */
-    const DIRECTION_RESPONSE = 1;
+    const int DIRECTION_RESPONSE = 1;
 
     /** @var int Status Error */
-    const STATUS_ERROR = 0;
+    const int STATUS_ERROR = 0;
+
     /** @var int Status not started */
-    const STATUS_NOT_STARTED = 1;
+    const int STATUS_NOT_STARTED = 1;
+
     /** @var int Status in progress */
-    const STATUS_IN_PROGRESS = 10;
+    const int STATUS_IN_PROGRESS = 10;
+
     /** @var int Status Backup */
-    const STATUS_BACKUP = 30;
+    const int STATUS_BACKUP = 30;
+
     /** @var int Status Download */
-    const STATUS_DOWNLOAD = 50;
+    const int STATUS_DOWNLOAD = 50;
+
     /** @var int Status Downloaded */
-    const STATUS_DOWNLOADED = 70;
+    const int STATUS_DOWNLOADED = 70;
+
     /** @var int Status Restore */
-    const STATUS_RESTORE = 80;
+    const int STATUS_RESTORE = 80;
+
     /** @var int Status Incompleted */
-    const STATUS_INCOMPLETED = 90;
+    const int STATUS_INCOMPLETED = 90;
+
     /** @var int Status Completed */
-    const STATUS_COMPLETED = 100;
+    const int STATUS_COMPLETED = 100;
 
     /**
      * Get.
@@ -95,7 +109,7 @@ class coursetransfer_request {
      * @return false|mixed|stdClass
      * @throws dml_exception
      */
-    public static function get(int $requestid) {
+    public static function get(int $requestid): mixed {
         global $DB;
         return $DB->get_record(self::TABLE, ['id' => $requestid]);
     }
@@ -104,10 +118,10 @@ class coursetransfer_request {
      * Get by Target Course Id.
      *
      * @param int $courseid
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function get_by_target_course_id(int $courseid) {
+    public static function get_by_target_course_id(int $courseid): array {
         global $DB;
         return $DB->get_records(self::TABLE,
                 ['target_course_id' => $courseid, 'type' => self::TYPE_COURSE, 'direction' => self::DIRECTION_REQUEST]);
@@ -117,10 +131,10 @@ class coursetransfer_request {
      * Get by Target Category Id.
      *
      * @param int $catid
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function get_by_target_category_id(int $catid) {
+    public static function get_by_target_category_id(int $catid): array {
         global $DB;
         return $DB->get_records(self::TABLE,
                 ['target_category_id' => $catid, 'type' => self::TYPE_CATEGORY, 'direction' => self::DIRECTION_REQUEST]);
@@ -130,10 +144,10 @@ class coursetransfer_request {
      * Get by Origin Course Id.
      *
      * @param int $courseid
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function get_by_origin_course_id(int $courseid) {
+    public static function get_by_origin_course_id(int $courseid): array {
         global $DB;
         return $DB->get_records(self::TABLE,
                 ['origin_course_id' => $courseid, 'type' => self::TYPE_COURSE, 'direction' => self::DIRECTION_RESPONSE]);
@@ -143,10 +157,10 @@ class coursetransfer_request {
      * Get by Origin Category Id.
      *
      * @param int $catid
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function get_by_origin_category_id(int $catid) {
+    public static function get_by_origin_category_id(int $catid): array {
         global $DB;
         return $DB->get_records(self::TABLE,
                 ['origin_category_id' => $catid, 'type' => self::TYPE_CATEGORY, 'direction' => self::DIRECTION_RESPONSE]);
@@ -156,10 +170,10 @@ class coursetransfer_request {
      * Filters
      *
      * @param array $filters
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function filters(array $filters) {
+    public static function filters(array $filters): array {
         global $DB;
         $where = '';
         if (isset($filters['type'])) {
@@ -255,9 +269,10 @@ class coursetransfer_request {
      * @param int|null $sizemaxbytes Upper bound for origin_backup_size (bytes).
      * @return array [string $where, array $params]
      */
-    public static function get_logs_filter_sql(int $type, int $direction, $status = null,
-            $datefrom = null, $dateto = null, $sizeminbytes = null, $sizemaxbytes = null,
-            $origincourseid = null, $targetcourseid = null): array {
+    public static function get_logs_filter_sql(int $type, int $direction, int|string $status = null, int $datefrom = null,
+                                               int $dateto = null, int $sizeminbytes = null,
+                                               int $sizemaxbytes = null, $origincourseid = null,
+                                               $targetcourseid = null): array {
         $where = 'direction = :direction AND type = :type';
         $params = ['direction' => $direction, 'type' => $type];
         if (is_numeric($status)) {
@@ -302,6 +317,8 @@ class coursetransfer_request {
      *
      * @param array $filters
      * @return array [string $where, array $params]
+     * @throws coding_exception
+     * @throws dml_exception
      */
     public static function get_executions_filter_sql(array $filters): array {
         global $DB;
@@ -372,7 +389,7 @@ class coursetransfer_request {
      * @param int $page zero-based page
      * @param int $perpage
      * @return stdClass[]
-     * @throws dml_exception
+     * @throws dml_exception|coding_exception
      */
     public static function get_executions(array $filters, int $page, int $perpage): array {
         global $DB;
@@ -390,7 +407,7 @@ class coursetransfer_request {
      *
      * @param array $filters see get_executions_filter_sql()
      * @return int
-     * @throws dml_exception
+     * @throws dml_exception|coding_exception
      */
     public static function count_executions(array $filters): int {
         global $DB;
@@ -407,7 +424,7 @@ class coursetransfer_request {
      *
      * @param int $limit
      * @return stdClass[]
-     * @throws dml_exception
+     * @throws dml_exception|coding_exception
      */
     public static function get_active_executions(int $limit = 20): array {
         global $DB;
@@ -452,7 +469,7 @@ class coursetransfer_request {
      * @param string $errorcode Error code to store if a fatal happens.
      */
     public static function register_fatal_shutdown(int $requestid, string $errorcode): void {
-        \core_shutdown_manager::register_function(function() use ($requestid, $errorcode) {
+        core_shutdown_manager::register_function(function() use ($requestid, $errorcode) {
             global $DB;
             $err = error_get_last();
             $fatalmask = E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR;
@@ -475,7 +492,7 @@ class coursetransfer_request {
      * Update status request category.
      *
      * @param int $requestid
-     * @return false|mixed|stdClass
+     * @return stdClass
      * @throws dml_exception
      * @throws moodle_exception
      */
@@ -507,7 +524,7 @@ class coursetransfer_request {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public static function insert_or_update(stdClass $object, int $id = null) {
+    public static function insert_or_update(stdClass $object, int $id = null): bool|int {
         global $DB;
         if (!array_key_exists($object->status, coursetransfer::STATUS)) {
             throw new moodle_exception('STATUS IS NOT VALID');

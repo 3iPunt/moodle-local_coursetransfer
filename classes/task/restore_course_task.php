@@ -62,7 +62,7 @@ class restore_course_task extends \core\task\adhoc_task {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function execute() {
+    public function execute(): void {
 
         $this->log_start("Restore Backup Course Remote Starting...");
 

@@ -229,7 +229,6 @@ class logs_course_response_table extends table_sql {
      *
      * @param stdClass $row Full data of the current row.
      * @return string
-     * @throws coding_exception
      */
     public function col_backupsize(stdClass $row): string {
         $bytes = !is_null($row->origin_backup_size) ? (int)$row->origin_backup_size : null;

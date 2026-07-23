@@ -34,7 +34,10 @@
 
 namespace local_coursetransfer;
 
+use coding_exception;
+use dml_exception;
 use local_coursetransfer\factory\user;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -55,14 +58,16 @@ defined('MOODLE_INTERNAL') || die();
 class cli_helper {
 
     /** @var int Exit code: success. */
-    const EXIT_OK = 0;
+    const int EXIT_OK = 0;
+
     /** @var int Exit code: runtime error (operation failed). */
-    const EXIT_RUNTIME = 1;
+    const int EXIT_RUNTIME = 1;
+
     /** @var int Exit code: usage/validation error (bad arguments). */
-    const EXIT_USAGE = 2;
+    const int EXIT_USAGE = 2;
 
     /** @var int Maximum deferral (days) for a scheduled operation. */
-    const SCHEDULE_MAX_DAYS = 30;
+    const int SCHEDULE_MAX_DAYS = 30;
 
     /**
      * Normalise a CLI option to an integer boolean (0|1), keeping the historical
@@ -71,7 +76,7 @@ class cli_helper {
      * @param mixed $value
      * @return int 0|1
      */
-    public static function to_bool($value): int {
+    public static function to_bool(mixed $value): int {
         return ($value === 'true' || (int) $value === 1) ? 1 : 0;
     }
 
@@ -96,6 +101,7 @@ class cli_helper {
      * otherwise echo the scheduled time (for a deferred run).
      *
      * @param int $timestamp
+     * @throws coding_exception
      */
     public static function check_schedule(int $timestamp): void {
         if (!self::schedule_is_valid($timestamp)) {
@@ -111,7 +117,9 @@ class cli_helper {
      * pointing at postinstall if it does not exist yet (instead of an opaque
      * fatal further down). Exit code stays 1, as in the existing error paths.
      *
-     * @return \stdClass
+     * @return stdClass
+     * @throws dml_exception
+     * @throws coding_exception
      */
     public static function require_ws_user(): \stdClass {
         $wsuser = \core_user::get_user_by_username(user::USERNAME_WS);

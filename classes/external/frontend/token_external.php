@@ -42,6 +42,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_multiple_structure;
 use core_external\external_value;
+use dml_exception;
 use local_coursetransfer\factory\user;
 use moodle_exception;
 
@@ -91,15 +92,16 @@ class token_external extends external_api {
      * Resolve the service user id.
      *
      * @return int
+     * @throws dml_exception
      */
     protected static function ws_userid(): int {
         $wsuser = \core_user::get_user_by_username(user::USERNAME_WS);
         return $wsuser ? (int)$wsuser->id : 0;
     }
 
-    // ---- create -----------------------------------------------------
-
     /**
+     * Create Parameters.
+     *
      * @return external_function_parameters
      */
     public static function create_parameters(): external_function_parameters {
@@ -110,7 +112,7 @@ class token_external extends external_api {
      * Create the token (repairing the service user/role if needed).
      *
      * @return array
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     public static function create(): array {
         self::require_admin();
@@ -127,13 +129,13 @@ class token_external extends external_api {
     }
 
     /**
+     * Create returns.
+     *
      * @return external_single_structure
      */
     public static function create_returns(): external_single_structure {
         return self::token_returns();
     }
-
-    // ---- revoke -----------------------------------------------------
 
     /**
      * @return external_function_parameters
@@ -146,7 +148,7 @@ class token_external extends external_api {
      * Revoke (delete) the token.
      *
      * @return array
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     public static function revoke(): array {
         self::require_admin();
@@ -165,15 +167,17 @@ class token_external extends external_api {
     }
 
     /**
+     * Revoke returns.
+     *
      * @return external_single_structure
      */
     public static function revoke_returns(): external_single_structure {
         return self::token_returns();
     }
 
-    // ---- regenerate -------------------------------------------------
-
     /**
+     * Regenerate Parameters.
+     *
      * @return external_function_parameters
      */
     public static function regenerate_parameters(): external_function_parameters {
@@ -184,7 +188,7 @@ class token_external extends external_api {
      * Regenerate the token (revoke + create new).
      *
      * @return array
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     public static function regenerate(): array {
         self::require_admin();
@@ -205,6 +209,8 @@ class token_external extends external_api {
     }
 
     /**
+     * Regenerate returns.
+     *
      * @return external_single_structure
      */
     public static function regenerate_returns(): external_single_structure {

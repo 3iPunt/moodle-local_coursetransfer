@@ -35,9 +35,9 @@
 namespace local_coursetransfer\task;
 
 use context_course;
+use core_php_time_limit;
 use curl;
 use dml_exception;
-use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use local_coursetransfer\coursetransfer_restore;
 use moodle_exception;
@@ -72,7 +72,7 @@ class download_file_course_task extends \core\task\adhoc_task {
 
         // Large backups need time and memory; remove the limits for this task and
         // record any uncatchable fatal (timeout/OOM) into the request log.
-        \core_php_time_limit::raise();
+        core_php_time_limit::raise();
         raise_memory_limit(MEMORY_HUGE);
         coursetransfer_request::register_fatal_shutdown((int)$requestid, '13099');
 
@@ -140,7 +140,7 @@ class download_file_course_task extends \core\task\adhoc_task {
                 $error = json_decode($body);
                 if ($error && !empty($error->errorcode)) {
                     // e.g. "sitepolicynotagreed: No ha aceptado la política del sitio [debuginfo]".
-                    $msg = $error->errorcode . ': ' . (isset($error->error) ? $error->error : '');
+                    $msg = $error->errorcode . ': ' . ($error->error ?? '');
                     if (!empty($error->debuginfo)) {
                         $msg .= ' [' . $error->debuginfo . ']';
                     }
@@ -195,5 +195,4 @@ class download_file_course_task extends \core\task\adhoc_task {
         $request->error_message = $message;
         coursetransfer_request::insert_or_update($request, $request->id);
     }
-
 }

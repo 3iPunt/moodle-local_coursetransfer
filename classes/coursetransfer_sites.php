@@ -34,6 +34,7 @@
 
 namespace local_coursetransfer;
 
+use coding_exception;
 use dml_exception;
 use moodle_exception;
 use stdClass;
@@ -50,11 +51,13 @@ use stdClass;
 class coursetransfer_sites {
 
     /** @var string Table Prex */
-    const TABLE_PREX = 'local_coursetransfer_';
+    const string TABLE_PREX = 'local_coursetransfer_';
+
     /** @var string Table Target */
-    const TABLE_TARGET = 'local_coursetransfer_target';
+    const string TABLE_TARGET = 'local_coursetransfer_target';
+
     /** @var string Table Origin */
-    const TABLE_ORIGIN = 'local_coursetransfer_origin';
+    const string TABLE_ORIGIN = 'local_coursetransfer_origin';
 
     /**
      * Get.
@@ -65,7 +68,7 @@ class coursetransfer_sites {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public static function get(string $type, int $id) {
+    public static function get(string $type, int $id): mixed {
         global $DB;
         $record = $DB->get_record(self::TABLE_PREX . $type, ['id' => $id]);
         if ($record) {
@@ -79,10 +82,10 @@ class coursetransfer_sites {
      * List.
      *
      * @param string $type
-     * @return false|mixed|stdClass
+     * @return array
      * @throws dml_exception
      */
-    public static function list(string $type) {
+    public static function list(string $type): array {
         global $DB;
         return $DB->get_records(self::TABLE_PREX . $type);
     }
@@ -95,7 +98,7 @@ class coursetransfer_sites {
      * @return false|mixed|stdClass
      * @throws dml_exception|moodle_exception
      */
-    public static function get_by_host(string $type, string $host) {
+    public static function get_by_host(string $type, string $host): mixed {
         global $DB;
         $compare = $DB->sql_compare_text('host');
         $compareplaceholder = $DB->sql_compare_text(':host');
@@ -134,7 +137,7 @@ class coursetransfer_sites {
      * @return stdClass[] platforms, each with: name, host, origin (row|null),
      *                    target (row|null), lasttest, lastteststatus,
      *                    lasttesterror (most recent of both roles).
-     * @throws dml_exception
+     * @throws dml_exception|coding_exception
      */
     public static function get_platforms(): array {
         $platforms = [];
@@ -174,13 +177,13 @@ class coursetransfer_sites {
      * direction of the pairing is broken.
      *
      * @param stdClass $platform
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     protected static function set_platform_test_info(stdClass $platform): void {
         $tested = [];
         foreach (['origin', 'target'] as $type) {
             $row = $platform->{$type};
-            if ($row && isset($row->lastteststatus) && $row->lastteststatus !== null) {
+            if ($row && isset($row->lastteststatus)) {
                 $tested[$type] = $row;
             }
         }

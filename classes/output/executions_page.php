@@ -37,6 +37,7 @@ namespace local_coursetransfer\output;
 use coding_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
+use moodle_exception;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -58,31 +59,31 @@ use templatable;
 class executions_page implements renderable, templatable {
 
     /** @var int Minutes without movement before an active request is flagged as stuck */
-    const STUCK_MINUTES = 30;
+    const int STUCK_MINUTES = 30;
 
     /** @var stdClass[] Active requests */
-    protected $active;
+    protected array $active;
 
     /** @var stdClass[] Current log page rows */
-    protected $rows;
+    protected array $rows;
 
     /** @var int Total rows matching the filters */
-    protected $total;
+    protected int $total;
 
     /** @var array Current filters (raw values from the page) */
-    protected $filters;
+    protected array $filters;
 
     /** @var string[] Site URLs for the site filter */
-    protected $sites;
+    protected array $sites;
 
     /** @var string Active tab: encurso|registro */
-    protected $tab;
+    protected string $tab;
 
     /** @var int Current page (zero-based) */
-    protected $page;
+    protected int $page;
 
     /** @var int Rows per page */
-    protected $perpage;
+    protected int $perpage;
 
     /**
      * Constructor.
@@ -113,7 +114,7 @@ class executions_page implements renderable, templatable {
      *
      * @param renderer_base $output
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $data = new stdClass();
@@ -222,7 +223,7 @@ class executions_page implements renderable, templatable {
      *
      * @param stdClass $request
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     protected function export_row(stdClass $request): stdClass {
         $item = $this->export_common($request);
@@ -256,7 +257,7 @@ class executions_page implements renderable, templatable {
      *
      * @param stdClass $request
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     protected function export_common(stdClass $request): stdClass {
         $item = new stdClass();

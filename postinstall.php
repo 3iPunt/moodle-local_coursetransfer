@@ -45,5 +45,3 @@ if (is_siteadmin()) {
         var_dump($e->getMessage());
     }
 }
-
-

@@ -38,6 +38,7 @@ use backup;
 use coding_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
+use moodle_exception;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -60,10 +61,10 @@ use templatable;
 class detail_page implements renderable, templatable {
 
     /** @var stdClass Request record */
-    protected $record;
+    protected stdClass $record;
 
     /** @var string Launcher username */
-    protected $username;
+    protected string $username;
 
     /**
      * Constructor.
@@ -81,7 +82,7 @@ class detail_page implements renderable, templatable {
      *
      * @param renderer_base $output
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $r = $this->record;
@@ -189,7 +190,7 @@ class detail_page implements renderable, templatable {
         $timeline = [];
         $count = count($steps);
         foreach ($steps as $i => $step) {
-            $done = $completed ? true : (!$iserror && $i < $curidx);
+            $done = $completed || !$iserror && $i < $curidx;
             $current = !$iserror && $i === $curidx && !$completed;
             $item = new stdClass();
             $item->label = get_string('exec_step_' . $step, 'local_coursetransfer');
@@ -360,7 +361,7 @@ class detail_page implements renderable, templatable {
      * @return string
      * @throws coding_exception
      */
-    protected function target_label($target): string {
+    protected function target_label(?int $target): string {
         switch ((int)$target) {
             case backup::TARGET_NEW_COURSE:
                 return get_string('in_new_course', 'local_coursetransfer');

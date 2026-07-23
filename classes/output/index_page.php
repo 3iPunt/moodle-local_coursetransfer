@@ -114,7 +114,7 @@ class index_page implements renderable, templatable {
 
         // Integration status checks.
         $wsok = !empty($CFG->enablewebservices)
-                && strpos((string)$CFG->webserviceprotocols, 'rest') !== false;
+                && str_contains((string)$CFG->webserviceprotocols, 'rest');
         try {
             $platforms = coursetransfer_sites::get_platforms();
         } catch (\Throwable $e) {

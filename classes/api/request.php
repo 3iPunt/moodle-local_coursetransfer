@@ -102,7 +102,7 @@ class request {
         }
         // The configurable field 'userid' is exposed in the UI but the real user property is 'id'.
         $userprop = ($field === 'userid') ? 'id' : $field;
-        $value = isset($user->{$userprop}) ? $user->{$userprop} : '';
+        $value = $user->{$userprop} ?? '';
         $params['field'] = $field;
         $params['value'] = (string)$value;
         if (!empty($perpage)) {

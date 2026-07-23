@@ -36,6 +36,8 @@ namespace local_coursetransfer\output;
 
 use coding_exception;
 use context_course;
+use core\exception\moodle_exception;
+use dml_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use moodle_url;
@@ -66,7 +68,7 @@ use templatable;
 class restore_course_page implements renderable, templatable {
 
     /** @var int How many recent restorations of this course to show. */
-    const RECENT_LIMIT = 5;
+    const int RECENT_LIMIT = 5;
 
     /** @var stdClass The destination (current) course. */
     protected stdClass $course;
@@ -86,6 +88,7 @@ class restore_course_page implements renderable, templatable {
      * @param renderer_base $output
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         global $USER;
@@ -125,6 +128,7 @@ class restore_course_page implements renderable, templatable {
      *
      * @return array
      * @throws coding_exception
+     * @throws dml_exception
      */
     protected function export_recent(): array {
         $rows = coursetransfer_request::get_executions(
@@ -152,6 +156,7 @@ class restore_course_page implements renderable, templatable {
      * @param stdClass $r
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     protected function map_recent(stdClass $r): stdClass {
         $status = (int)$r->status;

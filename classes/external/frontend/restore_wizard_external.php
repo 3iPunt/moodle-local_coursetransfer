@@ -38,6 +38,7 @@
 
 namespace local_coursetransfer\external\frontend;
 
+use backup;
 use coding_exception;
 use context_course;
 use context_coursecat;
@@ -54,13 +55,13 @@ use local_coursetransfer\api\request;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use local_coursetransfer\coursetransfer_sites;
-use local_coursetransfer\factory\category;
 use local_coursetransfer\factory\course;
 use local_coursetransfer\models\configuration_category;
 use local_coursetransfer\models\configuration_course;
 use moodle_exception;
 use moodle_url;
-use stdClass;
+use required_capability_exception;
+use restricted_context_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -97,9 +98,12 @@ class restore_wizard_external extends external_api {
      * coursetransfer::get_site_by_position().
      *
      * @return array
+     * @throws restricted_context_exception
+     * @throws required_capability_exception
      * @throws coding_exception
      * @throws dml_exception
-     */
+     * @throws invalid_parameter_exception
+ */
     public static function get_sites(): array {
         $context = context_system::instance();
         self::validate_context($context);
@@ -187,9 +191,11 @@ class restore_wizard_external extends external_api {
      * @param int $perpage
      * @param string $query
      * @return array
-     * @throws coding_exception
+     * @throws restricted_context_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
-     */
+     * @throws required_capability_exception
+ */
     public static function list_origin(int $siteid, string $type, int $page, int $perpage, string $query): array {
         global $USER;
         $params = self::validate_parameters(
@@ -248,7 +254,7 @@ class restore_wizard_external extends external_api {
                         }
                         $items[] = [
                             'id' => (int)$item->id,
-                            'name' => isset($item->name) ? $item->name : '',
+                            'name' => $item->name ?? '',
                             'shortname' => '',
                             'idnumber' => isset($item->idnumber) ? (string)$item->idnumber : '',
                             'category' => '',
@@ -267,7 +273,7 @@ class restore_wizard_external extends external_api {
                                 ? display_size((int)$item->backupsizeestimated) : '—';
                         $items[] = [
                             'id' => (int)$item->id,
-                            'name' => isset($item->fullname) ? $item->fullname : '',
+                            'name' => $item->fullname ?? '',
                             'shortname' => isset($item->shortname) ? (string)$item->shortname : '',
                             'idnumber' => isset($item->idnumber) ? (string)$item->idnumber : '',
                             'category' => isset($item->categoryname) ? (string)$item->categoryname : '',
@@ -389,9 +395,11 @@ class restore_wizard_external extends external_api {
      * @param int $courseid
      * @param int $targetcourseid
      * @return array
-     * @throws coding_exception
+     * @throws restricted_context_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
-     */
+     * @throws required_capability_exception
+    */
     public static function get_sections(int $siteid, int $courseid, int $targetcourseid = 0): array {
         global $USER;
         $params = self::validate_parameters(
@@ -419,7 +427,6 @@ class restore_wizard_external extends external_api {
         }
 
         $sections = [];
-        $success = false;
         $errors = [];
 
         try {
@@ -441,16 +448,16 @@ class restore_wizard_external extends external_api {
                         foreach ($section->activities as $act) {
                             $activities[] = [
                                 'cmid' => isset($act->cmid) ? (int)$act->cmid : 0,
-                                'name' => isset($act->name) ? $act->name : '',
+                                'name' => $act->name ?? '',
                                 'instance' => isset($act->instance) ? (int)$act->instance : 0,
-                                'modname' => isset($act->modname) ? $act->modname : '',
+                                'modname' => $act->modname ?? '',
                             ];
                         }
                     }
                     $sections[] = [
                         'sectionnum' => isset($section->sectionnum) ? (int)$section->sectionnum : 0,
                         'sectionid' => isset($section->sectionid) ? (int)$section->sectionid : 0,
-                        'sectionname' => isset($section->sectionname) ? $section->sectionname : '',
+                        'sectionname' => $section->sectionname ?? '',
                         'activities' => $activities,
                     ];
                 }
@@ -573,16 +580,20 @@ class restore_wizard_external extends external_api {
      *
      * @param int $siteid
      * @param string $type
-     * @param array $ids
+     * @param array $courses
+     * @param array $catids
      * @param int $targetcatid
-     * @param string $mode
-     * @param bool $removeenrols
-     * @param bool $removegroups
+     * @param string $catmode
      * @param bool $includeusers
+     * @param bool $removeorigin
      * @param int $schedule
      * @return array
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      * @throws coding_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
+     * @throws required_capability_exception
      */
     public static function submit(int $siteid, string $type, array $courses = [], array $catids = [],
             int $targetcatid = 0, string $catmode = 'merge', bool $includeusers = false,
@@ -643,7 +654,7 @@ class restore_wizard_external extends external_api {
                     // TARGET_NEW_COURSE — matching the legacy category flow.
                     // There is no merge/replace concept for categories, hence
                     // $catmode is ignored here.
-                    $targettarget = \backup::TARGET_NEW_COURSE;
+                    $targettarget = backup::TARGET_NEW_COURSE;
                     $dcat = ($targetcatid === 0)
                             ? core_course_category::get_default()
                             : core_course_category::get($targetcatid);
@@ -688,18 +699,18 @@ class restore_wizard_external extends external_api {
                                         $dcat,
                                         'Remote Restoring in process...',
                                         'IN-PROGRESS-' . time() . '-' . $num);
-                                $targettarget = \backup::TARGET_NEW_COURSE;
+                                $targettarget = backup::TARGET_NEW_COURSE;
                                 $removeenrols = false;
                                 $removegroups = false;
                             } else {
                                 // Restore over an existing target course.
                                 $targetcourseid = (int)$c['targetid'];
                                 require_capability('moodle/restore:restorecourse',
-                                        \context_course::instance($targetcourseid));
-                                $mode = isset($c['mode']) ? $c['mode'] : 'merge';
+                                        context_course::instance($targetcourseid));
+                                $mode = $c['mode'] ?? 'merge';
                                 $targettarget = ($mode === 'replace')
-                                        ? \backup::TARGET_EXISTING_DELETING
-                                        : \backup::TARGET_EXISTING_ADDING;
+                                        ? backup::TARGET_EXISTING_DELETING
+                                        : backup::TARGET_EXISTING_ADDING;
                                 $removeenrols = !empty($c['removeenrols']);
                                 $removegroups = !empty($c['removegroups']);
                             }
@@ -835,9 +846,11 @@ class restore_wizard_external extends external_api {
      * @param bool $includeusers
      * @param array $sections
      * @return array
-     * @throws coding_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      * @throws invalid_parameter_exception
-     */
+     * @throws required_capability_exception
+ */
     public static function submit_course(int $siteid, int $origincourseid, int $targetcourseid,
             string $mode = 'merge', bool $includeusers = false, array $sections = []): array {
         global $USER;
@@ -875,12 +888,12 @@ class restore_wizard_external extends external_api {
                 if (!coursetransfer::can_target_restore_content_remove($USER, $context)) {
                     require_capability('local/coursetransfer:target_restore_content_remove', $context);
                 }
-                $targettarget = \backup::TARGET_EXISTING_DELETING;
+                $targettarget = backup::TARGET_EXISTING_DELETING;
             } else {
                 if (!coursetransfer::can_target_restore_merge($USER, $context)) {
                     require_capability('local/coursetransfer:target_restore_merge', $context);
                 }
-                $targettarget = \backup::TARGET_EXISTING_ADDING;
+                $targettarget = backup::TARGET_EXISTING_ADDING;
             }
 
             $site = coursetransfer::get_site_by_position($siteid);
@@ -959,9 +972,11 @@ class restore_wizard_external extends external_api {
      * @param bool $removeorigin
      * @param int $schedule
      * @return array
-     * @throws coding_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      * @throws invalid_parameter_exception
-     */
+     * @throws required_capability_exception
+ */
     public static function submit_category(int $siteid, int $origincatid, int $targetcatid,
             bool $includeusers = false, bool $removeorigin = false, int $schedule = 0): array {
         global $USER;
@@ -997,7 +1012,7 @@ class restore_wizard_external extends external_api {
         try {
             $site = coursetransfer::get_site_by_position($siteid);
             $config = new configuration_category(
-                    \backup::TARGET_NEW_COURSE, false, false, $includeusers, $removeorigin, $nextruntime);
+                    backup::TARGET_NEW_COURSE, false, false, $includeusers, $removeorigin, $nextruntime);
             $res = coursetransfer::restore_category($USER, $site, $targetcatid, $origincatid, $config);
             $success = (bool)$res['success'];
             if (!empty($res['errors'])) {
@@ -1065,9 +1080,14 @@ class restore_wizard_external extends external_api {
      * @param array $ids
      * @param int $schedule
      * @return array
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      * @throws coding_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
-     */
+     * @throws required_capability_exception
+ */
+    
     public static function remove_submit(int $siteid, string $type, array $ids, int $schedule = 0): array {
         global $USER;
         $params = self::validate_parameters(
@@ -1167,9 +1187,9 @@ class restore_wizard_external extends external_api {
     /**
      * Map wizard mode to a backup target_target constant.
      *
-     * new     => \backup::TARGET_NEW_COURSE (2)
-     * replace => \backup::TARGET_EXISTING_DELETING (3)
-     * merge   => \backup::TARGET_EXISTING_ADDING (4)
+     * new     => backup::TARGET_NEW_COURSE (2)
+     * replace => backup::TARGET_EXISTING_DELETING (3)
+     * merge   => backup::TARGET_EXISTING_ADDING (4)
      *
      * @param string $mode
      * @return int
@@ -1177,12 +1197,12 @@ class restore_wizard_external extends external_api {
     protected static function mode_to_target(string $mode): int {
         switch ($mode) {
             case 'replace':
-                return \backup::TARGET_EXISTING_DELETING;
+                return backup::TARGET_EXISTING_DELETING;
             case 'merge':
-                return \backup::TARGET_EXISTING_ADDING;
+                return backup::TARGET_EXISTING_ADDING;
             case 'new':
             default:
-                return \backup::TARGET_NEW_COURSE;
+                return backup::TARGET_NEW_COURSE;
         }
     }
 
@@ -1193,13 +1213,13 @@ class restore_wizard_external extends external_api {
      * @param array|null $errors
      * @return array
      */
-    protected static function normalize_errors($errors): array {
+    protected static function normalize_errors(?array $errors): array {
         $out = [];
         if (is_array($errors)) {
             foreach ($errors as $error) {
                 $out[] = [
                     'code' => isset($error->code) ? (string)$error->code : '0',
-                    'msg' => isset($error->msg) ? $error->msg : '',
+                    'msg' => $error->msg ?? '',
                 ];
             }
         }

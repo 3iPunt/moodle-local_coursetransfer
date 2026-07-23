@@ -40,6 +40,7 @@ use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use dml_exception;
 use invalid_parameter_exception;
 use local_coursetransfer\api\request;
 use local_coursetransfer\coursetransfer;
@@ -226,7 +227,7 @@ class sites_external extends external_api {
      * @param string $name
      * @return array
      * @throws invalid_parameter_exception
-     * @throws coding_exception
+     * @throws coding_exception|dml_exception
      */
     public static function site_edit(string $type, int $id, string $host, string $token, string $name = ''): array {
         global $DB, $USER;
@@ -350,8 +351,10 @@ class sites_external extends external_api {
      * @param string $type
      * @param int $id
      * @return array
+     * @throws coding_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
-     */
+    */
     public static function site_remove(string $type, int $id): array {
         global $DB;
         $params = self::validate_parameters(
@@ -450,6 +453,8 @@ class sites_external extends external_api {
      * @param string $type
      * @param int $id
      * @return array
+     * @throws coding_exception
+     * @throws dml_exception
      * @throws invalid_parameter_exception
      */
     public static function site_test(string $type, int $id): array {
@@ -687,8 +692,6 @@ class sites_external extends external_api {
      * @param string $field
      * @param string $value
      * @param string $targetsite
-     *
-     *
      * @return array
      * @throws invalid_parameter_exception
      */

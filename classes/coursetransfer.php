@@ -38,9 +38,8 @@ namespace local_coursetransfer;
 use coding_exception;
 use context;
 use context_course;
-use core_collator;
+use context_module;
 use core_course_category;
-use core_course_list_element;
 use core_user;
 use course_modinfo;
 use dml_exception;
@@ -79,10 +78,10 @@ require_once($CFG->dirroot . '/local/coursetransfer/classes/task/create_backup_c
 class coursetransfer {
 
     /** @var string[] Fields User */
-    const FIELDS_USER = ['username', 'email', 'userid', 'idnumber'];
+    const array FIELDS_USER = ['username', 'email', 'userid', 'idnumber'];
 
     /** @var string[][] Status */
-    const STATUS = [
+    const array STATUS = [
         0 => ['shortname' => 'error', 'alert' => 'danger'],
         1 => ['shortname' => 'not_started', 'alert' => 'warning'],
         10 => ['shortname' => 'in_progress', 'alert' => 'primary'],
@@ -95,10 +94,10 @@ class coursetransfer {
     ];
 
     /** @var stdClass Course */
-    protected $course;
+    protected stdClass $course;
 
     /** @var request Request */
-    protected $request;
+    protected request $request;
 
     /**
      * constructor.
@@ -140,7 +139,6 @@ class coursetransfer {
      *
      * @param string $targetsite
      * @return array
-     * @throws dml_exception
      * @throws moodle_exception
      */
     public static function verify_target_site(string $targetsite): array {
@@ -259,7 +257,7 @@ class coursetransfer {
      * Get Backup Size Estimated
      *
      * @param int $courseid
-     * @return string
+     * @return int
      * @throws dml_exception
      * @throws moodle_exception
      */
@@ -275,7 +273,7 @@ class coursetransfer {
         }
         $modinfo = get_fast_modinfo($courseid);
         foreach ($modinfo->get_cms() as $cm) {
-            $context = \context_module::instance($cm->id);
+            $context = context_module::instance($cm->id);
             $results = $DB->get_records('files', ['contextid' => $context->id]);
             foreach ($results as $result) {
                 if ($result->filearea !== 'backup') {
@@ -306,7 +304,7 @@ class coursetransfer {
         }
         $modinfo = get_fast_modinfo($courseid);
         foreach ($modinfo->get_cms() as $cm) {
-            $context = \context_module::instance($cm->id);
+            $context = context_module::instance($cm->id);
             $results = $DB->get_records('files', ['contextid' => $context->id]);
             foreach ($results as $result) {
                 if ($result->filearea !== 'backup') {
@@ -484,7 +482,7 @@ class coursetransfer {
      * @param int $targetcourseid
      * @param int $origincourseid
      * @param configuration_course $configuration
-     * @param array|null $sections
+     * @param array $sections
      * @return array
      */
     public static function restore_course(stdClass $user,
@@ -602,7 +600,7 @@ class coursetransfer {
      *
      * @param stdClass $request
      * @return stored_file|null
-     * @throws dml_exception
+     * @throws dml_exception|coding_exception
      */
     private static function find_downloaded_backup(stdClass $request): ?stored_file {
         $context = context_course::instance((int)$request->target_course_id);
@@ -610,7 +608,7 @@ class coursetransfer {
         $files = $fs->get_area_files($context->id, 'backup', 'course', false, 'timemodified DESC', false);
         $prefix = 'local_coursetransfer_' . (int)$request->origin_course_id . '_';
         foreach ($files as $file) {
-            if (strpos($file->get_filename(), $prefix) === 0) {
+            if (str_starts_with($file->get_filename(), $prefix)) {
                 return $file;
             }
         }
@@ -737,12 +735,10 @@ class coursetransfer {
             configuration_category $configuration, array $courses = []): array {
 
         try {
-
             // 2. Category Request DB.
             $requestobject = coursetransfer_request::set_request_restore_category(
                     $site, $targetcategoryid, $origincategoryid, '', $configuration, $user
             );
-
             $request = new request($site);
             $origincategoryname = '';
             $origincategoryidnumber = '';
@@ -933,7 +929,7 @@ class coursetransfer {
      * @param array $categories
      * @param stdClass|null $user
      */
-    public static function get_childs(core_course_category $category, array &$categories, stdClass $user = null) {
+    public static function get_childs(core_course_category $category, array &$categories, stdClass $user = null): void {
         if ($category->get_children_count() > 0) {
             foreach ($category->get_children() as $child) {
                 if ($child->is_uservisible($user)) {
@@ -1053,7 +1049,7 @@ class coursetransfer {
         $hascourse = false;
         $cs = get_courses();
         foreach ($cs as $course) {
-            $context = \context_course::instance($course->id);
+            $context = context_course::instance($course->id);
             if (has_capability('moodle/backup:backupcourse', $context, $user->id) && (int)$course->id !== 1) {
                 $hascourse = true;
                 break;
@@ -1075,7 +1071,6 @@ class coursetransfer {
     public static function get_courses_user(stdClass $user, int $page = 0, int $perpage = 0, string $search = ''): array {
         $courses = [];
         $cs = get_courses();
-        $item = null;
         foreach ($cs as $course) {
             if (self::filter_course($course, $user, $search)) {
                 $courses[] = $course;
@@ -1122,7 +1117,7 @@ class coursetransfer {
      * @return int
      */
     public static function count_categories_user(): int {
-        $categories = \core_course_category::get_all();
+        $categories = core_course_category::get_all();
 
         return count($categories);
     }
@@ -1136,7 +1131,7 @@ class coursetransfer {
      * @return array
      */
     public static function get_categories_user(stdClass $user, int $page = 0, int $perpage = 0): array {
-        $categories = \core_course_category::get_all();
+        $categories = core_course_category::get_all();
         // Categories are not sorted as are listed to user using nested name.
         if ($perpage != 0) {
             $offset = $page * $perpage;
@@ -1152,7 +1147,7 @@ class coursetransfer {
      * @return array
      */
     public static function get_categories(): array {
-        return \core_course_category::get_all();
+        return core_course_category::get_all();
     }
 
     /**
@@ -1164,7 +1159,7 @@ class coursetransfer {
      * @throws dml_exception
      */
     public static function can_remove_origin_course(stdClass $user): bool {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         return has_capability('local/coursetransfer:origin_remove_course', $context, $user->id);
     }
 
@@ -1177,7 +1172,7 @@ class coursetransfer {
      * @throws dml_exception
      */
     public static function has_origin_user_data(stdClass $user): bool {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         return has_capability('local/coursetransfer:origin_restore_course_users', $context, $user->id);
     }
 
@@ -1214,7 +1209,7 @@ class coursetransfer {
      * @throws dml_exception
      */
     public static function can_target_restore_groups_remove(stdClass $user): bool {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         return has_capability('local/coursetransfer:target_restore_groups_remove', $context, $user->id);
     }
 
@@ -1227,7 +1222,7 @@ class coursetransfer {
      * @throws dml_exception
      */
     public static function can_target_restore_enrol_remove(stdClass $user): bool {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         return has_capability('local/coursetransfer:target_restore_enrol_remove', $context, $user->id);
     }
 
@@ -1240,7 +1235,7 @@ class coursetransfer {
      * @throws dml_exception
      */
     public static function can_restore_in_not_new_course(stdClass $user): bool {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         if (has_capability('local/coursetransfer:target_restore_content_remove', $context, $user->id) &&
                 has_capability('local/coursetransfer:target_restore_merge', $context, $user->id)) {
             return true;
@@ -1255,7 +1250,7 @@ class coursetransfer {
      * @param string $shortname
      * @throws dml_exception
      */
-    public static function cleanup_course_bin(int $courseid, string $shortname) {
+    public static function cleanup_course_bin(int $courseid, string $shortname): void {
         global $DB;
         if (get_config('local_coursetransfer', 'remove_course_cleanup')) {
             mtrace("Remove course items recycle bin enabled ...");
@@ -1300,7 +1295,7 @@ class coursetransfer {
      * @param int $catid
      * @throws dml_exception
      */
-    public static function cleanup_category_bin(int $catid) {
+    public static function cleanup_category_bin(int $catid): void {
         global $DB;
         if (get_config('local_coursetransfer', 'remove_cat_cleanup')) {
             mtrace("Remove category items recycle bin enabled ...");
@@ -1343,11 +1338,10 @@ class coursetransfer {
             return false;
         }
         if (!empty($search)) {
-            if (strpos(strtolower($course->fullname), strtolower($search)) === false) {
+            if (!str_contains(strtolower($course->fullname), strtolower($search))) {
                 return false;
             }
         }
         return true;
     }
-
 }

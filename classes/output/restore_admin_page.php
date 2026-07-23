@@ -35,7 +35,9 @@
 namespace local_coursetransfer\output;
 
 use coding_exception;
+use core\exception\moodle_exception;
 use core_course_category;
+use dml_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
 use moodle_url;
@@ -66,7 +68,7 @@ use templatable;
 class restore_admin_page implements renderable, templatable {
 
     /** @var int How many recent restorations to show on the landing. */
-    const RECENT_LIMIT = 5;
+    const int RECENT_LIMIT = 5;
 
     /**
      * Export for template.
@@ -74,6 +76,7 @@ class restore_admin_page implements renderable, templatable {
      * @param renderer_base $output
      * @return stdClass
      * @throws coding_exception
+     * @throws moodle_exception
      */
     public function export_for_template(renderer_base $output): stdClass {
         $data = new stdClass();
@@ -104,6 +107,7 @@ class restore_admin_page implements renderable, templatable {
      * the admin may create courses are offered.
      *
      * @return array [{value, label}]
+     * @throws coding_exception
      */
     protected function export_destcategories(): array {
         $options = [(object)[
@@ -131,6 +135,7 @@ class restore_admin_page implements renderable, templatable {
      *
      * @return array
      * @throws coding_exception
+     * @throws dml_exception
      */
     protected function export_recent(): array {
         // Restores are the course (type 0) and category (type 1) request rows.
@@ -163,7 +168,7 @@ class restore_admin_page implements renderable, templatable {
      * @param stdClass $r
      * @param string $logurl
      * @return stdClass
-     * @throws coding_exception
+     * @throws coding_exception|moodle_exception
      */
     protected function map_recent(stdClass $r, string $logurl): stdClass {
         $status = (int)$r->status;
