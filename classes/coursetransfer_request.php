@@ -55,52 +55,52 @@ use stdClass;
 class coursetransfer_request {
 
     /** @var string Table */
-    const string TABLE = 'local_coursetransfer_request';
+    const TABLE = 'local_coursetransfer_request';
 
     /** @var int Type Course */
-    const int TYPE_COURSE = 0;
+    const TYPE_COURSE = 0;
 
     /** @var int Type Category */
-    const int TYPE_CATEGORY = 1;
+    const TYPE_CATEGORY = 1;
 
     /** @var int Type Remove Course */
-    const int TYPE_REMOVE_COURSE = 2;
+    const TYPE_REMOVE_COURSE = 2;
 
     /** @var int Type Remove Category */
-    const int TYPE_REMOVE_CATEGORY = 3;
+    const TYPE_REMOVE_CATEGORY = 3;
 
     /** @var int Direction Request */
-    const int DIRECTION_REQUEST = 0;
+    const DIRECTION_REQUEST = 0;
 
     /** @var int Direction Response */
-    const int DIRECTION_RESPONSE = 1;
+    const DIRECTION_RESPONSE = 1;
 
     /** @var int Status Error */
-    const int STATUS_ERROR = 0;
+    const STATUS_ERROR = 0;
 
     /** @var int Status not started */
-    const int STATUS_NOT_STARTED = 1;
+    const STATUS_NOT_STARTED = 1;
 
     /** @var int Status in progress */
-    const int STATUS_IN_PROGRESS = 10;
+    const STATUS_IN_PROGRESS = 10;
 
     /** @var int Status Backup */
-    const int STATUS_BACKUP = 30;
+    const STATUS_BACKUP = 30;
 
     /** @var int Status Download */
-    const int STATUS_DOWNLOAD = 50;
+    const STATUS_DOWNLOAD = 50;
 
     /** @var int Status Downloaded */
-    const int STATUS_DOWNLOADED = 70;
+    const STATUS_DOWNLOADED = 70;
 
     /** @var int Status Restore */
-    const int STATUS_RESTORE = 80;
+    const STATUS_RESTORE = 80;
 
     /** @var int Status Incompleted */
-    const int STATUS_INCOMPLETED = 90;
+    const STATUS_INCOMPLETED = 90;
 
     /** @var int Status Completed */
-    const int STATUS_COMPLETED = 100;
+    const STATUS_COMPLETED = 100;
 
     /**
      * Get.
@@ -524,7 +524,8 @@ class coursetransfer_request {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public static function insert_or_update(stdClass $object, int $id = null): bool|int {
+    public static function insert_or_update(stdClass $object, int $id = null): bool|int
+    {
         global $DB;
         if (!array_key_exists($object->status, coursetransfer::STATUS)) {
             throw new moodle_exception('STATUS IS NOT VALID');

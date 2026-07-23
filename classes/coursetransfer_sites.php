@@ -51,13 +51,13 @@ use stdClass;
 class coursetransfer_sites {
 
     /** @var string Table Prex */
-    const string TABLE_PREX = 'local_coursetransfer_';
+    const TABLE_PREX = 'local_coursetransfer_';
 
     /** @var string Table Target */
-    const string TABLE_TARGET = 'local_coursetransfer_target';
+    const TABLE_TARGET = 'local_coursetransfer_target';
 
     /** @var string Table Origin */
-    const string TABLE_ORIGIN = 'local_coursetransfer_origin';
+    const TABLE_ORIGIN = 'local_coursetransfer_origin';
 
     /**
      * Get.

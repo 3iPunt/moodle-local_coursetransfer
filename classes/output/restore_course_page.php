@@ -68,7 +68,7 @@ use templatable;
 class restore_course_page implements renderable, templatable {
 
     /** @var int How many recent restorations of this course to show. */
-    const int RECENT_LIMIT = 5;
+    const RECENT_LIMIT = 5;
 
     /** @var stdClass The destination (current) course. */
     protected stdClass $course;

@@ -59,7 +59,7 @@ use templatable;
 class executions_page implements renderable, templatable {
 
     /** @var int Minutes without movement before an active request is flagged as stuck */
-    const int STUCK_MINUTES = 30;
+    const STUCK_MINUTES = 30;
 
     /** @var stdClass[] Active requests */
     protected array $active;

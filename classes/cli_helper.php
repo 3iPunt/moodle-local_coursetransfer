@@ -58,16 +58,16 @@ defined('MOODLE_INTERNAL') || die();
 class cli_helper {
 
     /** @var int Exit code: success. */
-    const int EXIT_OK = 0;
+    const EXIT_OK = 0;
 
     /** @var int Exit code: runtime error (operation failed). */
-    const int EXIT_RUNTIME = 1;
+    const EXIT_RUNTIME = 1;
 
     /** @var int Exit code: usage/validation error (bad arguments). */
-    const int EXIT_USAGE = 2;
+    const EXIT_USAGE = 2;
 
     /** @var int Maximum deferral (days) for a scheduled operation. */
-    const int SCHEDULE_MAX_DAYS = 30;
+    const SCHEDULE_MAX_DAYS = 30;
 
     /**
      * Normalise a CLI option to an integer boolean (0|1), keeping the historical

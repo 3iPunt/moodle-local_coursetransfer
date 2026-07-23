@@ -65,7 +65,7 @@ use templatable;
 class restore_category_page implements renderable, templatable {
 
     /** @var int How many recent restorations of this category to show. */
-    const int RECENT_LIMIT = 5;
+    const RECENT_LIMIT = 5;
 
     /** @var core_course_category The destination (current) category. */
     protected core_course_category $category;

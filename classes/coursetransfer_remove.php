@@ -53,7 +53,7 @@ use stdClass;
 class coursetransfer_remove {
 
     /** @var int Cleanup bin task nextruntim plus */
-    const int CLEANUP_BIN_TASK_NEXTRUNTIME_PLUS = 240;
+    const CLEANUP_BIN_TASK_NEXTRUNTIME_PLUS = 240;
 
     /**
      * Create task remove course.

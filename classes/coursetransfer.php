@@ -78,10 +78,10 @@ require_once($CFG->dirroot . '/local/coursetransfer/classes/task/create_backup_c
 class coursetransfer {
 
     /** @var string[] Fields User */
-    const array FIELDS_USER = ['username', 'email', 'userid', 'idnumber'];
+    const FIELDS_USER = ['username', 'email', 'userid', 'idnumber'];
 
     /** @var string[][] Status */
-    const array STATUS = [
+    const STATUS = [
         0 => ['shortname' => 'error', 'alert' => 'danger'],
         1 => ['shortname' => 'not_started', 'alert' => 'warning'],
         10 => ['shortname' => 'in_progress', 'alert' => 'primary'],

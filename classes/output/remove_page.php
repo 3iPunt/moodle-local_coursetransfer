@@ -66,7 +66,7 @@ use templatable;
 class remove_page implements renderable, templatable {
 
     /** @var int How many recent deletions to show on the landing. */
-    const int RECENT_LIMIT = 5;
+    const RECENT_LIMIT = 5;
 
     /**
      * Export for template.
