@@ -12,18 +12,19 @@
  */
 
 .local-coursetransfer {
-    /* Brand */
-    --orange-50: #fff1ed;
-    --orange-100: #ffddd2;
-    --orange-200: #ffbca6;
-    --orange-500: #f84015;
-    --orange-600: #da3208;
-    --orange-700: #b12706;
-    --teal-50: #e6f7f8;
-    --teal-500: #00a6b0;
-    --teal-600: #008791;
-    --teal-700: #006a72;
-    --teal-800: #004f55;
+    /* Brand (logo colours: magenta #ea1a7f primary, amber #ffa827 secondary) */
+    --magenta-50: #fdeaf3;
+    --magenta-100: #f9cbe1;
+    --magenta-200: #f293c0;
+    --magenta-500: #ea1a7f;
+    --magenta-600: #c9156c;
+    --magenta-700: #a3115a;
+    --magenta-border: #f1d0de;
+    --amber-50: #fff4e0;
+    --amber-500: #ffa827;
+    --amber-600: #e08d10;
+    --amber-700: #b96f08;
+    --amber-800: #8a5205;
     /* Neutrals */
     --neutral-0: #fff;
     --neutral-25: #fafafa;
@@ -42,20 +43,20 @@
     --warning-500: #e8a317;
     --warning-700: #9a6b08;
     --warning-50: #fcf3df;
-    --danger-500: #e23b2e;
-    --danger-50: #fceae8;
+    --danger-500: #cd1405;
+    --danger-50: #ffe3e0;
     --info-500: #2d7ff9;
     --info-50: #e8f1fe;
     /* Semantic aliases */
-    --color-primary: var(--orange-500);
-    --color-primary-hover: var(--orange-600);
-    --color-primary-press: var(--orange-700);
-    --color-secondary: var(--teal-500);
+    --color-primary: var(--magenta-500);
+    --color-primary-hover: var(--magenta-600);
+    --color-primary-press: var(--magenta-700);
+    --color-secondary: var(--amber-500);
     --text-strong: var(--neutral-900);
     --text-body: var(--neutral-800);
     --text-muted: var(--neutral-500);
     --text-subtle: var(--neutral-400);
-    --text-link: var(--orange-600);
+    --text-link: var(--magenta-600);
     --surface-alt: var(--neutral-25);
     --surface-sunken: var(--neutral-50);
     --border-default: var(--neutral-200);
@@ -137,8 +138,8 @@
 /* status 10 (in_progress) and 30 (in_backup) */
 .local-coursetransfer .ct-badge--in-progress,
 .local-coursetransfer .ct-badge--in-backup {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 /* status 50 (download) and 70 (downloaded) */
@@ -168,8 +169,8 @@
 
 /* Self-pairing marker ("this site"), not a state: no leading dot */
 .local-coursetransfer .ct-badge--self {
-    background: var(--teal-50);
-    color: var(--teal-700);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-badge--self::before {
@@ -310,8 +311,8 @@
 }
 
 .local-coursetransfer .ct-alert--info {
-    background: var(--teal-50);
-    color: var(--teal-800);
+    background: var(--amber-50);
+    color: var(--amber-800);
 }
 
 .local-coursetransfer .ct-alert--success {
@@ -321,7 +322,7 @@
 
 .local-coursetransfer .ct-alert--danger {
     background: var(--danger-50);
-    border: 1px solid #f0cfca;
+    border: 1px solid var(--magenta-border);
     color: var(--danger-500);
 }
 
@@ -407,8 +408,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--teal-50);
-    color: var(--teal-600);
+    background: var(--amber-50);
+    color: var(--amber-600);
 }
 
 .local-coursetransfer .ct-sitecard--offline .ct-sitecard-icon {
@@ -424,7 +425,7 @@
 
 .local-coursetransfer .ct-sitecard[aria-pressed="true"] {
     border-color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
 }
 
 .local-coursetransfer .ct-sitecard[disabled] {
@@ -584,7 +585,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px, rgba(0, 0, 0, 0.26) 0 2px 4px -1px;
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.10));
     background: linear-gradient(138deg, #FFF9E4 11.83%, #FFEBED 89.48%);
 }
 
@@ -656,7 +657,7 @@
 
 .local-coursetransfer .ct-banner--error {
     background: var(--danger-50);
-    border: 1px solid #f0cfca;
+    border: 1px solid var(--magenta-border);
     color: var(--danger-500);
 }
 
@@ -760,13 +761,13 @@
 }
 
 .local-coursetransfer .ct-chip--origin {
-    background: var(--teal-50);
-    color: var(--teal-700);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-chip--target {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-chip--off {
@@ -782,8 +783,8 @@
     margin-bottom: 20px;
     padding: 10px 14px;
     border-radius: var(--radius-md);
-    background: var(--teal-50);
-    border: 1.5px solid var(--teal-200);
+    background: var(--amber-50);
+    border: 1.5px solid var(--amber-200);
 }
 
 .local-coursetransfer .ct-sitebar-icon {
@@ -793,7 +794,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: var(--teal-500);
+    background: var(--amber-500);
     color: #fff;
     font-size: 13px;
     flex: 0 0 auto;
@@ -802,7 +803,7 @@
 .local-coursetransfer .ct-sitebar-label {
     font-size: 12.5px;
     font-weight: 600;
-    color: var(--teal-700);
+    color: var(--amber-700);
     text-transform: uppercase;
     letter-spacing: .02em;
 }
@@ -810,7 +811,7 @@
 .local-coursetransfer .ct-sitebar-name {
     font-size: 14px;
     font-weight: 700;
-    color: var(--teal-800);
+    color: var(--amber-800);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -830,7 +831,7 @@
 }
 
 .local-coursetransfer .ct-startcard--danger {
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
     border-left: 4px solid var(--danger-500);
 }
 
@@ -840,13 +841,13 @@
 }
 
 .local-coursetransfer .ct-wizard--danger {
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
     border-top: 3px solid var(--danger-500);
 }
 
 .local-coursetransfer .ct-sitebar--danger {
     background: var(--danger-50);
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
 }
 
 .local-coursetransfer .ct-sitebar--danger .ct-sitebar-icon {
@@ -860,7 +861,7 @@
 
 .local-coursetransfer .ct-selcounter--danger.ct-selcounter--active {
     background: var(--danger-50);
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
 }
 
 .local-coursetransfer .ct-done-icon--danger {
@@ -881,7 +882,7 @@
     align-items: center;
     gap: 14px;
     padding: 16px 20px;
-    border-bottom: 1px solid #f0cfca;
+    border-bottom: 1px solid var(--magenta-border);
 }
 
 .local-coursetransfer .ct-removecard-icon {
@@ -1008,7 +1009,7 @@
 
 .local-coursetransfer .ct-iconbtn--active {
     border-color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
 }
 
@@ -1167,7 +1168,7 @@
 }
 
 .local-coursetransfer .ct-rolecard--origin[aria-pressed="true"] {
-    background: var(--teal-50);
+    background: var(--amber-50);
     border-color: var(--color-secondary);
 }
 
@@ -1177,7 +1178,7 @@
 }
 
 .local-coursetransfer .ct-rolecard--target[aria-pressed="true"] {
-    background: var(--orange-50);
+    background: var(--magenta-50);
     border-color: var(--color-primary);
 }
 
@@ -1259,13 +1260,13 @@
 }
 
 .local-coursetransfer .ct-btn--outline {
-    background: var(--orange-50);
+    background: var(--magenta-50);
     border: 1.5px solid var(--color-primary);
     color: var(--color-primary);
 }
 
 .local-coursetransfer .ct-btn--outline:hover {
-    background: var(--orange-100);
+    background: var(--magenta-100);
     color: var(--color-primary-hover);
 }
 
@@ -1369,8 +1370,8 @@
 }
 
 .local-coursetransfer .ct-tab-count--hot {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 /* Active migration cards */
@@ -1490,23 +1491,23 @@
 
 /* Progressive tone per phase: each segment a shade darker as it advances. */
 .local-coursetransfer .ct-segment--0 .ct-segment-fill {
-    background: #fb7a53;
+    background: var(--magenta-200);
 }
 
 .local-coursetransfer .ct-segment--1 .ct-segment-fill {
-    background: var(--orange-500);
+    background: var(--magenta-500);
 }
 
 .local-coursetransfer .ct-segment--2 .ct-segment-fill {
-    background: var(--orange-600);
+    background: var(--magenta-600);
 }
 
 .local-coursetransfer .ct-segment--3 .ct-segment-fill {
-    background: var(--orange-700);
+    background: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-segment--4 .ct-segment-fill {
-    background: #7f1b04;
+    background: #74103f;
 }
 
 /* Current phase: the track gently pulses so it reads as active even when its
@@ -1520,7 +1521,7 @@
         background: var(--neutral-100);
     }
     50% {
-        background: var(--orange-100);
+        background: var(--magenta-100);
     }
 }
 
@@ -1709,13 +1710,13 @@
 }
 
 .local-coursetransfer .ct-dirtag--origin {
-    background: var(--teal-50);
-    color: var(--teal-700);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-dirtag--target {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-dirtag--self {
@@ -1858,15 +1859,15 @@
 }
 
 .local-coursetransfer .ct-linkbtn--origin {
-    border: 1.5px solid var(--teal-200);
-    background: var(--teal-50);
-    color: var(--teal-700);
+    border: 1.5px solid var(--amber-200);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-linkbtn--target {
     border: 1.5px solid var(--color-primary-border);
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-detail-grid {
@@ -1950,7 +1951,7 @@
 }
 
 .local-coursetransfer .ct-tl--current .ct-tl-marker {
-    background: var(--orange-50);
+    background: var(--magenta-50);
     border-color: var(--color-primary);
     color: var(--color-primary);
 }
@@ -2060,7 +2061,7 @@
 /* Detail error card */
 .local-coursetransfer .ct-detail-error {
     background: var(--danger-50);
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
     padding: 18px 20px;
 }
 
@@ -2248,8 +2249,8 @@
     gap: 12px;
     width: 100%;
     text-align: left;
-    background: var(--surface-brand-subtle, var(--orange-50));
-    border: 1.5px solid var(--color-primary-border, var(--orange-200));
+    background: var(--surface-brand-subtle, var(--magenta-50));
+    border: 1.5px solid var(--color-primary-border, var(--magenta-200));
     border-radius: var(--radius-sm);
     padding: 13px 15px;
     cursor: pointer;
@@ -2341,7 +2342,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
     font-size: 22px;
 }
@@ -2431,7 +2432,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
 }
 
@@ -2546,7 +2547,7 @@
 }
 
 .local-coursetransfer .ct-selcounter--active {
-    background: var(--orange-50);
+    background: var(--magenta-50);
     border-color: var(--color-primary-border);
 }
 
@@ -2603,8 +2604,8 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
     border: 1px solid var(--color-primary-border);
     border-radius: var(--radius-pill);
     padding: 4px 4px 4px 12px;
@@ -2623,7 +2624,7 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    color: var(--orange-700);
+    color: var(--magenta-700);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2634,7 +2635,7 @@
 }
 
 .local-coursetransfer .ct-cart-chip-x:hover {
-    background: var(--orange-100);
+    background: var(--magenta-100);
 }
 
 .local-coursetransfer .ct-cart-chip-x .fa {
@@ -2693,7 +2694,7 @@
 }
 
 .local-coursetransfer .ct-selrow[aria-pressed="true"] {
-    background: var(--orange-50);
+    background: var(--magenta-50);
 }
 
 .local-coursetransfer .ct-checkbox {
@@ -2838,7 +2839,7 @@
 
 .local-coursetransfer .ct-modeopt[aria-pressed="true"] {
     border-color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
 }
 
 .local-coursetransfer .ct-modeopt--danger[aria-pressed="true"] {
@@ -2947,7 +2948,7 @@
 }
 
 .local-coursetransfer .ct-modeopt-confirm {
-    border-top: 1px solid #f0cfca;
+    border-top: 1px solid var(--magenta-border);
     background: var(--danger-50);
     padding: 13px 17px 13px 50px;
 }
@@ -3072,8 +3073,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--teal-50);
-    color: var(--teal-600);
+    background: var(--amber-50);
+    color: var(--amber-600);
 }
 
 .local-coursetransfer .ct-common-body {
@@ -3144,13 +3145,13 @@
 }
 
 .local-coursetransfer .ct-chip--new {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-chip--existing {
-    background: var(--teal-50);
-    color: var(--teal-700);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-chip--replace {
@@ -3180,7 +3181,7 @@
 }
 
 .local-coursetransfer .ct-destcard--danger {
-    border-color: #f0cfca;
+    border-color: var(--magenta-border);
 }
 
 .local-coursetransfer .ct-destcard-head {
@@ -3305,11 +3306,11 @@
 }
 
 .local-coursetransfer .ct-review-env--origin {
-    color: var(--teal-700);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-review-env--target {
-    color: var(--orange-700);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-review-env-sep {
@@ -3332,7 +3333,7 @@
     font-weight: 700;
     font-size: 11.5px;
     color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
     border-radius: 6px;
     padding: 3px 8px;
     flex: none;
@@ -3371,8 +3372,8 @@
 }
 
 .local-coursetransfer .ct-destcard-tag--new {
-    background: var(--orange-50);
-    color: var(--orange-700);
+    background: var(--magenta-50);
+    color: var(--magenta-700);
 }
 
 .local-coursetransfer .ct-destcard-tag--warn {
@@ -3386,8 +3387,8 @@
 }
 
 .local-coursetransfer .ct-destcard-tag--merge {
-    background: var(--teal-50);
-    color: var(--teal-700);
+    background: var(--amber-50);
+    color: var(--amber-700);
 }
 
 .local-coursetransfer .ct-destcard-body {
@@ -3406,7 +3407,7 @@
 
 .local-coursetransfer .ct-destopt[aria-pressed="true"] {
     border-color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
 }
 
 .local-coursetransfer .ct-destopt-btn {
@@ -3579,8 +3580,8 @@
     height: 26px;
     border-radius: var(--radius-pill);
     flex: none;
-    background: var(--teal-50);
-    color: var(--teal-600);
+    background: var(--amber-50);
+    color: var(--amber-600);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3687,7 +3688,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
 }
 
@@ -3771,8 +3772,8 @@
 }
 
 .local-coursetransfer .ct-review-cell-icon--ok {
-    background: var(--teal-50);
-    color: var(--teal-600);
+    background: var(--amber-50);
+    color: var(--amber-600);
 }
 
 /* "Off" state: the option is disabled/negated — muted icon crossed out with a
@@ -3837,7 +3838,7 @@
     width: 70px;
     height: 70px;
     border-radius: var(--radius-pill);
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
     display: flex;
     align-items: center;
@@ -3872,7 +3873,7 @@
 
 .local-coursetransfer .ct-radiocard[aria-pressed="true"] {
     border-color: var(--color-primary);
-    background: var(--orange-50);
+    background: var(--magenta-50);
 }
 
 .local-coursetransfer .ct-radiocard-radio {
@@ -3951,7 +3952,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--orange-50);
+    background: var(--magenta-50);
     color: var(--color-primary);
     border: 2px solid var(--color-primary-border);
 }
@@ -3983,7 +3984,7 @@
    Reuses the ct-modeopt-confirm-btn/box pattern (same as Replace mode). */
 .local-coursetransfer .ct-removeorigin-confirm {
     background: var(--danger-50);
-    border: 1px solid #f0cfca;
+    border: 1px solid var(--magenta-border);
     border-radius: var(--radius-sm);
     padding: 12px 14px;
     margin-top: 8px;
@@ -4031,12 +4032,36 @@
     flex-wrap: wrap;
 }
 
+.local-coursetransfer .ct-idx-logobox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
 .local-coursetransfer .ct-idx-logo {
     height: 72px;
     width: auto;
     max-width: 260px;
     object-fit: contain;
-    flex: 0 0 auto;
+    display: block;
+}
+
+/* Summary page only: turn the whole main content area into the brand banner.
+   Scoped via the `ct-summary-page` body class added in index.php so it NEVER
+   leaks to other Moodle pages (this stylesheet is loaded site-wide). */
+@media (min-width: 768px) {
+    body.ct-summary-page #page.drawers div[role="main"] {
+        background: linear-gradient(138deg, #FFF9E4 11.83%, #FFEBED 89.48%);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.10);
+        padding: 29px;
+        border-radius: 10px;
+    }
+
+    body.ct-summary-page.pagelayout-standard #page.drawers .main-inner,
+    body.ct-summary-page.limitedwidth #page.drawers .main-inner {
+        max-width: 900px;
+    }
 }
 
 .local-coursetransfer .ct-idx-hero-text {

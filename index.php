@@ -46,6 +46,8 @@ $title = get_string('summary', 'local_coursetransfer');
 if (is_siteadmin()) {
     $PAGE->set_context(context_system::instance());
     $PAGE->set_pagelayout('standard');
+    // Scopes the summary-only banner styles (see styles.css .ct-summary-page).
+    $PAGE->add_body_class('ct-summary-page');
     $PAGE->set_title($title);
     // The page renders its own hero heading; clear the theme one.
     $PAGE->set_heading('');
