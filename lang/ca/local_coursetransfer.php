@@ -34,6 +34,7 @@ $string['coursetransfer:origin_restore_category'] = 'Restaura categoria de plata
  */
 
 $string['pluginname'] = "Restaurar cursos remots";
+$string['event_request_completed'] = 'Petició de transferència completada';
 $string['pluginname_header_general'] = "General";
 $string['setting_target_restore_course_max_size'] = "Grandària màxima del curs a restaurar (MB)";
 $string['setting_target_restore_course_max_size_desc'] = "Límit a la mida de la còpia de seguretat (arxiu MBZ) del curs origen a restaurar a MB.";

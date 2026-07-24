@@ -34,6 +34,7 @@ $string['coursetransfer:origin_restore_category'] = 'Leheneratu jatorri-platafor
  */
 
 $string['pluginname'] = "Berreskuratu urruneko ikastaroak";
+$string['event_request_completed'] = 'Transferentzia-eskaera osatuta';
 $string['pluginname_header_general'] = "Orokorra";
 $string['setting_target_restore_course_max_size'] = "Leheneratu beharreko ikastaroaren gehienezko tamaina (MB)";
 $string['setting_target_restore_course_max_size_desc'] = "Mugatu iturburu-ikastaroaren babeskopia (MBZ fitxategia) MB-tan leheneratu beharreko babeskopia.";

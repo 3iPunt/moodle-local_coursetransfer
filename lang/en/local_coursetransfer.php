@@ -34,6 +34,7 @@ $string['coursetransfer:origin_restore_category'] = 'Restore remote platform cat
  */
 
 $string['pluginname'] = 'Course Transfer';
+$string['event_request_completed'] = 'Course transfer request completed';
 $string['pluginname_header_general'] = 'General';
 $string['setting_target_restore_course_max_size'] = 'Maximum course size to be restored (MB)';
 $string['setting_target_restore_course_max_size_desc'] = 'Limit of the size of the backup copy (MBZ file)of the origin course to be restored in MB.';

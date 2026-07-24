@@ -105,6 +105,7 @@ class restore_course_task extends \core\task\adhoc_task {
                     if ($reqcat->status === coursetransfer_request::STATUS_COMPLETED) {
                         coursetransfer_notification::send_restore_category_completed(
                                 $request->userid, $request->origin_category_id);
+                        coursetransfer_request::trigger_request_completed($reqcat);
                         if ($reqcat->origin_remove_category) {
                             $this->log('Origin Category Removing...');
                             if (has_capability('local/coursetransfer:origin_remove_category',
@@ -123,6 +124,7 @@ class restore_course_task extends \core\task\adhoc_task {
                     }
                 } else {
                     coursetransfer_notification::send_restore_course_completed($request->userid, $request->target_course_id);
+                    coursetransfer_request::trigger_request_completed($request);
                 }
 
                 // Remove origen course logical.

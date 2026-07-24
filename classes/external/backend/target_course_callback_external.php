@@ -236,6 +236,7 @@ class target_course_callback_external extends external_api {
                     } else if ((int)$request->type === coursetransfer_request::TYPE_REMOVE_CATEGORY) {
                         coursetransfer_notification::send_remove_category_completed($request->userid, $request->origin_category_id);
                     }
+                    coursetransfer_request::trigger_request_completed($request);
                     $data->id = $request->id;
                     $success = true;
                 } else {

@@ -516,6 +516,27 @@ class coursetransfer_request {
     }
 
     /**
+     * Fire the request_completed event for a request row.
+     *
+     * Decouples the plugin from any notification policy: observers (e.g.
+     * local_coursetransfermanager) decide whether to notify. The plugin itself
+     * no longer sends messages/emails.
+     *
+     * @param stdClass $request A local_coursetransfer_request row.
+     */
+    public static function trigger_request_completed(stdClass $request): void {
+        \local_coursetransfer\event\request_completed::create([
+            'context' => \context_system::instance(),
+            'objectid' => (int)$request->id,
+            'userid' => (int)$request->userid,
+            'other' => [
+                'type' => (int)$request->type,
+                'direction' => (int)$request->direction,
+            ],
+        ])->trigger();
+    }
+
+    /**
      * Insert or update row in table.
      *
      * @param stdClass $object

@@ -34,6 +34,7 @@ $string['coursetransfer:origin_restore_category'] = 'Restaurar categoría de pla
  */
 
 $string['pluginname'] = "Restaurar cursos remotos";
+$string['event_request_completed'] = 'Petición de transferencia completada';
 $string['pluginname_header_general'] = "Xeral";
 $string['setting_target_restore_course_max_size'] = "Tamaño máximo do curso para restaurar (MB)";
 $string['setting_target_restore_course_max_size_desc'] = "Limite o tamaño da copia de seguridade (ficheiro MBZ) do curso de orixe que se restaurará en MB.";
