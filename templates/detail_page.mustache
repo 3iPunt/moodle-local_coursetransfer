@@ -81,6 +81,13 @@
     </div>
     {{/scheduled}}
 
+    {{#inprogress}}
+    <div class="ct-alert {{#stalled}}ct-alert--warning{{/stalled}}{{^stalled}}ct-alert--info{{/stalled}} ct-mt">
+        <i class="fa {{#stalled}}fa-exclamation-triangle{{/stalled}}{{^stalled}}fa-hourglass-half{{/stalled}} ct-alert-icon" aria-hidden="true"></i>
+        <p>{{ agetext }}{{#stalled}} · {{#str}} exec_stalled, local_coursetransfer {{/str}}{{/stalled}}</p>
+    </div>
+    {{/inprogress}}
+
     <div class="ct-detail-grid">
         <div class="ct-card ct-timeline-card">
             <div class="ct-card-eyebrow">{{#str}} exec_progress, local_coursetransfer {{/str}}</div>
@@ -181,6 +188,62 @@
                 </div>
             </div>
             {{/hastree}}
+
+            {{#hastasks}}
+            {{! Task tracking: audit aid — adhoc tasks queued/running on THIS site for
+                this request (the remote site's tasks run there). }}
+            <div class="ct-card ct-fieldgroup">
+                <div class="ct-card-eyebrow">{{#str}} tracking, local_coursetransfer {{/str}}</div>
+                {{#hastaskfailing}}
+                <div class="ct-alert ct-alert--danger">
+                    <i class="fa fa-exclamation-triangle ct-alert-icon" aria-hidden="true"></i>
+                    <p>{{#str}} tracking_failing_hint, local_coursetransfer {{/str}}</p>
+                </div>
+                {{/hastaskfailing}}
+                {{#hastaskdue}}
+                <div class="ct-alert ct-alert--warning">
+                    <i class="fa fa-clock-o ct-alert-icon" aria-hidden="true"></i>
+                    <p>{{#str}} tracking_due_hint, local_coursetransfer {{/str}}
+                        <a href="{{ tasksurl }}" target="_blank" rel="noopener">{{#str}} tracking_tasks_link, local_coursetransfer {{/str}}</a></p>
+                </div>
+                {{/hastaskdue}}
+                <div class="ct-tasks-wrap">
+                    <table class="ct-tasks">
+                        <thead>
+                            <tr>
+                                <th>{{#str}} tracking_class, local_coursetransfer {{/str}}</th>
+                                <th>{{#str}} tracking_nextrun, local_coursetransfer {{/str}}</th>
+                                <th>{{#str}} tracking_faildelay, local_coursetransfer {{/str}}</th>
+                                <th>{{#str}} timecreated, local_coursetransfer {{/str}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#tasks}}
+                            <tr class="{{#failing}}ct-tasks-row--fail{{/failing}}">
+                                <td class="ct-tasks-name">{{ classname }}</td>
+                                <td>{{ nextrun }}</td>
+                                <td class="{{#failing}}ct-tasks-fail{{/failing}}">{{ faildelay }}</td>
+                                <td>{{ timecreated }}</td>
+                            </tr>
+                            {{/tasks}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{/hastasks}}
+
+            {{! Cross-site correlation: ids to locate the same operation on the peer Moodle. }}
+            <div class="ct-card ct-fieldgroup">
+                <div class="ct-card-eyebrow">{{#str}} exec_corr, local_coursetransfer {{/str}}</div>
+                <div class="ct-corr">
+                    {{#corr}}
+                    <div class="ct-corr-item">
+                        <div class="ct-corr-label">{{ label }}</div>
+                        <div class="ct-corr-value">{{#url}}<a href="{{ url }}" target="_blank" rel="noopener">{{ value }} <i class="fa fa-external-link" aria-hidden="true"></i></a>{{/url}}{{^url}}{{ value }}{{/url}}</div>
+                    </div>
+                    {{/corr}}
+                </div>
+            </div>
         </div>
     </div>
 

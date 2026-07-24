@@ -37,27 +37,32 @@ require_once('../../config.php');
 
 global $DB;
 
-$type = optional_param('type', coursetransfer_request::TYPE_COURSE, PARAM_INT);
-$direction = optional_param('direction', coursetransfer_request::DIRECTION_REQUEST, PARAM_INT);
-$fstatus = optional_param('fstatus', '', PARAM_RAW);
-$fdatefrom = optional_param('fdatefrom', '', PARAM_RAW);
-$fdateto = optional_param('fdateto', '', PARAM_RAW);
-$fsizemin = optional_param('fsizemin', 0, PARAM_INT);
-$fsizemax = optional_param('fsizemax', 0, PARAM_INT);
-$forigincourseid = optional_param('forigincourseid', 0, PARAM_INT);
-$ftargetcourseid = optional_param('ftargetcourseid', 0, PARAM_INT);
+// Same filter params as the logs page (logs.php), so "Export" respects the
+// current view.
+$q = trim(optional_param('q', '', PARAM_TEXT));
+$festado = optional_param('festado', '', PARAM_ALPHA);
+$ftipo = optional_param('ftipo', -1, PARAM_INT);
+$fdir = optional_param('fdir', '', PARAM_ALPHA);
+$fsite = trim(optional_param('fsite', '', PARAM_URL));
+$ffrom = optional_param('ffrom', '', PARAM_RAW_TRIMMED);
+$fto = optional_param('fto', '', PARAM_RAW_TRIMMED);
 $dataformat = optional_param('dataformat', 'csv', PARAM_ALPHA);
 
 require_login();
 require_capability('local/coursetransfer:view_logs', context_system::instance());
 
-$datefromts = $fdatefrom !== '' ? strtotime($fdatefrom . ' 00:00:00') : null;
-$datetots = $fdateto !== '' ? strtotime($fdateto . ' 23:59:59') : null;
-list($where, $params) = coursetransfer_request::get_logs_filter_sql(
-        $type, $direction, $fstatus, $datefromts, $datetots,
-        $fsizemin ? $fsizemin * 1000000 : null,
-        $fsizemax ? $fsizemax * 1000000 : null,
-        $forigincourseid ?: null, $ftargetcourseid ?: null);
+$fromts = preg_match('/^\d{4}-\d{2}-\d{2}$/', $ffrom) ? strtotime($ffrom . ' 00:00:00') : null;
+$tots = preg_match('/^\d{4}-\d{2}-\d{2}$/', $fto) ? strtotime($fto . ' 23:59:59') : null;
+$filters = [
+    'q' => $q,
+    'statusgroup' => in_array($festado, ['prog', 'wait', 'done', 'err'], true) ? $festado : '',
+    'type' => ($ftipo >= 0 && $ftipo <= 3) ? $ftipo : -1,
+    'dir' => in_array($fdir, ['in', 'out'], true) ? $fdir : '',
+    'site' => $fsite,
+    'from' => $fromts,
+    'to' => $tots,
+];
+[$where, $params] = coursetransfer_request::get_executions_filter_sql($filters);
 
 $columns = [
         'id' => get_string('request_id', 'local_coursetransfer'),
@@ -76,7 +81,14 @@ $columns = [
 ];
 
 $statusmap = coursetransfer::STATUS;
-$rs = $DB->get_recordset_select('local_coursetransfer_request', $where, $params, 'id DESC');
+// get_executions_filter_sql aliases the request table as `r` and may reference
+// the joined course as `c` (search by target course name).
+$sql = "SELECT r.*, c.fullname AS targetcoursename
+          FROM {local_coursetransfer_request} r
+     LEFT JOIN {course} c ON c.id = r.target_course_id
+         WHERE $where
+      ORDER BY r.timemodified DESC, r.id DESC";
+$rs = $DB->get_recordset_sql($sql, $params);
 
 \core\dataformat::download_data(
         'coursetransfer_logs',

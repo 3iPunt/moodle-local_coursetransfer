@@ -127,7 +127,8 @@ class detail_page implements renderable, templatable {
             $data->openoriginlabel = get_string($iscategory ? 'exec_g_removecat' : 'exec_g_removecourse',
                     'local_coursetransfer');
         } else {
-            $data->openoriginlabel = get_string('exec_open_origin', 'local_coursetransfer');
+            $data->openoriginlabel = get_string($iscategory ? 'exec_g_origincat' : 'exec_g_origincourse',
+                    'local_coursetransfer');
         }
         $data->desturl = '';
         if ($isrestore && !empty($r->target_course_id)) {
@@ -169,6 +170,46 @@ class detail_page implements renderable, templatable {
         // Related scheduled/adhoc tasks (shown inline here instead of a separate page).
         $data->tasks = $this->build_tasks((int)$r->id);
         $data->hastasks = !empty($data->tasks);
+        // Aggregate diagnostics so the admin can spot (and mitigate) problems.
+        $data->hastaskfailing = false;
+        $data->hastaskdue = false;
+        foreach ($data->tasks as $t) {
+            $data->hastaskfailing = $data->hastaskfailing || $t->failing;
+            $data->hastaskdue = $data->hastaskdue || $t->due;
+        }
+        $data->tasksurl = (new moodle_url('/admin/tool/task/scheduledtasks.php'))->out(false);
+
+        // Age / stalled detection (audit): a request still in progress whose last
+        // change is old is likely stuck (remote platform or cron not running).
+        $iscompleted = (int)$r->status === coursetransfer_request::STATUS_COMPLETED;
+        $data->inprogress = !$iscompleted && !$data->haserror;
+        $data->agetext = '';
+        $data->stalled = false;
+        if ($data->inprogress) {
+            $idle = time() - (int)$r->timemodified;
+            $data->agetext = get_string('exec_age', 'local_coursetransfer', (object)[
+                'age' => format_time(time() - (int)$r->timecreated),
+                'idle' => format_time($idle),
+            ]);
+            $data->stalled = $idle > HOURSECS;
+        }
+
+        // Cross-site correlation: the ids needed to find the same operation on the
+        // peer Moodle (request id, origin platform, origin/target object ids).
+        $originid = $iscategory ? (int)$r->origin_category_id : (int)$r->origin_course_id;
+        $targetid = $iscategory ? (int)($r->target_category_id ?? 0) : (int)($r->target_course_id ?? 0);
+        $sitelogs = $r->siteurl ? rtrim($r->siteurl, '/') . '/local/coursetransfer/logs.php' : '';
+        $selfurl = (new moodle_url('/local/coursetransfer/log.php', ['id' => (int)$r->id]))->out(false);
+        $data->corr = [
+            (object)['label' => get_string('exec_corr_request', 'local_coursetransfer'),
+                    'value' => '#' . (int)$r->id, 'url' => $selfurl],
+            (object)['label' => get_string('exec_corr_site', 'local_coursetransfer'),
+                    'value' => $r->siteurl, 'url' => $sitelogs],
+            (object)['label' => get_string('exec_corr_origin', 'local_coursetransfer'),
+                    'value' => $originid, 'url' => $data->originurl],
+            (object)['label' => get_string('exec_corr_target', 'local_coursetransfer'),
+                    'value' => $targetid ?: '—', 'url' => $targetid ? $data->desturl : ''],
+        ];
 
         // If this course request was created as part of a category restore, link to
         // the parent category request.
@@ -362,12 +403,17 @@ class detail_page implements renderable, templatable {
      * @return stdClass[]
      */
     protected function build_tasks(int $requestid): array {
+        $now = time();
         $tasks = [];
         foreach (coursetransfer_request::get_related_adhoc_tasks($requestid) as $task) {
             $shortclass = ltrim(strrchr($task->classname, '\\'), '\\') ?: $task->classname;
             $tasks[] = (object)[
                 'classname' => $shortclass,
                 'faildelay' => (int)$task->faildelay,
+                // Diagnostics: a task retrying after failure, or one already due but
+                // still queued (a sign the cron may be stalled).
+                'failing' => (int)$task->faildelay > 0,
+                'due' => !empty($task->nextruntime) && (int)$task->nextruntime <= $now,
                 'nextrun' => $task->nextruntime ? userdate($task->nextruntime) : '-',
                 'timecreated' => !empty($task->timecreated) ? userdate($task->timecreated) : '-',
             ];

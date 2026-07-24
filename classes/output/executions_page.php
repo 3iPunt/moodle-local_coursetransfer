@@ -121,6 +121,7 @@ class executions_page implements renderable, templatable {
         $data->headertitle = get_string('logs_page', 'local_coursetransfer');
         $data->headerdesc = get_string('exec_lead', 'local_coursetransfer');
         $data->baseurl = (new moodle_url('/local/coursetransfer/logs.php'))->out(false);
+        $data->exporturl = (new moodle_url('/local/coursetransfer/export.php'))->out(false);
         $data->back = (new moodle_url('/admin/settings.php', ['section' => 'local_coursetransfer']))->out(false);
         $data->summary = (new moodle_url('/local/coursetransfer/index.php'))->out(false);
 

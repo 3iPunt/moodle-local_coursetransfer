@@ -67,6 +67,15 @@ class request {
     /** @var string Error code: response could not be JSON-decoded. */
     const ERROR_DECODE = '12003';
 
+    /** @var string Error code: HTTP error status (4xx/5xx) from the remote. */
+    const ERROR_HTTP = '12004';
+
+    /** @var string Error code: empty response body from the remote. */
+    const ERROR_EMPTY = '12005';
+
+    /** @var string Error code: request was redirected (3xx) — URL/scheme mismatch. */
+    const ERROR_REDIRECT = '12006';
+
     /** @var string Host */
     public string $host;
 
@@ -421,12 +430,49 @@ class request {
             return $this->error_response(self::ERROR_CURL, $wsname . ': ' . $e->getMessage());
         }
 
+        // Layered error coverage so the admin sees exactly what happened on the
+        // remote call (critical for cross-site debugging).
+        $httpcode = (int)($info['http_code'] ?? 0);
+
+        // 1. Transport failure: DNS, connection refused, SSL, timeout...
+        if ($cerrno !== 0) {
+            $this->log_request($wsname, $info, $cerror, $cerrno, $raw);
+            return $this->error_response(self::ERROR_CURL,
+                    $wsname . ': ' . get_string('error_ws_curl', 'local_coursetransfer',
+                            (object)['msg' => $cerror !== '' ? $cerror : 'cURL', 'errno' => $cerrno]));
+        }
+
+        // 2. Redirect (3xx): never reached the REST endpoint — usually an http/https,
+        //    trailing-slash or www mismatch in the registered platform URL.
+        if ($httpcode >= 300 && $httpcode < 400) {
+            $this->log_request($wsname, $info, $cerror, $cerrno, $raw);
+            return $this->error_response(self::ERROR_REDIRECT,
+                    $wsname . ': ' . get_string('error_ws_redirect', 'local_coursetransfer', $httpcode));
+        }
+
+        // 3. HTTP error status: endpoint reached but failed (WS disabled, wrong path,
+        //    remote 5xx...).
+        if ($httpcode >= 400) {
+            $this->log_request($wsname, $info, $cerror, $cerrno, $raw);
+            return $this->error_response(self::ERROR_HTTP,
+                    $wsname . ': ' . get_string('error_ws_http', 'local_coursetransfer', $httpcode));
+        }
+
+        // 4. Empty body (often WS REST not enabled on the remote).
+        if (trim((string)$raw) === '') {
+            $this->log_request($wsname, $info, $cerror, $cerrno, $raw);
+            return $this->error_response(self::ERROR_EMPTY,
+                    $wsname . ': ' . get_string('error_ws_empty', 'local_coursetransfer'));
+        }
+
+        // 5. Non-JSON body.
         try {
             $response = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             $this->log_request($wsname, $info, $cerror, $cerrno, $raw);
             return $this->error_response(self::ERROR_DECODE,
-                    $wsname . ': ' . $e->getMessage() . ': ' . $cerror . ' (' . $cerrno . ')');
+                    $wsname . ': ' . get_string('error_ws_decode', 'local_coursetransfer',
+                            (object)['http' => $httpcode, 'snippet' => mb_substr(trim((string)$raw), 0, 200)]));
         }
 
         // Expected envelope from the remote plugin: { success, errors, data, paging }.

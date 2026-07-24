@@ -164,6 +164,10 @@
             {{#filters.any}}
             <a class="ct-btn ct-btn--secondary ct-btn--sm ct-filters-clear" href="{{ baseurl }}?tab=registro">{{#str}} exec_filter_clear, local_coursetransfer {{/str}}</a>
             {{/filters.any}}
+            <button type="submit" class="ct-btn ct-btn--secondary ct-btn--sm" formaction="{{ exporturl }}" name="dataformat" value="csv">
+                <i class="fa fa-download" aria-hidden="true"></i>
+                {{#str}} exec_export, local_coursetransfer {{/str}}
+            </button>
         </div>
     </form>
 

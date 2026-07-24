@@ -12,6 +12,10 @@
  */
 
 .local-coursetransfer {
+    /* Responsive by CONTAINER width (not viewport): the plugin content often sits
+       in a narrow column (theme blocks/drawers), so layout must react to its own
+       width. See the @container blocks below. */
+    container: ct / inline-size;
     /* Brand (logo colours: magenta #ea1a7f primary, amber #ffa827 secondary) */
     --magenta-50: #fdeaf3;
     --magenta-100: #f9cbe1;
@@ -1872,15 +1876,254 @@
 
 .local-coursetransfer .ct-detail-grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 270px 1fr;
     gap: 16px;
     align-items: start;
     margin-top: 1rem;
 }
 
+/* Screen-edge padding stays viewport-based (a container query can't style the
+   very element that defines the container). */
 @media (max-width: 720px) {
+    .local-coursetransfer {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+}
+
+/* Layout stacking reacts to the CONTAINER width (the plugin content column),
+   not the window — so it works even when a theme right column/drawer narrows it. */
+@container ct (max-width: 720px) {
     .local-coursetransfer .ct-detail-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Hero: stack everything vertically — title block, then any action buttons
+       / status-back group, left-aligned. */
+    .local-coursetransfer .ct-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    /* Wizard steps: scroll horizontally instead of squishing the 4 markers. */
+    .local-coursetransfer .ct-steps {
+        overflow-x: auto;
+    }
+
+    /* Logs: hide the column header and reflow each row as a compact card. */
+    .local-coursetransfer .ct-log-head {
+        display: none;
+    }
+
+    .local-coursetransfer .ct-log-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+    }
+
+    .local-coursetransfer .ct-log-fromto {
+        flex: 1 1 100%;
+        order: 5;
+    }
+
+    .local-coursetransfer .ct-log-actions {
+        margin-left: auto;
+    }
+
+    .local-coursetransfer .ct-log-site,
+    .local-coursetransfer .ct-log-size,
+    .local-coursetransfer .ct-log-date {
+        order: 6;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Header: stack the icon above the title/description, full width. */
+    .local-coursetransfer .ct-hero-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+    }
+
+    /* Wizard footer: stack the nav as full-width buttons (primary action first). */
+    .local-coursetransfer .ct-wizard-footer {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+    }
+
+    .local-coursetransfer .ct-wizard-footer .ct-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .local-coursetransfer .ct-wizard-footer .ct-wizard-stepnum {
+        order: -1;
+        text-align: center;
+    }
+
+    .local-coursetransfer .ct-wizard-footer [data-action="primary"] {
+        order: 1;
+    }
+
+    .local-coursetransfer .ct-wizard-footer [data-action="back"] {
+        order: 2;
+    }
+
+    .local-coursetransfer .ct-wizard-footer [data-action="cancel"] {
+        order: 3;
+    }
+
+    /* Card selectors (type/role/site) to a single column — overrides the inline
+       `grid-template-columns:1fr 1fr` some steps set for desktop. */
+    .local-coursetransfer .ct-rolecards {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Start card (landing): stack icon, text and the full-width action button. */
+    .local-coursetransfer .ct-startcard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .local-coursetransfer .ct-startcard .ct-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Platform card: the action icons drop to their own full-width row. */
+    .local-coursetransfer .ct-platform-main {
+        flex-wrap: wrap;
+    }
+
+    .local-coursetransfer .ct-platform-actions {
+        flex-basis: 100%;
+        justify-content: flex-start;
+        margin-top: 4px;
+    }
+
+    /* Recent list: stack each row's data vertically (badge, name, date...). */
+    .local-coursetransfer .ct-recent-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .local-coursetransfer .ct-recent-spacer {
+        display: none;
+    }
+
+    /* Selection table: the count drops below the name/meta instead of a fixed
+       right column, and the redundant meta header hides. */
+    .local-coursetransfer .ct-seltable-head .ct-col-meta {
+        display: none;
+    }
+
+    .local-coursetransfer .ct-selrow {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Long names wrap fully on mobile: the ellipsis truncation only makes
+       sense with the hover tooltip, which touch devices don't have, and the
+       picker needs the whole name legible. Override the base nowrap/ellipsis. */
+    .local-coursetransfer .ct-selrow-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        text-align: center;
+    }
+
+    /* Sub-line and code stay in NORMAL flow (each label and its value are
+       adjacent inline nodes — a flex column would split "IdNumber" from its
+       number), just centred and free to wrap on long idnumbers/urls. */
+    .local-coursetransfer .ct-selrow-sub,
+    .local-coursetransfer .ct-meta-code {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        text-align: center;
+    }
+
+    /* Body spans the full width so the centred text reads as centred (a flex
+       item under align-items:center would otherwise shrink to its content). */
+    .local-coursetransfer .ct-selrow-body {
+        flex: none;
+        width: 100%;
+    }
+
+    /* Site bar ("Bringing content from…"): stack on a narrow column, and let
+       the (often URL-long) site name wrap instead of overflowing. */
+    .local-coursetransfer .ct-sitebar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .local-coursetransfer .ct-sitebar-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .local-coursetransfer .ct-selrow-meta {
+        width: auto;
+        text-align: center;
+        margin-top: 2px;
+        font-weight: 600;
+    }
+
+    /* Ajax search box: centre the icon + field (and its text) to match the
+       centred rows below, instead of hugging the left of the full-width bar. */
+    .local-coursetransfer .ct-search {
+        justify-content: center;
+    }
+
+    .local-coursetransfer .ct-search input {
+        flex: 0 1 auto;
+        text-align: center;
+    }
+
+    /* Destination-category card: stack icon / text / select, select full width. */
+    .local-coursetransfer .ct-common {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .local-coursetransfer .ct-common-icon {
+        align-self: center;
+    }
+
+    .local-coursetransfer .ct-common-select {
+        width: 100%;
+    }
+
+    /* Category tree: let each label wrap (long course names + id badge no longer
+       glue together / overflow); trim the per-level indent to save width. The
+       body keeps overflow-x:auto for genuinely deep trees. */
+    .local-coursetransfer .ct-tree-label {
+        flex-wrap: wrap;
+    }
+
+    .local-coursetransfer .ct-tree-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .local-coursetransfer .ct-tree .ct-tree {
+        margin-left: 6px;
+        padding-left: 8px;
     }
 }
 
@@ -2034,7 +2277,7 @@
     gap: 14px 20px;
 }
 
-@media (max-width: 540px) {
+@container ct (max-width: 540px) {
     .local-coursetransfer .ct-fields {
         grid-template-columns: 1fr;
     }
@@ -2084,6 +2327,65 @@
 }
 
 /* Section / activity tree */
+/* Task tracking table (request detail audit aid). */
+.local-coursetransfer .ct-tasks-wrap {
+    overflow-x: auto;
+}
+
+.local-coursetransfer .ct-tasks {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.local-coursetransfer .ct-tasks th,
+.local-coursetransfer .ct-tasks td {
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-default);
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-tasks th {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.local-coursetransfer .ct-tasks-name {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.local-coursetransfer .ct-tasks-row--fail {
+    background: var(--danger-50);
+}
+
+.local-coursetransfer .ct-tasks-fail {
+    color: var(--danger-500);
+    font-weight: 700;
+}
+
+/* Correlation block: label stacked above value (values can be long URLs). */
+.local-coursetransfer .ct-corr-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--divider);
+}
+
+.local-coursetransfer .ct-corr-item:last-child {
+    border-bottom: 0;
+}
+
+.local-coursetransfer .ct-corr-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.local-coursetransfer .ct-corr-value {
+    color: var(--text-body);
+    word-break: break-all;
+}
+
 .local-coursetransfer .ct-sectree {
     border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
@@ -4783,6 +5085,8 @@
 .local-coursetransfer .ct-tree-body {
     font-size: 14px;
     color: var(--text-muted);
+    /* Deep subtrees indent a lot; scroll instead of overflowing the card. */
+    overflow-x: auto;
 }
 
 .local-coursetransfer .ct-tree,
