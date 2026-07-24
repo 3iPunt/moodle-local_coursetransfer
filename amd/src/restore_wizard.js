@@ -40,8 +40,9 @@ define([
     'jquery',
     'core/ajax',
     'core/str',
+    'core/form-autocomplete',
     'local_coursetransfer/category_tree'
-], function($, Ajax, Str, CategoryTree) {
+], function($, Ajax, Str, AutoComplete, CategoryTree) {
     "use strict";
 
     var PERPAGE = 10;
@@ -62,7 +63,7 @@ define([
         'rw_col_size', 'rw_col_count',
         // Step 2 "Destination per course".
         'rw_dest_new', 'rw_dest_default_badge', 'rw_dest_cat_label',
-        'rw_dest_configure', 'rw_dest_collapse',
+        'rw_dest_configure', 'rw_dest_collapse', 'rw_defaultcat', 'rw_defcat_search_ph',
         'rw_dest_inherited', 'rw_dest_existing', 'rw_dest_search_ph',
         'rw_dest_no_results', 'rw_dest_pick_target', 'rw_dest_change',
         'rw_exmode_merge', 'rw_exmode_merge_desc', 'rw_exmode_replace',
@@ -245,7 +246,9 @@ define([
 
             // Step 2: default destination category.
             $root.on('change', '[data-action="default-cat"]', function() {
-                self.onDefaultCat(parseInt($(this).val(), 10) || 0);
+                var cat = parseInt($(this).val(), 10) || 0;
+                self.rememberCatLabel(cat, $(this).find('option:selected').text());
+                self.onDefaultCat(cat);
             });
 
             // Step 2: per-course destination cards.
@@ -256,7 +259,9 @@ define([
                 self.setCardMode(self.cidOf($(this)), 'existing');
             });
             $root.on('change', '[data-action="card-cat"]', function() {
-                self.onCardCat(self.cidOf($(this)), parseInt($(this).val(), 10) || 0);
+                var cat = parseInt($(this).val(), 10) || 0;
+                self.rememberCatLabel(cat, $(this).find('option:selected').text());
+                self.onCardCat(self.cidOf($(this)), cat);
             });
             $root.on('input', '[data-action="target-search"]', function() {
                 var id = self.cidOf($(this));
@@ -367,6 +372,13 @@ define([
                     }
                 });
             });
+
+            // Destination-category autocomplete: seed the label cache. The
+            // selects are enhanced when step 2 is shown (the default one) and as
+            // cards render (the per-course ones) — enhancing a still-hidden step
+            // here would mismeasure the widget.
+            this.acseq = 0;
+            this.catLabels = {'0': this.S.rw_defaultcat || ''};
 
             this.showView('landing');
         },
@@ -1050,17 +1062,46 @@ define([
         },
 
         /**
-         * Build the list of destination-category options from the common
-         * select, so per-course selects reuse the same options.
-         *
-         * @return {Object[]} [{value, label}]
+         * Enhance every not-yet-enhanced destination-category <select> with the
+         * core/form-autocomplete widget backed by the server-side search web
+         * service. Safe to call after any render: each render produces fresh
+         * <select> elements, and the data-ac-done flag stops the same element
+         * being enhanced twice (enhance is not idempotent).
          */
-        destOptionList: function() {
-            var opts = [];
-            this.$root.find('#ct-destcat option').each(function() {
-                opts.push({value: $(this).attr('value'), label: $(this).text()});
+        enhanceCatSelects: function() {
+            var self = this;
+            this.$root.find('select.ct-catac').each(function() {
+                var el = this;
+                if (el.getAttribute('data-ac-done')) {
+                    return;
+                }
+                el.setAttribute('data-ac-done', '1');
+                if (!el.id) {
+                    el.id = 'ct-catac-' + (self.acseq++);
+                }
+                var ph = self.S.rw_defcat_search_ph || '';
+                AutoComplete.enhance(
+                    '#' + el.id, false, 'local_coursetransfer/dest_category_search',
+                    ph, false, true, ph, true
+                ).catch(function() {
+                    // If enhancement fails the plain <select> still works.
+                    return null;
+                });
             });
-            return opts;
+        },
+
+        /**
+         * Cache a category id -> label so the review/summary and inheriting
+         * cards can show the chosen category name without every option being
+         * present in the DOM (the whole point of the autocomplete).
+         *
+         * @param {Number} id
+         * @param {String} label
+         */
+        rememberCatLabel: function(id, label) {
+            if (label) {
+                this.catLabels[String(id)] = label;
+            }
         },
 
         /**
@@ -1118,6 +1159,9 @@ define([
             this.renderDestCards();
             this.renderBreakdown();
             this.renderTree();
+            // Enhance the default-category select now the step is visible (covers
+            // the category type, where renderDestCards early-returns).
+            this.enhanceCatSelects();
         },
 
         /**
@@ -1213,6 +1257,8 @@ define([
             } else {
                 $w.prop('hidden', true);
             }
+            // Enhance any per-course category selects just rendered.
+            this.enhanceCatSelects();
         },
 
         /**
@@ -1224,6 +1270,8 @@ define([
             var $old = this.$root.find('.ct-destcard[data-cid="' + id + '"]');
             if ($old.length) {
                 $old.replaceWith(this.buildCard(id));
+                // Enhance the category select if this card now shows one.
+                this.enhanceCatSelects();
             }
         },
 
@@ -1340,16 +1388,16 @@ define([
                 var $extra = $('<div>').addClass('ct-destopt-extra');
                 $extra.append($('<label>').addClass('ct-destopt-cat-label')
                     .text(this.S.rw_dest_cat_label || 'Destination category'));
-                var $sel = $('<select>').addClass('ct-input').attr('data-action', 'card-cat');
+                // Autocomplete-backed select: only the current option is seeded;
+                // the widget searches the rest server-side (scales to thousands).
+                // Wrapped so form-autocomplete's generated markup stays grouped.
                 var cat = String(d.categorytarget || 0);
-                this.destOptionList().forEach(function(o) {
-                    var $o = $('<option>').attr('value', o.value).text(o.label);
-                    if (o.value === cat) {
-                        $o.attr('selected', 'selected');
-                    }
-                    $sel.append($o);
-                });
-                $extra.append($sel);
+                var $acwrap = $('<div>').addClass('ct-acwrap');
+                var $sel = $('<select>').addClass('ct-input ct-catac').attr('data-action', 'card-cat');
+                $sel.append($('<option>').attr('value', cat).attr('selected', 'selected')
+                    .text(this.catLabel(cat)));
+                $acwrap.append($sel);
+                $extra.append($acwrap);
                 if (d.inherited) {
                     var $note = $('<div>').addClass('ct-inherit-note');
                     $note.append($('<i>').addClass('fa fa-link').attr('aria-hidden', 'true'));
@@ -1790,12 +1838,19 @@ define([
          * Build the review summary (values injected as text).
          */
         /**
-         * Human label of a destination category id (from the common select).
+         * Human label of a destination category id, from the label cache
+         * populated as the user picks categories in the autocomplete (id 0 is
+         * the default category). Falls back to any option still in the DOM, then
+         * to "#id".
          *
          * @param {Number} catid
          * @return {String}
          */
         catLabel: function(catid) {
+            var key = String(catid || 0);
+            if (this.catLabels && this.catLabels[key]) {
+                return this.catLabels[key];
+            }
             var $opt = this.$root.find('#ct-destcat option[value="' + catid + '"]');
             return $opt.length ? $opt.text() : ('#' + catid);
         },

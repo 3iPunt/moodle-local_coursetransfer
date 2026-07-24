@@ -575,6 +575,7 @@ $string['rw_defcat_desc'] = 'Txartel guztiak aurrekargatzen ditu. Ikastaro bakoi
 $string['rw_dest_new'] = 'Sortu ikastaro berria';
 $string['rw_dest_default_badge'] = 'LEHENETSIA';
 $string['rw_dest_cat_label'] = 'Helburuko kategoria';
+$string['rw_defcat_search_ph'] = 'Bilatu kategoria bat…';
 $string['rw_dest_inherited'] = 'Helburu lehenetsia heredatzen du';
 $string['rw_dest_existing'] = 'Berreskuratu lehendik dagoen ikastaro baten gainean';
 $string['rw_dest_search_ph'] = 'Bilatu helburuko ikastaroa izenez, izen laburrez edo idnumber-ez…';

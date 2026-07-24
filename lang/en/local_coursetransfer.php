@@ -580,6 +580,7 @@ $string['rw_defcat_desc'] = 'Preloads every card. You can change it on each cour
 $string['rw_dest_new'] = 'Create a new course';
 $string['rw_dest_default_badge'] = 'DEFAULT';
 $string['rw_dest_cat_label'] = 'Destination category';
+$string['rw_defcat_search_ph'] = 'Search a category…';
 $string['rw_dest_inherited'] = 'Inherits the default destination';
 $string['rw_dest_existing'] = 'Restore over an existing course';
 $string['rw_dest_search_ph'] = 'Search destination course by name, short name or idnumber…';

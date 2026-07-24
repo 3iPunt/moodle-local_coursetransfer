@@ -582,6 +582,7 @@ $string['rw_defcat_desc'] = 'Precarga todas las tarjetas. Puedes cambiarla en ca
 $string['rw_dest_new'] = 'Crear curso nuevo';
 $string['rw_dest_default_badge'] = 'POR DEFECTO';
 $string['rw_dest_cat_label'] = 'Categoría destino';
+$string['rw_defcat_search_ph'] = 'Buscar una categoría…';
 $string['rw_dest_inherited'] = 'Hereda el destino por defecto';
 $string['rw_dest_existing'] = 'Restaurar sobre un curso existente';
 $string['rw_dest_search_ph'] = 'Buscar curso destino por nombre, nombre corto o idnumber…';

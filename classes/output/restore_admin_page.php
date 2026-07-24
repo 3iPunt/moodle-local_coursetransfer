@@ -36,7 +36,6 @@ namespace local_coursetransfer\output;
 
 use coding_exception;
 use core\exception\moodle_exception;
-use core_course_category;
 use dml_exception;
 use local_coursetransfer\coursetransfer;
 use local_coursetransfer\coursetransfer_request;
@@ -92,36 +91,14 @@ class restore_admin_page implements renderable, templatable {
         // Search page size (plugin setting, default 5).
         $data->pagesize = max(1, (int)(get_config('local_coursetransfer', 'pagesize') ?: 5));
 
-        $data->destcategories = $this->export_destcategories();
+        // Destination categories are no longer dumped here: the step-2 picker is
+        // an autocomplete (core/form-autocomplete) that searches them server-side
+        // via local_coursetransfer_dest_search_category_name, so it scales to
+        // thousands of categories.
         $data->recent = $this->export_recent();
         $data->hasrecent = !empty($data->recent);
 
         return $data;
-    }
-
-    /**
-     * Local destination categories for the step 2 <select>.
-     *
-     * Option 0 = default category (first available). Uses the course
-     * category model with the create capability so only categories where
-     * the admin may create courses are offered.
-     *
-     * @return array [{value, label}]
-     * @throws coding_exception
-     */
-    protected function export_destcategories(): array {
-        $options = [(object)[
-            'value' => 0,
-            'label' => get_string('rw_defaultcat', 'local_coursetransfer'),
-        ]];
-        $list = core_course_category::make_categories_list('moodle/course:create');
-        foreach ($list as $id => $name) {
-            $options[] = (object)[
-                'value' => (int)$id,
-                'label' => $name,
-            ];
-        }
-        return $options;
     }
 
     /**

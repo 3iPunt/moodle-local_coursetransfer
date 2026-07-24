@@ -42,6 +42,7 @@ use local_coursetransfer\external\backend\remove_external;
 use local_coursetransfer\external\frontend\origin_remove_external;
 use local_coursetransfer\external\frontend\restore_wizard_external;
 use local_coursetransfer\external\frontend\token_external;
+use local_coursetransfer\external\frontend\search_category;
 use local_coursetransfer\external\frontend\search_course;
 use local_coursetransfer\external\frontend\sites_external;
 
@@ -271,6 +272,15 @@ $functions = [
             'classname' => search_course::class,
             'methodname' => 'search_by_name',
             'description' => 'Search course by name in destination',
+            'type' => 'read',
+            'ajax' => true,
+            'loginrequired' => true,
+    ],
+
+    'local_coursetransfer_dest_search_category_name' => [
+            'classname' => search_category::class,
+            'methodname' => 'search_by_name',
+            'description' => 'Search destination category by name (autocomplete)',
             'type' => 'read',
             'ajax' => true,
             'loginrequired' => true,

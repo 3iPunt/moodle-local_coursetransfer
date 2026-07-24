@@ -575,6 +575,7 @@ $string['rw_defcat_desc'] = 'Precarga todas as tarxetas. Podes cambiala en cada 
 $string['rw_dest_new'] = 'Crear un curso novo';
 $string['rw_dest_default_badge'] = 'POR DEFECTO';
 $string['rw_dest_cat_label'] = 'Categoría de destino';
+$string['rw_defcat_search_ph'] = 'Buscar unha categoría…';
 $string['rw_dest_inherited'] = 'Herda o destino por defecto';
 $string['rw_dest_existing'] = 'Restaurar sobre un curso existente';
 $string['rw_dest_search_ph'] = 'Buscar curso de destino por nome, nome curto ou idnumber…';

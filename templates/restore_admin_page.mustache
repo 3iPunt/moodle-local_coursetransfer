@@ -32,7 +32,6 @@
     "headertitle": "Restaurar cursos o categoría remota",
     "headerdesc": "Trae cursos o una categoría desde otra plataforma Moodle.",
     "back": "#", "summaryurl": "#", "logurl": "#",
-    "destcategories": [{"value": 0, "label": "Categoría por defecto"}],
     "recent": [], "hasrecent": false
   }
 }}
@@ -241,11 +240,15 @@
                         <label class="ct-common-title" for="ct-destcat" data-region="defcat-title">{{#str}} rw_defcat_title, local_coursetransfer {{/str}}</label>
                         <span class="ct-common-desc" data-region="defcat-desc">{{#str}} rw_defcat_desc, local_coursetransfer {{/str}}</span>
                     </div>
-                    <select id="ct-destcat" class="ct-input ct-common-select" data-action="default-cat">
-                        {{#destcategories}}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {{/destcategories}}
-                    </select>
+                    {{! Autocomplete-backed (core/form-autocomplete + server search):
+                        only the default option is seeded; the rest is searched
+                        on demand so this scales to thousands of categories. The
+                        wrapper keeps the generated widget as a single flex item. }}
+                    <div class="ct-acwrap ct-common-select">
+                        <select id="ct-destcat" class="ct-input ct-catac" data-action="default-cat">
+                            <option value="0" selected="selected">{{#str}} rw_defaultcat, local_coursetransfer {{/str}}</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{! Breakdown chips (built by JS). }}
