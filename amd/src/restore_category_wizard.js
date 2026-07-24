@@ -41,8 +41,8 @@ define([
     'jquery',
     'core/ajax',
     'core/str',
-    'core/templates'
-], function($, Ajax, Str, Templates) {
+    'local_coursetransfer/category_tree'
+], function($, Ajax, Str, CategoryTree) {
     "use strict";
 
     var PERPAGE = 5;
@@ -63,7 +63,9 @@ define([
         // Canonical direction terms (reused, not duplicated) + intro paragraph.
         'platforms_role_origin', 'platforms_role_target', 'rcc_review_intro',
         // Category subtree preview.
-        'rcc_tree_title', 'rcc_tree_empty', 'rcc_tree_error'
+        'rcc_tree_title', 'rcc_tree_empty', 'rcc_tree_error',
+        // "This site" label when the origin is the current platform (self-pairing).
+        'platforms_this_site'
     ];
 
     var Wizard = {
@@ -112,6 +114,7 @@ define([
                 step: 0,
                 siteid: null,
                 sitename: '',
+                siteiscurrent: false,
                 catid: null,
                 catname: '',
                 catmeta: '',
@@ -291,6 +294,7 @@ define([
             }
             if (n === 2) {
                 this.syncOptions();
+                this.renderTree();
             }
             if (n === 3) {
                 this.renderReview();
@@ -417,6 +421,7 @@ define([
                     .attr('data-action', 'toggle-origin')
                     .attr('data-siteid', site.id)
                     .attr('data-sitename', site.name)
+                    .attr('data-siteiscurrent', site.iscurrent ? '1' : '0')
                     .attr('aria-pressed', 'false')
                     .prop('disabled', offline);
                 $card.append($('<span>').addClass('ct-sitecard-icon')
@@ -447,6 +452,10 @@ define([
             }
             this.state.siteid = parseInt($card.attr('data-siteid'), 10);
             this.state.sitename = $card.attr('data-sitename') || '';
+            this.state.siteiscurrent = $card.attr('data-siteiscurrent') === '1';
+            if (this.state.siteiscurrent && this.S.platforms_this_site) {
+                this.state.sitename = this.S.platforms_this_site;
+            }
             this.region('sites').find('[data-action="toggle-origin"]').attr('aria-pressed', 'false');
             $card.attr('aria-pressed', 'true');
             this.state.catid = null;
@@ -664,6 +673,30 @@ define([
         // ---- Step 3: review -------------------------------------------
 
         /**
+         * Fetch the origin category subtree and render it in the options step
+         * (preview of the hierarchy that will be recreated on the target). Built as
+         * DOM in JS to avoid a recursive mustache partial, which the JS template
+         * engine does not render.
+         */
+        renderTree: function() {
+            var s = this.state;
+            var $wrap = this.region('tree');
+            var $body = this.region('tree-body');
+            if (!$wrap.length || !s.catid) {
+                if ($wrap.length) {
+                    $wrap.prop('hidden', true);
+                }
+                return;
+            }
+            $wrap.prop('hidden', false);
+            CategoryTree.load($body, s.siteid, s.catid, {
+                loading: this.S.rw_loading,
+                empty: this.S.rcc_tree_empty,
+                error: this.S.rcc_tree_error
+            });
+        },
+
+        /**
          * Render the review summary (values injected as text).
          */
         renderReview: function() {
@@ -752,41 +785,6 @@ define([
                 : (self.S.rw_review_sched_now || 'Immediate');
             cell('fa-clock-o', self.S.rw_review_schedule_field || 'Execution', sched);
             $review.append($grid);
-
-            // Subtree preview: the exact category hierarchy (subcategories + courses)
-            // that will be recreated on the target site.
-            var $treewrap = $('<div>').addClass('ct-tree-wrap ct-mt').attr('data-region', 'tree');
-            $treewrap.append($('<h3>').addClass('ct-tree-title')
-                .text(self.S.rcc_tree_title || 'Category tree to import'));
-            var $treebody = $('<div>').addClass('ct-tree-body');
-            $treebody.text(self.S.rw_loading || 'Loading…');
-            $treewrap.append($treebody);
-            $review.append($treewrap);
-            Ajax.call([{
-                methodname: 'local_coursetransfer_restore_wizard_get_category_tree',
-                args: {siteid: s.siteid, categoryid: s.catid}
-            }])[0].done(function(resp) {
-                var node = null;
-                if (resp.success && resp.tree) {
-                    try {
-                        node = JSON.parse(resp.tree);
-                    } catch (e) {
-                        node = null;
-                    }
-                }
-                if (!node) {
-                    $treebody.text(self.S.rcc_tree_empty || 'No subtree to show.');
-                    return;
-                }
-                Templates.render('local_coursetransfer/category_tree', node).then(function(html) {
-                    $treebody.empty().append(html);
-                    return html;
-                }).catch(function() {
-                    $treebody.text(self.S.rcc_tree_error || 'Could not load the tree.');
-                });
-            }).fail(function() {
-                $treebody.text(self.S.rcc_tree_error || 'Could not load the tree.');
-            });
 
             // Destructive: origin category will be deleted.
             var $ro = this.region('review-removeorigin');

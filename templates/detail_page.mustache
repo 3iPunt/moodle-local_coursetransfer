@@ -38,11 +38,17 @@
 }}
 <div class="local-coursetransfer" data-region="detail_page">
 
-    {{! Shared hero (icon + course name + request #); status badge on the right.
-        Theme heading cleared with set_heading(''). }}
+    {{! Shared hero (icon + course name + request #); status badge + back link on the
+        right, vertically centred. Theme heading cleared with set_heading(''). }}
     <div class="ct-hero">
         {{> local_coursetransfer/components/page_header }}
-        <span class="ct-badge {{ badgeclass }}">{{ statuslabel }}</span>
+        <div class="ct-hero-side">
+            <span class="ct-badge ct-badge--lg {{ badgeclass }}">{{ statuslabel }}</span>
+            <a class="ct-btn ct-btn--secondary ct-btn--sm" href="{{ back }}">
+                <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                {{#str}} exec_back_log, local_coursetransfer {{/str}}
+            </a>
+        </div>
     </div>
 
     <div class="ct-detail-links">
@@ -60,6 +66,12 @@
             <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
         {{/desturl}}
+        {{#hascatparent}}
+        <a class="ct-btn ct-btn--sm ct-linkbtn" href="{{ catparenturl }}">
+            <i class="fa fa-sitemap" aria-hidden="true"></i>
+            {{#str}} exec_view_cat_request, local_coursetransfer {{/str}} #{{ catparentid }}
+        </a>
+        {{/hascatparent}}
     </div>
 
     {{#scheduled}}
@@ -158,6 +170,17 @@
                 </div>
             </div>
             {{/hassections}}
+
+            {{#hastree}}
+            <div class="ct-card ct-fieldgroup">
+                <div class="ct-card-eyebrow">{{#str}} rcc_tree_title, local_coursetransfer {{/str}}</div>
+                <div class="ct-tree-body">
+                    {{#tree}}
+                    {{> local_coursetransfer/category_tree }}
+                    {{/tree}}
+                </div>
+            </div>
+            {{/hastree}}
         </div>
     </div>
 

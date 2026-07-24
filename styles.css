@@ -553,6 +553,21 @@
     margin-bottom: 24px;
 }
 
+/* Right-aligned hero group: status badge + back link, vertically centred. */
+.local-coursetransfer .ct-hero-side {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Larger status badge for the detail hero. */
+.local-coursetransfer .ct-badge--lg {
+    font-size: 14px;
+    padding: 7px 16px;
+}
+
 .local-coursetransfer .ct-hero-main {
     display: flex;
     align-items: center;
@@ -566,11 +581,11 @@
     height: 70px;
     border-radius: 15px;
     flex: none;
-    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: rgba(99, 99, 99, 0.2) 0 2px 8px 0;
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px, rgba(0, 0, 0, 0.26) 0 2px 4px -1px;
+    background: linear-gradient(138deg, #FFF9E4 11.83%, #FFEBED 89.48%);
 }
 
 .local-coursetransfer .ct-page-icon img {
@@ -1613,7 +1628,7 @@
 .local-coursetransfer .ct-log-head,
 .local-coursetransfer .ct-log-row {
     display: grid;
-    grid-template-columns: 104px 1.7fr 1fr 66px 100px 32px;
+    grid-template-columns: 26px 104px 1.7fr 1fr 66px 100px 32px;
     gap: 12px;
     padding: 11px 16px;
     align-items: center;
@@ -1652,6 +1667,22 @@
 
 .local-coursetransfer .ct-log-fromto {
     min-width: 0;
+}
+
+/* Compact direction indicator: request (this site initiated) vs response (received). */
+.local-coursetransfer .ct-log-dir {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.local-coursetransfer .ct-log-dir--request {
+    color: var(--color-secondary);
+}
+
+.local-coursetransfer .ct-log-dir--response {
+    color: var(--color-primary);
 }
 
 .local-coursetransfer .ct-log-line {
@@ -1728,6 +1759,18 @@
     margin-top: 3px;
 }
 
+/* "Part of a category restore" back-link, kept compact inside the row. */
+.local-coursetransfer .ct-log-catlink {
+    margin-left: 8px;
+    font-size: 11px;
+    color: var(--color-secondary);
+    white-space: nowrap;
+}
+
+.local-coursetransfer .ct-log-catlink:hover {
+    text-decoration: underline;
+}
+
 .local-coursetransfer .ct-log-site {
     font-size: 12.5px;
     min-width: 0;
@@ -1741,10 +1784,11 @@
 }
 
 .local-coursetransfer .ct-iconbtn--xs {
-    width: 30px;
-    height: 30px;
+    width: 22px;
+    height: 22px;
     display: inline-flex;
     text-decoration: none;
+    margin: 3px;
 }
 
 .local-coursetransfer .ct-iconbtn--xs .fa {
@@ -4461,6 +4505,64 @@
     line-height: 1.5;
 }
 
+/* ---- "How to connect" scenario pills (accordion) ---- */
+.local-coursetransfer .ct-idx-pill {
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    background: var(--surface-alt);
+    margin-bottom: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.local-coursetransfer .ct-idx-pill-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+}
+
+.local-coursetransfer .ct-idx-pill-num {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-secondary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.local-coursetransfer .ct-idx-pill-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.local-coursetransfer .ct-idx-pill-chevron {
+    flex: 0 0 auto;
+    color: var(--text-subtle);
+    transition: transform 0.15s ease;
+}
+
+.local-coursetransfer .ct-idx-pill--open .ct-idx-pill-chevron {
+    transform: rotate(180deg);
+}
+
+.local-coursetransfer .ct-idx-pill-body {
+    padding: 4px 14px 14px;
+}
+
 .local-coursetransfer .ct-idx-node-arrow {
     display: inline-flex;
     align-items: center;
@@ -4712,7 +4814,7 @@
 }
 
 .local-coursetransfer .ct-tree-id {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-subtle);
     background: var(--surface-alt);
     border: 1px solid var(--border-subtle);

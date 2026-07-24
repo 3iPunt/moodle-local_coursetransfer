@@ -221,6 +221,12 @@
                     </div>
                     <button type="button" class="ct-switch" data-action="toggle-schedule" role="switch" aria-checked="false"></button>
                 </div>
+
+                {{! Subtree preview: the hierarchy that will be recreated on the target. }}
+                <div class="ct-tree-wrap ct-mt" data-region="tree" hidden>
+                    <h3 class="ct-tree-title">{{#str}} rcc_tree_title, local_coursetransfer {{/str}}</h3>
+                    <div class="ct-tree-body" data-region="tree-body"></div>
+                </div>
             </div>
 
             {{! ---- STEP 3 · Review ---- }}

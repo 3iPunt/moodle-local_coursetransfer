@@ -281,7 +281,20 @@ class executions_page implements renderable, templatable {
         $item->dirin = ($isrestore && $isrequest) || (!$isrestore && !$isrequest);
         $item->dirlabel = get_string($item->dirin ? 'platforms_role_origin' : 'platforms_role_target',
                 'local_coursetransfer');
+        // Direction of the record itself: request (this site initiated) vs response
+        // (this site received a request from a peer). Shown as a compact icon.
+        $item->isrequest = $isrequest;
+        $item->dirtip = get_string($isrequest ? 'exec_dir_request' : 'exec_dir_response', 'local_coursetransfer');
         $item->typedir = '#' . $request->id . ' · ' . $item->typelabel;
+
+        // Course requests created as part of a category restore point back to the
+        // parent category request via request_category_id.
+        $catreqid = (int)($request->request_category_id ?? 0);
+        $item->iscatchild = $catreqid > 0;
+        if ($item->iscatchild) {
+            $item->catrequestid = $catreqid;
+            $item->catrequesturl = (new moodle_url('/local/coursetransfer/log.php', ['id' => $catreqid]))->out(false);
+        }
 
         $item->site = $request->siteurl;
         $item->date = userdate((int)$request->timemodified,

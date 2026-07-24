@@ -39,8 +39,9 @@
 define([
     'jquery',
     'core/ajax',
-    'core/str'
-], function($, Ajax, Str) {
+    'core/str',
+    'local_coursetransfer/category_tree'
+], function($, Ajax, Str, CategoryTree) {
     "use strict";
 
     var PERPAGE = 10;
@@ -85,7 +86,9 @@ define([
         'rw_dest_title_cat', 'rw_dest_desc_cat', 'rw_defcat_title_cat', 'rw_defcat_desc_cat',
         'rw_users_cat', 'rw_users_cat_desc', 'rw_removeorigin_cat', 'rw_removeorigin_cat_desc',
         'rw_removeorigin_confirm_cat', 'rw_review_removeorigin_field_cat', 'rw_review_dest_cat',
-        'platforms_role_origin', 'platforms_role_target'
+        'platforms_role_origin', 'platforms_role_target',
+        // Category subtree preview + self-pairing label.
+        'rw_loading', 'rcc_tree_title', 'rcc_tree_empty', 'rcc_tree_error', 'platforms_this_site'
     ];
 
     var Wizard = {
@@ -1114,6 +1117,32 @@ define([
 
             this.renderDestCards();
             this.renderBreakdown();
+            this.renderTree();
+        },
+
+        /**
+         * Category subtree preview (only for the category type, single selection).
+         * Shown in the destination step so the admin sees the hierarchy that will
+         * be recreated on the target.
+         */
+        renderTree: function() {
+            var s = this.state;
+            var $wrap = this.region('tree');
+            var $body = this.region('tree-body');
+            if (!$wrap.length) {
+                return;
+            }
+            var ids = this.selectedIds();
+            if (s.type !== 'category' || ids.length !== 1) {
+                $wrap.prop('hidden', true);
+                return;
+            }
+            $wrap.prop('hidden', false);
+            CategoryTree.load($body, s.siteid, parseInt(ids[0], 10), {
+                loading: this.S.rw_loading,
+                empty: this.S.rcc_tree_empty,
+                error: this.S.rcc_tree_error
+            });
         },
 
         /**

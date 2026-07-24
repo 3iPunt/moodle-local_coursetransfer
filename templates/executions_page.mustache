@@ -171,6 +171,7 @@
 
     <div class="ct-card ct-log">
         <div class="ct-log-head">
+            <span></span>
             <span>{{#str}} exec_col_status, local_coursetransfer {{/str}}</span>
             <span>{{#str}} exec_col_fromto, local_coursetransfer {{/str}}</span>
             <span>{{#str}} exec_col_site, local_coursetransfer {{/str}}</span>
@@ -181,6 +182,10 @@
         {{#rows}}
         <div class="ct-log-row-wrap">
             <div class="ct-log-row">
+                <span class="ct-log-dir {{#isrequest}}ct-log-dir--request{{/isrequest}}{{^isrequest}}ct-log-dir--response{{/isrequest}}" title="{{ dirtip }}" aria-label="{{ dirtip }}">
+                    {{#isrequest}}<i class="fa fa-paper-plane-o" aria-hidden="true"></i>{{/isrequest}}
+                    {{^isrequest}}<i class="fa fa-inbox" aria-hidden="true"></i>{{/isrequest}}
+                </span>
                 <span>
                     <span class="ct-badge {{ badgeclass }}">{{ statuslabel }}</span>
                     {{#scheduled}}<i class="fa fa-calendar-o ct-sched-ic" title="{{ scheduledtooltip }}" aria-label="{{ scheduledtooltip }}"></i>{{/scheduled}}
@@ -206,7 +211,9 @@
                     </span>
                     <span class="ct-log-note">{{#str}} exec_remove_note, local_coursetransfer {{/str}}</span>
                     {{/isremove}}
-                    <span class="ct-log-typedir">{{ typedir }}</span>
+                    <span class="ct-log-typedir">{{ typedir }}
+                        {{#iscatchild}}<a class="ct-log-catlink" href="{{ catrequesturl }}" target="_blank" rel="noopener" title="{{#str}} exec_part_of_cat, local_coursetransfer {{/str}} #{{ catrequestid }}"><i class="fa fa-sitemap" aria-hidden="true"></i> #{{ catrequestid }}</a>{{/iscatchild}}
+                    </span>
                 </span>
                 <span class="ct-log-site">{{ site }}</span>
                 <span class="ct-log-size">{{ size }}</span>
@@ -215,6 +222,9 @@
                     <a class="ct-iconbtn ct-iconbtn--xs" href="{{ detailurl }}" target="_blank" rel="noopener" title="{{#str}} exec_detail, local_coursetransfer {{/str}}" aria-label="{{#str}} exec_detail, local_coursetransfer {{/str}}">
                         <i class="fa fa-chevron-right" aria-hidden="true"></i>
                     </a>
+                    <button type="button" class="ct-iconbtn ct-iconbtn--xs ct-iconbtn--danger" data-action="delete-log" data-id="{{ id }}" title="{{#str}} exec_delete, local_coursetransfer {{/str}}" aria-label="{{#str}} exec_delete, local_coursetransfer {{/str}}">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                    </button>
                 </span>
             </div>
             {{#iserror}}

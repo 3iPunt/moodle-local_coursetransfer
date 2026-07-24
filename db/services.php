@@ -333,6 +333,15 @@ $functions = [
         'loginrequired' => true,
     ],
 
+    'local_coursetransfer_restore_wizard_delete_request' => [
+        'classname' => restore_wizard_external::class,
+        'methodname' => 'delete_request',
+        'description' => 'Delete a request (execution log) record',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+    ],
+
     'local_coursetransfer_restore_wizard_submit' => [
         'classname' => restore_wizard_external::class,
         'methodname' => 'submit',

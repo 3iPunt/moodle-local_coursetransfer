@@ -159,5 +159,16 @@ function xmldb_local_coursetransfer_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2026072000, 'local', 'coursetransfer');
     }
 
+    if ($oldversion < 2026072400) {
+        // Persisted snapshot of the origin category subtree at request time.
+        $table = new xmldb_table('local_coursetransfer_request');
+        $field = new xmldb_field('origin_category_tree', XMLDB_TYPE_TEXT, null, null, null, null, null,
+                'origin_category_requests');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026072400, 'local', 'coursetransfer');
+    }
+
     return true;
 }

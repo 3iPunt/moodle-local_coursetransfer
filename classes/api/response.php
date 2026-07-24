@@ -53,25 +53,25 @@ class response {
     /** @var array|null List of errors (each [code, msg]) or null. */
     public ?array $errors;
 
-    /** @var stdClass|array|null Response payload. */
-    public stdClass|array|null $data;
+    /** @var stdClass|array|string|null Response payload (string when the WS returns raw JSON, e.g. the category tree). */
+    public stdClass|array|string|null $data;
 
-    /** @var array|null Paging info or null. */
-    public ?array $paging;
+    /** @var stdClass|array|null Paging info or null. */
+    public stdClass|array|null $paging;
 
     /**
      * response constructor.
      *
      * @param bool $success
-     * @param stdClass|array|null $data
+     * @param stdClass|array|string|null $data
      * @param array|null $errors
-     * @param array|null $paging
+     * @param stdClass|array|null $paging
      */
     public function __construct(
             bool $success,
-            stdClass|array|null $data = null,
+            stdClass|array|string|null $data = null,
             ?array $errors = null,
-            ?array $paging = null
+            stdClass|array|null $paging = null
     ) {
         $this->success = $success;
         $this->data = $data;

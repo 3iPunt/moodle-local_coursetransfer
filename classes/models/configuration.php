@@ -57,8 +57,8 @@ abstract class configuration {
     /** @var bool Origin Enrol Users */
     public bool $originenrolusers;
 
-    /** @var int Next Run Time TimeStamp */
-    public int $nextruntime;
+    /** @var int|null Next Run Time TimeStamp (null = run as soon as possible). */
+    public ?int $nextruntime = null;
 
     /**
      * constructor.
@@ -125,9 +125,7 @@ abstract class configuration {
      * @param int|null $config
      */
     protected function set_nextruntime(int $config = null): void {
-        if (!is_null($config)) {
-            $this->nextruntime = $config;
-        }
+        $this->nextruntime = $config;
     }
 
 }

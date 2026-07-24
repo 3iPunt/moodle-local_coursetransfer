@@ -223,6 +223,12 @@
 
                 <div class="ct-removecard" data-region="confirm-card"></div>
 
+                {{! Category subtree preview (only for a single selected category): what will be deleted. }}
+                <div class="ct-tree-wrap ct-mt" data-region="tree" hidden>
+                    <h3 class="ct-tree-title">{{#str}} rcc_tree_title, local_coursetransfer {{/str}}</h3>
+                    <div class="ct-tree-body" data-region="tree-body"></div>
+                </div>
+
                 <div class="ct-alert ct-alert--neutral ct-mt">
                     <i class="fa fa-info-circle ct-alert-icon" aria-hidden="true"></i>
                     <p>{{#str}} rmv_reversibility_desc, local_coursetransfer {{/str}}</p>

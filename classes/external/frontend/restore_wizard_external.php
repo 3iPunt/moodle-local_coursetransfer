@@ -105,10 +105,15 @@ class restore_wizard_external extends external_api {
      * @throws invalid_parameter_exception
  */
     public static function get_sites(): array {
+        global $CFG;
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('local/coursetransfer:origin_restore', $context);
 
+        $normalize = function(string $url): string {
+            return strtolower(rtrim(trim($url), '/'));
+        };
+        $localhost = $normalize($CFG->wwwroot);
         $sites = [];
         // coursetransfer_sites::list('origin') gives us name/lasttest/lastteststatus
         // keyed and indexed by the site record id, which IS the position.
@@ -133,6 +138,7 @@ class restore_wizard_external extends external_api {
                 'host' => $record->host,
                 'connected' => $connected,
                 'status' => $status,
+                'iscurrent' => ($normalize($record->host) === $localhost),
             ];
         }
 
@@ -156,6 +162,8 @@ class restore_wizard_external extends external_api {
                         'host' => new external_value(PARAM_RAW, 'Site host'),
                         'connected' => new external_value(PARAM_BOOL, 'Whether last test was OK'),
                         'status' => new external_value(PARAM_TEXT, 'Connection status text'),
+                        'iscurrent' => new external_value(PARAM_BOOL,
+                                'Whether the site is this very platform (self-pairing)', VALUE_OPTIONAL),
                     ]
                 )),
             ]
@@ -599,6 +607,81 @@ class restore_wizard_external extends external_api {
                     ]
                 )),
                 'tree' => new external_value(PARAM_RAW, 'Category subtree as JSON', VALUE_OPTIONAL),
+            ]
+        );
+    }
+
+    /**
+     * Delete request parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_request_parameters(): external_function_parameters {
+        return new external_function_parameters(
+            [
+                'requestid' => new external_value(PARAM_INT, 'Request (execution log) id to delete'),
+            ]
+        );
+    }
+
+    /**
+     * Delete a request (execution log) record.
+     *
+     * Removes the local_coursetransfer_request row so the entry disappears from the
+     * logs. Guarded by the view_logs capability (system context).
+     *
+     * @param int $requestid
+     * @return array
+     * @throws restricted_context_exception
+     * @throws invalid_parameter_exception
+     * @throws required_capability_exception
+     */
+    public static function delete_request(int $requestid): array {
+        global $DB;
+        $params = self::validate_parameters(
+            self::delete_request_parameters(), ['requestid' => $requestid]
+        );
+        $requestid = $params['requestid'];
+
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('local/coursetransfer:view_logs', $context);
+
+        $errors = [];
+        $success = false;
+        try {
+            // Remove any queued adhoc task tied to this request so it does not run
+            // orphaned after the request record is gone.
+            foreach (coursetransfer_request::get_related_adhoc_tasks($requestid) as $task) {
+                $DB->delete_records('task_adhoc', ['id' => $task->id]);
+            }
+            $DB->delete_records(coursetransfer_request::TABLE, ['id' => $requestid]);
+            $success = true;
+        } catch (moodle_exception $e) {
+            $errors[] = ['code' => '30701', 'msg' => $e->getMessage()];
+        }
+
+        return [
+            'success' => $success,
+            'errors' => $errors,
+        ];
+    }
+
+    /**
+     * Delete request returns.
+     *
+     * @return external_single_structure
+     */
+    public static function delete_request_returns(): external_single_structure {
+        return new external_single_structure(
+            [
+                'success' => new external_value(PARAM_BOOL, 'Whether it was deleted'),
+                'errors' => new external_multiple_structure(new external_single_structure(
+                    [
+                        'code' => new external_value(PARAM_TEXT, 'Code'),
+                        'msg' => new external_value(PARAM_RAW, 'Message'),
+                    ]
+                )),
             ]
         );
     }

@@ -33,8 +33,11 @@
  */
 
 define([
-    'jquery'
-], function($) {
+    'jquery',
+    'core/ajax',
+    'core/notification',
+    'core/str'
+], function($, Ajax, Notification, Str) {
     "use strict";
 
     var REFRESHSECONDS = 30;
@@ -48,6 +51,36 @@ define([
 
             $root.on('click', '[data-action="refresh"]', function() {
                 window.location.reload();
+            });
+
+            // Delete an execution log record (with confirmation).
+            $root.on('click', '[data-action="delete-log"]', function() {
+                var id = parseInt($(this).attr('data-id'), 10);
+                if (!id) {
+                    return;
+                }
+                Str.get_strings([
+                    {key: 'exec_delete_title', component: 'local_coursetransfer'},
+                    {key: 'exec_delete_confirm', component: 'local_coursetransfer'},
+                    {key: 'exec_delete', component: 'local_coursetransfer'}
+                ]).then(function(s) {
+                    Notification.saveCancel(s[0], s[1], s[2], function() {
+                        Ajax.call([{
+                            methodname: 'local_coursetransfer_restore_wizard_delete_request',
+                            args: {requestid: id}
+                        }])[0].done(function(resp) {
+                            if (resp.success) {
+                                window.location.reload();
+                            } else {
+                                Notification.addNotification({
+                                    message: (resp.errors[0] && resp.errors[0].msg) || 'Error',
+                                    type: 'error'
+                                });
+                            }
+                        }).fail(Notification.exception);
+                    });
+                    return s;
+                }).catch(Notification.exception);
             });
 
             $root.on('click', '[data-action="toggle-error"]', function() {

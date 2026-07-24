@@ -112,6 +112,9 @@ define([
             $root.on('click', '[data-action="toggle-how"]', function() {
                 self.toggleHow($(this));
             });
+            $root.on('click', '[data-action="toggle-pill"]', function() {
+                self.togglePill($(this));
+            });
         },
 
         /**
@@ -293,6 +296,20 @@ define([
             $body.prop('hidden', !open);
             $btn.attr('aria-expanded', open ? 'true' : 'false');
             this.region('how').toggleClass('ct-idx-how--open', open);
+        },
+
+        /**
+         * Toggle one "how to connect" scenario pill.
+         *
+         * @param {jQuery} $btn
+         */
+        togglePill: function($btn) {
+            var $pill = $btn.closest('.ct-idx-pill');
+            var $body = $pill.find('.ct-idx-pill-body');
+            var open = $body.prop('hidden');
+            $body.prop('hidden', !open);
+            $btn.attr('aria-expanded', open ? 'true' : 'false');
+            $pill.toggleClass('ct-idx-pill--open', open);
         }
     };
 

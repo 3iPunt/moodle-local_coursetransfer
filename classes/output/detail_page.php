@@ -169,6 +169,26 @@ class detail_page implements renderable, templatable {
         // Related scheduled/adhoc tasks (shown inline here instead of a separate page).
         $data->tasks = $this->build_tasks((int)$r->id);
         $data->hastasks = !empty($data->tasks);
+
+        // If this course request was created as part of a category restore, link to
+        // the parent category request.
+        $catreqid = (int)($r->request_category_id ?? 0);
+        $data->hascatparent = $catreqid > 0;
+        if ($data->hascatparent) {
+            $data->catparentid = $catreqid;
+            $data->catparenturl = (new moodle_url('/local/coursetransfer/log.php', ['id' => $catreqid]))->out(false);
+        }
+
+        // Category subtree snapshot persisted at request time (category requests only).
+        $data->tree = null;
+        $data->hastree = false;
+        if (!empty($r->origin_category_tree)) {
+            $decodedtree = json_decode((string)$r->origin_category_tree);
+            if ($decodedtree && isset($decodedtree->name)) {
+                $data->tree = $decodedtree;
+                $data->hastree = true;
+            }
+        }
         return $data;
     }
 

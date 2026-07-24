@@ -146,18 +146,69 @@
             <i class="fa fa-chevron-down ct-idx-how-chevron" aria-hidden="true"></i>
         </button>
         <div class="ct-idx-how-body" data-region="how-body" hidden>
-            <div class="ct-idx-how-diagram">
-                <span class="ct-idx-node ct-idx-node--this"><span class="ct-idx-node-badge ct-idx-node-badge--a">A</span>{{#str}} idx_this_site, local_coursetransfer {{/str}}</span>
-                <span class="ct-idx-node-arrow"><i class="fa fa-long-arrow-left" aria-hidden="true"></i> {{#str}} platforms_role_origin, local_coursetransfer {{/str}}</span>
-                <span class="ct-idx-node"><span class="ct-idx-node-badge ct-idx-node-badge--b">B</span>{{#str}} idx_other_platform, local_coursetransfer {{/str}}</span>
+
+            {{! Scenario 1: another platform brings FROM this site (this site = origin; this token). }}
+            <div class="ct-idx-pill">
+                <button type="button" class="ct-idx-pill-head" data-action="toggle-pill" aria-expanded="false">
+                    <span class="ct-idx-pill-num">1</span>
+                    <span class="ct-idx-pill-title">{{#str}} idx_sc1_title, local_coursetransfer {{/str}}</span>
+                    <i class="fa fa-chevron-down ct-idx-pill-chevron" aria-hidden="true"></i>
+                </button>
+                <div class="ct-idx-pill-body" hidden>
+                    <div class="ct-idx-how-diagram">
+                        <span class="ct-idx-node ct-idx-node--this"><span class="ct-idx-node-badge ct-idx-node-badge--a">A</span>{{#str}} idx_this_site, local_coursetransfer {{/str}}</span>
+                        <span class="ct-idx-node-arrow"><i class="fa fa-long-arrow-left" aria-hidden="true"></i> {{#str}} platforms_role_origin, local_coursetransfer {{/str}}</span>
+                        <span class="ct-idx-node"><span class="ct-idx-node-badge ct-idx-node-badge--b">B</span>{{#str}} idx_other_platform, local_coursetransfer {{/str}}</span>
+                    </div>
+                    <p class="ct-idx-how-flow">{{#str}} idx_how_flow, local_coursetransfer {{/str}}</p>
+                    <ol class="ct-idx-steps">
+                        <li>{{#str}} idx_step1, local_coursetransfer {{/str}}</li>
+                        <li>{{#str}} idx_step2, local_coursetransfer {{/str}}</li>
+                        <li>{{#str}} idx_step3, local_coursetransfer {{/str}}</li>
+                        <li>{{#str}} idx_step4, local_coursetransfer {{/str}}</li>
+                    </ol>
+                </div>
             </div>
-            <p class="ct-idx-how-flow">{{#str}} idx_how_flow, local_coursetransfer {{/str}}</p>
-            <ol class="ct-idx-steps">
-                <li>{{#str}} idx_step1, local_coursetransfer {{/str}}</li>
-                <li>{{#str}} idx_step2, local_coursetransfer {{/str}}</li>
-                <li>{{#str}} idx_step3, local_coursetransfer {{/str}}</li>
-                <li>{{#str}} idx_step4, local_coursetransfer {{/str}}</li>
-            </ol>
+
+            {{! Scenario 2: this site brings FROM another platform (this site = target; the other's token). }}
+            <div class="ct-idx-pill">
+                <button type="button" class="ct-idx-pill-head" data-action="toggle-pill" aria-expanded="false">
+                    <span class="ct-idx-pill-num">2</span>
+                    <span class="ct-idx-pill-title">{{#str}} idx_sc2_title, local_coursetransfer {{/str}}</span>
+                    <i class="fa fa-chevron-down ct-idx-pill-chevron" aria-hidden="true"></i>
+                </button>
+                <div class="ct-idx-pill-body" hidden>
+                    <div class="ct-idx-how-diagram">
+                        <span class="ct-idx-node ct-idx-node--this"><span class="ct-idx-node-badge ct-idx-node-badge--a">A</span>{{#str}} idx_this_site, local_coursetransfer {{/str}}</span>
+                        <span class="ct-idx-node-arrow">{{#str}} platforms_role_origin, local_coursetransfer {{/str}} <i class="fa fa-long-arrow-right" aria-hidden="true"></i></span>
+                        <span class="ct-idx-node"><span class="ct-idx-node-badge ct-idx-node-badge--b">B</span>{{#str}} idx_other_platform, local_coursetransfer {{/str}}</span>
+                    </div>
+                    <p class="ct-idx-how-flow">{{#str}} idx_sc2_flow, local_coursetransfer {{/str}}</p>
+                    <ol class="ct-idx-steps">
+                        <li>{{#str}} idx_sc2_step1, local_coursetransfer {{/str}}</li>
+                        <li>{{#str}} idx_sc2_step2, local_coursetransfer {{/str}}</li>
+                        <li>{{#str}} idx_sc2_step3, local_coursetransfer {{/str}}</li>
+                    </ol>
+                </div>
+            </div>
+
+            {{! Scenario 3: same site (loopback, for testing). }}
+            <div class="ct-idx-pill">
+                <button type="button" class="ct-idx-pill-head" data-action="toggle-pill" aria-expanded="false">
+                    <span class="ct-idx-pill-num">3</span>
+                    <span class="ct-idx-pill-title">{{#str}} idx_sc3_title, local_coursetransfer {{/str}}</span>
+                    <i class="fa fa-chevron-down ct-idx-pill-chevron" aria-hidden="true"></i>
+                </button>
+                <div class="ct-idx-pill-body" hidden>
+                    <div class="ct-idx-how-diagram">
+                        <span class="ct-idx-node ct-idx-node--this"><span class="ct-idx-node-badge ct-idx-node-badge--a">A</span>{{#str}} idx_this_site, local_coursetransfer {{/str}}</span>
+                        <span class="ct-idx-node-arrow"><i class="fa fa-refresh" aria-hidden="true"></i></span>
+                        <span class="ct-idx-node ct-idx-node--this"><span class="ct-idx-node-badge ct-idx-node-badge--a">A</span>{{#str}} idx_this_site, local_coursetransfer {{/str}}</span>
+                    </div>
+                    <p class="ct-idx-how-flow">{{#str}} idx_sc3_desc, local_coursetransfer {{/str}}</p>
+                </div>
+            </div>
+
             <div class="ct-alert ct-alert--info">
                 <i class="fa fa-info-circle ct-alert-icon" aria-hidden="true"></i>
                 <p>{{#str}} idx_pairing_note, local_coursetransfer {{/str}} <a href="{{ url_logs }}">{{#str}} logs_page, local_coursetransfer {{/str}}</a>.</p>

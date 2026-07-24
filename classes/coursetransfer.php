@@ -872,6 +872,8 @@ class coursetransfer {
                 category::update($targetcategoryid, $origincategoryname, $origincategoryidnumber, $origincategordesc);
             }
             $requestobject->origin_category_name = $origincategoryname;
+            // Persist a snapshot of the subtree so the request detail can show it later.
+            $requestobject->origin_category_tree = is_string($res->data) ? $res->data : json_encode($data);
             coursetransfer_request::insert_or_update($requestobject, $requestobject->id);
 
             // 3. Recreate the tree: root courses + nested subcategories.

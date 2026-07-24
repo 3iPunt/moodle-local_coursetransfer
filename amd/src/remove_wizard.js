@@ -40,8 +40,9 @@
 define([
     'jquery',
     'core/ajax',
-    'core/str'
-], function($, Ajax, Str) {
+    'core/str',
+    'local_coursetransfer/category_tree'
+], function($, Ajax, Str, CategoryTree) {
     "use strict";
 
     var PERPAGE = 5;
@@ -57,7 +58,9 @@ define([
         'rmv_selected', 'rmv_selected_none', 'rmv_sel_title_course', 'rmv_sel_title_category',
         'rmv_sel_desc_course', 'rmv_sel_desc_category', 'rmv_search_ph_course',
         'rmv_search_ph_category', 'rmv_col_course', 'rmv_col_category', 'rmv_col_meta',
-        'rmv_will_delete_in', 'rmv_list_heading', 'rmv_more', 'rmv_confirm_check', 'rmv_run'
+        'rmv_will_delete_in', 'rmv_list_heading', 'rmv_more', 'rmv_confirm_check', 'rmv_run',
+        // Category subtree preview.
+        'rw_loading', 'rcc_tree_title', 'rcc_tree_empty', 'rcc_tree_error'
     ];
 
     var Wizard = {
@@ -829,6 +832,32 @@ define([
             this.state.confirm = false;
             this.$root.find('[data-action="toggle-confirm"]').attr('aria-checked', 'false');
             this.region('submit-error').prop('hidden', true);
+
+            this.renderTree();
+        },
+
+        /**
+         * Category subtree preview (only for a single selected category): shows the
+         * hierarchy that will be deleted, so the destructive action is explicit.
+         */
+        renderTree: function() {
+            var s = this.state;
+            var $wrap = this.region('tree');
+            var $body = this.region('tree-body');
+            if (!$wrap.length) {
+                return;
+            }
+            var ids = this.selectedIds();
+            if (s.kind !== 'category' || ids.length !== 1) {
+                $wrap.prop('hidden', true);
+                return;
+            }
+            $wrap.prop('hidden', false);
+            CategoryTree.load($body, s.siteid, parseInt(ids[0], 10), {
+                loading: this.S.rw_loading,
+                empty: this.S.rcc_tree_empty,
+                error: this.S.rcc_tree_error
+            });
         },
 
         // ---- Submit ----------------------------------------------------
