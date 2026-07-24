@@ -73,6 +73,9 @@ class search_category extends external_api {
         return new external_function_parameters(
             [
                 'text' => new external_value(PARAM_TEXT, 'Text for searching a destination category'),
+                'type' => new external_value(PARAM_ALPHA,
+                    'Restore type: "category" (option 0 = Top/root) or "course" (option 0 = default category)',
+                    VALUE_DEFAULT, ''),
             ]
         );
     }
@@ -81,18 +84,23 @@ class search_category extends external_api {
      * Search destination categories by (path) name.
      *
      * Only categories where the user can create courses are offered, mirroring
-     * the capability the plain select used. Result 0 is the synthetic "default
-     * category" option, returned when the query is empty or matches its label,
-     * so the default remains reachable from the autocomplete.
+     * the capability the plain select used. Result 0 is the synthetic option
+     * returned when the query is empty or matches its label, so it stays
+     * reachable from the autocomplete. Its meaning (and label) depends on the
+     * restore type: for a category restore it is the top level (Moodle's "Top",
+     * parent 0 = a new root category); for a course restore it is the site
+     * default category (a course cannot live under Top).
      *
      * @param string $text
+     * @param string $type Restore type ("category" | "course" | "").
      * @return array
      * @throws invalid_parameter_exception
      */
-    public static function search_by_name(string $text): array {
+    public static function search_by_name(string $text, string $type = ''): array {
         $params = self::validate_parameters(
             self::search_by_name_parameters(), [
                 'text' => $text,
+                'type' => $type,
             ]
         );
 
@@ -103,8 +111,11 @@ class search_category extends external_api {
         $data = [];
 
         try {
-            // The default-category pseudo option (id 0), always first when it matches.
-            $defaultlabel = get_string('rw_defaultcat', 'local_coursetransfer');
+            // The id-0 pseudo option, always first when it matches. Label by type:
+            // category => Moodle's core "Top"; course => plugin "default category".
+            $defaultlabel = ($params['type'] === 'category')
+                ? get_string('top')
+                : get_string('rw_defaultcat', 'local_coursetransfer');
             if ($needle === '' || core_text::strpos(core_text::strtolower($defaultlabel), $needle) !== false) {
                 $d = new stdClass();
                 $d->id = 0;

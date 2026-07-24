@@ -63,9 +63,17 @@ define(['core/ajax'], function(Ajax) {
          * @param {Function} failure Called with the error on failure.
          */
         transport: function(selector, query, success, failure) {
+            // The restore type (category|course) drives the id-0 label server-side
+            // (category => "Top", course => default category); read it off the
+            // enhanced <select> so a course card never shows "Top".
+            var type = '';
+            var el = document.querySelector(selector);
+            if (el && el.dataset) {
+                type = el.dataset.catType || '';
+            }
             Ajax.call([{
                 methodname: 'local_coursetransfer_dest_search_category_name',
-                args: {text: query || ''}
+                args: {text: query || '', type: type}
             }])[0].then(function(response) {
                 success(response && response.data ? response.data : []);
                 return response;

@@ -117,10 +117,14 @@ define([
             var strrequests = STRINGKEYS.map(function(key) {
                 return {key: key, component: 'local_coursetransfer'};
             });
+            // Moodle's own "Top" label (root category) for the category-restore
+            // default option, so we use core terminology.
+            strrequests.push({key: 'top', component: 'core'});
             Str.get_strings(strrequests).then(function(values) {
                 STRINGKEYS.forEach(function(key, i) {
                     self.S[key] = values[i];
                 });
+                self.S.top = values[STRINGKEYS.length];
                 return self.bind();
             }).catch(function() {
                 // Even without strings the UI must respond.
@@ -1210,6 +1214,16 @@ define([
             this.region('removeorigin-desc').text(pick(this.S.rw_removeorigin_desc, this.S.rw_removeorigin_cat_desc) || '');
             this.region('removeorigin-confirm-text')
                 .text(pick(this.S.rw_removeorigin_confirm, this.S.rw_removeorigin_confirm_cat) || '');
+
+            // Id-0 label of the destination autocomplete depends on the type: for
+            // a category restore it means the top level (Moodle's "Top"); for a
+            // course, the default category. Set the option text + cache + the
+            // data-cat-type the transport reads, BEFORE the select is enhanced.
+            var deflabel = pick(this.S.rw_defaultcat, this.S.top) || '';
+            this.catLabels['0'] = deflabel;
+            var $dc = this.$root.find('#ct-destcat');
+            $dc.attr('data-cat-type', cat ? 'category' : 'course');
+            $dc.find('option[value="0"]').text(deflabel);
         },
 
         /**
@@ -1393,7 +1407,8 @@ define([
                 // Wrapped so form-autocomplete's generated markup stays grouped.
                 var cat = String(d.categorytarget || 0);
                 var $acwrap = $('<div>').addClass('ct-acwrap');
-                var $sel = $('<select>').addClass('ct-input ct-catac').attr('data-action', 'card-cat');
+                var $sel = $('<select>').addClass('ct-input ct-catac')
+                    .attr('data-action', 'card-cat').attr('data-cat-type', 'course');
                 $sel.append($('<option>').attr('value', cat).attr('selected', 'selected')
                     .text(this.catLabel(cat)));
                 $acwrap.append($sel);

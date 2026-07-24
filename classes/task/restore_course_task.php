@@ -23,7 +23,7 @@
 // Córdoba, Extremadura, Vigo, Las Palmas de Gran Canaria y Burgos.
 
 /**
- * logs_course_response_table
+ * restore_course_task
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
@@ -43,7 +43,7 @@ use local_coursetransfer\coursetransfer_restore;
 use moodle_exception;
 
 /**
- * logs_course_response_table
+ * restore_course_task
  *
  * @package    local_coursetransfer
  * @copyright  2023 Proyecto UNIMOODLE
