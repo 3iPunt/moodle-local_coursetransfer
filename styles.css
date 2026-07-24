@@ -1965,6 +1965,48 @@
         text-align: center;
     }
 
+    .local-coursetransfer .ct-review-item {
+        flex-direction: column;
+    }
+
+    .local-coursetransfer .ct-review-kv {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .local-coursetransfer .ct-review-item-dest {
+        justify-content: center;
+    }
+
+    .local-coursetransfer .ct-destopt-extra {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        margin: 10px;
+    }
+
+    .local-coursetransfer .ct-switchrow {
+        flex-direction: column;
+    }
+
+    .local-coursetransfer .ct-destcard-head {
+        display: flex !important;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .local-coursetransfer .ct-destopt-extra {
+        padding: 0 !important;
+    }
+
+    .local-coursetransfer .ct-destopt {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
     .local-coursetransfer .ct-wizard-footer [data-action="primary"] {
         order: 1;
     }
@@ -2039,6 +2081,8 @@
         overflow-wrap: anywhere;
         word-break: break-word;
         text-align: center;
+        display: flex !important;
+        flex-direction: column;
     }
 
     /* Sub-line and code stay in NORMAL flow (each label and its value are
@@ -2049,6 +2093,8 @@
         overflow-wrap: anywhere;
         word-break: break-word;
         text-align: center;
+        display: flex !important;
+        flex-direction: column;
     }
 
     /* Body spans the full width so the centred text reads as centred (a flex
@@ -2058,11 +2104,20 @@
         width: 100%;
     }
 
+    .local-coursetransfer .ct-revhead {
+        flex-direction: column;
+    }
+
+    .local-coursetransfer .ct-revstats {
+        flex-direction: column;
+        display: flex !important;
+    }
+
     /* Site bar ("Bringing content from…"): stack on a narrow column, and let
        the (often URL-long) site name wrap instead of overflowing. */
     .local-coursetransfer .ct-sitebar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
     }
 
     .local-coursetransfer .ct-sitebar-name {
@@ -2075,9 +2130,13 @@
 
     .local-coursetransfer .ct-selrow-meta {
         width: auto;
-        text-align: center;
+        text-align: center !important;
         margin-top: 2px;
         font-weight: 600;
+    }
+
+    .local-coursetransfer .ct-startcard-body {
+        text-align: center;
     }
 
     /* Ajax search box: centre the icon + field (and its text) to match the
