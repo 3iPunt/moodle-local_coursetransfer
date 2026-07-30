@@ -40,8 +40,13 @@ if ($hassiteconfig) {
 
     global $ADMIN, $CFG;
 
-    $ADMIN->add('modules', new admin_category('local_coursetransfer_category',
-            new lang_string('pluginname', 'local_coursetransfer')));
+    // The category may already exist: local_coursetransfermanager creates it too
+    // when its settings load first (plugin settings load in displayname order,
+    // which is locale-dependent).
+    if (!$ADMIN->locate('local_coursetransfer_category')) {
+        $ADMIN->add('modules', new admin_category('local_coursetransfer_category',
+                new lang_string('pluginname', 'local_coursetransfer')));
+    }
 
     $ADMIN->add('local_coursetransfer_category', new admin_externalpage('local_coursetransfer_config',
             get_string('configuration', 'local_coursetransfer'),
