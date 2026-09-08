@@ -2,6 +2,14 @@
 
 All notable changes to this plugin are documented here.
 
+## Unreleased
+
+### Fixed
+
+- **Platforms page and site removal failing with `textconditionsnotallowed`:** the
+  "in use" lookup compared the TEXT column `siteurl` with a plain equality condition.
+  It now uses `sql_compare_text()`.
+
 ## 2.0.0 — 2026-07-30
 
 Major release: GUI redesign (Tresipunt design system), Moodle 4.5 compatibility
