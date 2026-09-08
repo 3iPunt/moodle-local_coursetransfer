@@ -108,6 +108,16 @@ class coursetransfer_backup {
 
         self::set_value_settings_section_activities($bc, $courseid, $rootusers, $sections);
 
+        // Core defaults the 'filename' setting to 'backup.mbz' for every backup. Backups without
+        // user data are stored by backup_helper::store_backup_file() in the requesting user's
+        // private backup area (one file area shared by all their requests), and that function
+        // deletes any existing file with the same pathname before storing the new one. Without a
+        // unique filename per request, two coursetransfer backups requested by the same user that
+        // overlap in time would overwrite each other's backup.mbz, so give each request its own name.
+        $bc->get_plan()->get_setting('filename')->set_status(base_setting::NOT_LOCKED);
+        $bc->get_plan()->get_setting('filename')->set_value(
+                'local_coursetransfer_' . $requestoriginid . '_' . $courseid . '.mbz');
+
         $bc->set_execution(backup::EXECUTION_DELAYED);
         $bc->save_controller();
         $asynctask = new create_backup_course_task();

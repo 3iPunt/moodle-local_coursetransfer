@@ -2,6 +2,16 @@
 
 All notable changes to this plugin are documented here.
 
+## Unreleased
+
+### Fixed
+
+- **Concurrent backups from the same user overwriting each other:** course
+  backups shared core's default `backup.mbz` filename, so two overlapping
+  coursetransfer requests by the same user deleted each other's file in the
+  user's private backup area (error 10201). Each backup request now gets a
+  unique filename.
+
 ## 2.0.0 — 2026-07-30
 
 Major release: GUI redesign (Tresipunt design system), Moodle 4.5 compatibility
