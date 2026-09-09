@@ -233,7 +233,8 @@ class coursetransfer_sites {
     public static function is_in_use(string $host): bool {
         global $DB;
         // The siteurl column is TEXT, so a plain equality condition is rejected by the DML layer.
-        $select = $DB->sql_compare_text('siteurl') . ' = ' . $DB->sql_compare_text(':siteurl');
+        // The length is explicit: the 32-character default would compare only the start of the URL.
+        $select = $DB->sql_compare_text('siteurl', 255) . ' = ' . $DB->sql_compare_text(':siteurl', 255);
         return $DB->record_exists_select(
             'local_coursetransfer_request',
             $select,

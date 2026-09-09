@@ -25,6 +25,7 @@
 namespace local_coursetransfer;
 
 use advanced_testcase;
+use dml_exception;
 
 /**
  * The siteurl column of local_coursetransfer_request is TEXT: the lookup must not use a
@@ -45,25 +46,47 @@ final class coursetransfer_sites_in_use_test extends advanced_testcase {
     }
 
     /**
-     * A host with a request row is in use; a host without one is not; trailing slashes are ignored.
+     * Registers a completed request coming from the given site.
+     *
+     * @param string $siteurl
+     * @throws dml_exception
      */
-    public function test_is_in_use(): void {
+    protected function add_request(string $siteurl): void {
         global $DB;
-
-        $this->assertFalse(coursetransfer_sites::is_in_use('https://origin.example.com'));
 
         $DB->insert_record('local_coursetransfer_request', (object) [
             'type' => coursetransfer_request::TYPE_COURSE,
-            'siteurl' => 'https://origin.example.com',
+            'siteurl' => $siteurl,
             'direction' => coursetransfer_request::DIRECTION_REQUEST,
             'userid' => 2,
             'status' => coursetransfer_request::STATUS_COMPLETED,
             'timecreated' => time(),
             'timemodified' => time(),
         ]);
+    }
+
+    /**
+     * A host with a request row is in use; a host without one is not; trailing slashes are ignored.
+     */
+    public function test_is_in_use(): void {
+        $this->assertFalse(coursetransfer_sites::is_in_use('https://origin.example.com'));
+
+        $this->add_request('https://origin.example.com');
 
         $this->assertTrue(coursetransfer_sites::is_in_use('https://origin.example.com'));
         $this->assertTrue(coursetransfer_sites::is_in_use('https://origin.example.com/'));
         $this->assertFalse(coursetransfer_sites::is_in_use('https://other.example.com'));
+    }
+
+    /**
+     * Two platforms whose URLs share their first 32 characters are still different sites: the
+     * comparison must not fall back to the default length of sql_compare_text(), which would
+     * truncate the URL on the database engines that cast the column.
+     */
+    public function test_is_in_use_compares_the_whole_url(): void {
+        $this->add_request('https://campusvirtual.example.edu/2025');
+
+        $this->assertTrue(coursetransfer_sites::is_in_use('https://campusvirtual.example.edu/2025'));
+        $this->assertFalse(coursetransfer_sites::is_in_use('https://campusvirtual.example.edu/2026'));
     }
 }
