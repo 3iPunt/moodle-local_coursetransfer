@@ -92,7 +92,6 @@ class coursetransfer_backup {
                 backup::MODE_GENERAL, $userid,
                 backup::RELEASESESSION_YES);
         $bc->set_status(backup::STATUS_AWAITING);
-        $bc->set_status(backup::STATUS_AWAITING);
         $bc->get_plan()->get_setting('users')->set_status(base_setting::NOT_LOCKED);
         $bc->get_plan()->get_setting('users')->set_value($rootusers);
         $bc->get_plan()->get_setting('role_assignments')->set_status(base_setting::NOT_LOCKED);
@@ -108,15 +107,11 @@ class coursetransfer_backup {
 
         self::set_value_settings_section_activities($bc, $courseid, $rootusers, $sections);
 
-        // Core defaults the 'filename' setting to 'backup.mbz' for every backup. Backups without
-        // user data are stored by backup_helper::store_backup_file() in the requesting user's
-        // private backup area (one file area shared by all their requests), and that function
-        // deletes any existing file with the same pathname before storing the new one. Without a
-        // unique filename per request, two coursetransfer backups requested by the same user that
-        // overlap in time would overwrite each other's backup.mbz, so give each request its own name.
-        $bc->get_plan()->get_setting('filename')->set_status(base_setting::NOT_LOCKED);
-        $bc->get_plan()->get_setting('filename')->set_value(
-                'local_coursetransfer_' . $requestoriginid . '_' . $courseid . '.mbz');
+        // Core defaults 'filename' to 'backup.mbz' and stores the backup in a file area shared by
+        // every request of the same user, deleting any file already stored under that name. Without
+        // a unique name per request, two overlapping backups would destroy each other's file.
+        $filename = 'local_coursetransfer_' . $requestoriginid . '_' . $courseid . '.mbz';
+        $bc->get_plan()->get_setting('filename')->set_value($filename);
 
         $bc->set_execution(backup::EXECUTION_DELAYED);
         $bc->save_controller();
