@@ -6,6 +6,10 @@ All notable changes to this plugin are documented here.
 
 ### Fixed
 
+- **Platforms page and site removal failing with `textconditionsnotallowed`:** the
+  "in use" lookup compared the TEXT column `siteurl` with a plain equality condition.
+  It now uses `sql_compare_text()`.
+
 - **Concurrent backups from the same user overwriting each other:** course
   backups shared core's default `backup.mbz` filename, so two overlapping
   coursetransfer requests by the same user deleted each other's file in the
