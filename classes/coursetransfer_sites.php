@@ -100,14 +100,16 @@ class coursetransfer_sites {
      */
     public static function get_by_host(string $type, string $host): mixed {
         global $DB;
-        $compare = $DB->sql_compare_text('host');
-        $compareplaceholder = $DB->sql_compare_text(':host');
+        // The length is explicit: the 32-character default of sql_compare_text() would compare only
+        // the start of the URL, and two platforms sharing that prefix would resolve to the same row.
+        $compare = $DB->sql_compare_text('host', 255);
+        $compareplaceholder = $DB->sql_compare_text(':host', 255);
         $records = $DB->get_records_sql(
                 "SELECT id, host, token
                     FROM {" . self::TABLE_PREX . $type . "}
                     WHERE {$compare} = {$compareplaceholder}",
                 [
-                        'host' => $host,
+                        'host' => self::clean_host($host),
                 ]
         );
         if ($records) {
