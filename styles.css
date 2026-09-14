@@ -4870,12 +4870,19 @@
     font-size: 17px;
 }
 
+.local-coursetransfer .ct-idx-how-text {
+    flex: 1;
+    min-width: 0;
+}
+
 .local-coursetransfer .ct-idx-how-title {
+    display: block;
     font-weight: 700;
     color: var(--text-strong);
 }
 
 .local-coursetransfer .ct-idx-how-sub {
+    display: block;
     font-size: 13px;
     color: var(--text-muted);
 }
@@ -5265,4 +5272,175 @@
     border-radius: 4px;
     padding: 0 6px;
     flex: 0 0 auto;
+}
+/* ---- Legacy activity/configuration tables (rendered per row) ---------- */
+/* Moved out of the Mustache templates: a <style> block inside the body is
+   invalid HTML and was duplicated once per rendered row. */
+div[data-region='table_activities_component'] div.sections-table-header {
+    display: flex;
+    border-bottom: 2px solid #9396aa;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+div[data-region='table_activities_component'] div.section-info {
+    display: flex;
+    border-bottom: 1px solid #d7d8e2;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 400;
+}
+div[data-region='table_activities_component'] div.section-row {
+    display: flex;
+    flex-direction: column;
+}
+div[data-region='table_activities_component'] div.activities-table {
+    width: 90%;
+}
+div[data-region='table_activities_component'] div.center-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+div[data-region='table_activities_component'] div.activities-table-header {
+    display: flex;
+    border-bottom: 2px solid #9396aa;
+    padding: 5px;
+    font-size: 13px;
+    font-weight: 600;
+}
+div[data-region='table_activities_component'] div.activities-data {
+    width: 45%;
+}
+div[data-region='table_activities_component'] div.activities-data.unselected {
+    opacity: 0.4;
+}
+div[data-region='table_activities_component'] div.checkbox {
+    width: 10%;
+}
+div[data-region='table_activities_component'] div.activities-row {
+    display: flex;
+    border-bottom: 1px solid #d7d8e2;
+    padding: 5px;
+    font-size: 13px;
+    font-weight: 400;
+}
+div[data-region='table_activities_component'] .selected {
+    background-color: #f7f9fc;
+}
+div[data-region='table_activities_component'] div.checkbox {
+    width: 10%;
+}
+div[data-region='table_activities_component'] div.section-data {
+    width: 30%;
+}
+div[data-region='table_activities_component'] div.section-data.unselected {
+    opacity: 0.4;
+}
+div[data-region='table_activities_component'] .checkbox i.fa {
+    font-size: 20px;
+    padding-top: 3px;
+}
+div[data-region='table_activities_component'] .checkbox i.fa.text-success {
+    color: #21c235;
+}
+div[data-region='table_configuration_component'] .modal-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+}
+div[data-region='table_configuration_component'] ul.configuration-list {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+}
+div[data-region='table_configuration_component'] li.configuration-group {
+    display: flex;
+    margin: 20px 0;
+}
+div[data-region='table_configuration_component'] div.checkbox {
+    padding: 0 5%;
+}
+div[data-region='table_configuration_component'] div.config-title {
+    padding-bottom: 5px;
+    font-size: 14px;
+    font-weight: 700;
+}
+div[data-region='table_configuration_component'] div.config-desc {
+    padding-bottom: 5px;
+    padding-right: 10px;
+    font-size: 12px;
+    font-weight: 400;
+}
+div[data-region='table_configuration_component'] input[type="checkbox"]:checked,
+div[data-region='table_configuration_component'] input[type="checkbox"]:active,
+div[data-region='table_configuration_component'] input[type="checkbox"]:disabled {
+    box-shadow: none;
+}
+div[data-region='table_configuration_component'] .checkbox i.fa {
+    font-size: 20px;
+    padding-top: 3px;
+}
+
+div[data-region='table_configuration_component'] .checkbox i.fa.text-success {
+    color: #21c235;
+}
+
+/* ---- Step indicator and error page (moved out of their templates) ----- */
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep {
+    display: flex;
+    width: 133px;
+    justify-content: space-between;
+    align-items: center;
+    margin: auto;
+    list-style: none;
+    padding: 0;
+    position: relative;
+}
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep li.step {
+    height: 13px;
+    width: 13px;
+    background-color: black;
+    border-radius: 10px;
+}
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep li.step span.num {
+    display: none;
+}
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep li.step.current {
+    height: 34px;
+    width: 34px;
+    background: #0d6efd;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep li.step.current span.num {
+    color: white;
+    display: block;
+    margin: auto;
+    font-weight: 600;
+    font-size: 21px;
+}
+div.local_coursetransfer div[data-region="stepbystep"] ul.stepbystep li.line {
+    border-bottom: 1px dotted black;
+    width: 100%;
+    position: absolute;
+    z-index: 0;
+}
+[data-region="local_coursetransfer_error_page"] {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+[data-region="local_coursetransfer_error_page"] i.fa.fa-exclamation-triangle {
+    font-size: 38px;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    color: orange;
 }

@@ -158,6 +158,7 @@ function xmldb_local_coursetransfer_upgrade($oldversion): bool {
         } else {
             debugging('Table local_coursetransfer_request not exists');
         }
+        upgrade_plugin_savepoint(true, 2024040500, 'local', 'coursetransfer');
     }
 
     if ($oldversion < 2026061002) {
