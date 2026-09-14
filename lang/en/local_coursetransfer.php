@@ -1,5 +1,4 @@
 <?php
-$string['coursetransfer:origin_restore_category'] = 'Restore remote platform category';
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,6 +31,8 @@ $string['coursetransfer:origin_restore_category'] = 'Restore remote platform cat
  * @author     3IPUNT <contacte@tresipunt.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Course Transfer';
 $string['event_request_completed'] = 'Course transfer request completed';
@@ -244,6 +245,7 @@ $string['backupsize_larger'] = "The backup size is greater than allowed";
 $string['restore_origin_remove'] = "Delete origin course";
 $string['restore_origin_remove_desc'] = "The origin course will be deleted once restored";
 $string['coursetransfer:origin_restore'] = "Restore remote courses or categories";
+$string['coursetransfer:origin_restore_category'] = 'Restore remote platform category';
 $string['coursetransfer:origin_restore_course'] = "Restore origen platform course";
 $string['coursetransfer:origin_remove_course'] = "Remove origin platform course";
 $string['coursetransfer:origin_remove_category'] = "Remove origin platform category";
@@ -316,7 +318,7 @@ $string['in_target_adding_not_remove_enrols'] = 'Target enrols cannot be deleted
 $string['in_target_adding_not_remove_groups'] = 'Groups cannot be deleted in target, when the target is a content merge (--target_target=4)';
 $string['coursetransfer:view_logs'] = 'View logs';
 
-// Paired platforms page (TIPGOODLE-352 redesign).
+// Paired platforms page.
 $string['platform_conn_error'] = 'Connection error';
 $string['platform_conn_ok'] = 'Connected';
 $string['platform_conn_untested'] = 'Untested';
@@ -379,7 +381,7 @@ $string['platforms_saved_untested'] = 'Platform saved. Test the connection from 
 $string['platforms_this_site'] = 'This site';
 $string['platforms_test_role_pending'] = 'Will work after saving: this check needs the <strong>I send to it</strong> registration of this very platform, which will be created now.';
 
-// Executions log page (TIPGOODLE-352 redesign).
+// Executions log page.
 $string['exec_lead'] = 'The pulse of transfers in progress, waiting and with errors.';
 $string['exec_refresh'] = 'Refresh';
 $string['exec_tab_active'] = 'In progress';
@@ -448,7 +450,7 @@ $string['exec_err_nomessage'] = 'The request failed but no detail was recorded. 
 $string['exec_err_incomplete'] = 'The category restore finished incomplete: at least one course failed.';
 $string['exec_err_incomplete_action'] = 'Open the detail to see which courses failed and retry them individually.';
 
-// Request detail page (TIPGOODLE-352 redesign).
+// Request detail page.
 $string['exec_request_num'] = 'Request';
 $string['exec_open_origin'] = 'Origin course';
 $string['exec_open_dest'] = 'Destination course';
@@ -640,7 +642,7 @@ $string['rw_removeorigin_cat_desc'] = 'Destructive: the origin category will be 
 $string['rw_removeorigin_confirm_cat'] = 'I understand that the origin category will be permanently deleted on the remote platform after being restored, and that this cannot be undone.';
 $string['rw_review_removeorigin_field_cat'] = 'Delete origin category';
 $string['rw_review_dest_cat'] = '→ into {$a}';
-// Teacher course-restore assistant (TIPGOODLE-352).
+// Teacher course-restore assistant.
 $string['rct_title'] = 'Restore a remote course';
 $string['rct_lead'] = 'Bring a whole course, or just the sections you need, from another Moodle platform into this course.';
 $string['rct_back_course'] = 'Back to the course';
@@ -698,7 +700,7 @@ $string['rct_done_step2'] = 'Bringing it to your course';
 $string['rct_done_step3'] = 'Ready and available';
 $string['rct_done_see'] = 'See my restorations';
 $string['rct_sec_empty'] = 'no activities';
-// Teacher/manager category-restore assistant (TIPGOODLE-352).
+// Teacher/manager category-restore assistant.
 $string['rcc_title'] = 'Restore a remote category';
 $string['rcc_lead'] = 'Bring a whole category — all its courses, including subcategories — from another Moodle platform into this category.';
 $string['rcc_back_cat'] = 'Back to the category';
@@ -721,7 +723,7 @@ $string['rcc_tree_error'] = 'The category tree could not be loaded.';
 $string['rcc_done_title'] = 'We are preparing it';
 $string['rcc_done_desc'] = 'We are bringing the category courses into your category. It happens in the background and may take a few minutes; we will notify you when it is ready.';
 $string['rcc_done_see'] = 'See my restorations';
-// Admin remote-delete assistant (TIPGOODLE-352).
+// Admin remote-delete assistant.
 $string['rmv_title'] = 'Delete on a remote platform';
 $string['rmv_lead'] = 'Delete courses or whole categories on another connected Moodle platform. It is a destructive and remote action: what you delete is not on this site.';
 $string['rmv_start'] = 'Delete remote courses or categories';

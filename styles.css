@@ -2,12 +2,11 @@
 
 /*
  * ============================================================
- * Course Transfer design system (Tresipunt / Claude Design).
+ * Course Transfer design system (Tresipunt).
  * Everything is scoped under .local-coursetransfer so tokens and
  * component styles never leak outside the plugin's content region.
  * The page shell stays with the theme (Boost, BS4/BS5); fonts fall
  * back to the theme/system stack — no external font CDN is loaded.
- * Source of truth: .tresipunt docs, design/claude-design/.
  * ============================================================
  */
 
@@ -15,6 +14,7 @@
     /* Responsive by CONTAINER width (not viewport): the plugin content often sits
        in a narrow column (theme blocks/drawers), so layout must react to its own
        width. See the @container blocks below. */
+    /* stylelint-disable-next-line csstree/validator -- Container queries are valid CSS; the bundled csstree does not know them. */
     container: ct / inline-size;
     /* Brand (logo colours: magenta #ea1a7f primary, amber #ffa827 secondary) */
     --magenta-50: #fdeaf3;
@@ -68,7 +68,7 @@
     --border-subtle: var(--neutral-100);
     --divider: var(--neutral-100);
     --focus-ring: rgba(248, 64, 21, 0.45);
-    /* Type: the theme owns typography (decision Q4, TIPGOODLE-352). Both
+    /* Type: the theme owns typography (decision Q4). Both
        tokens resolve to `inherit` so every ct-* component uses the theme
        font; a theme shipping brand fonts (e.g. Fresk) cascades in alone. */
     --font-heading: inherit;
@@ -196,7 +196,8 @@
     font-size: 14px;
     cursor: pointer;
     text-decoration: none;
-    transition: background-color var(--dur-fast) var(--ease-standard),
+    transition:
+        background-color var(--dur-fast) var(--ease-standard),
         box-shadow var(--dur-base) var(--ease-standard),
         transform var(--dur-fast) var(--ease-standard);
 }
@@ -590,7 +591,7 @@
     align-items: center;
     justify-content: center;
     filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.10));
-    background: linear-gradient(138deg, #FFF9E4 11.83%, #FFEBED 89.48%);
+    background: linear-gradient(138deg, #fff9e4 11.83%, #ffebed 89.48%);
 }
 
 .local-coursetransfer .ct-page-icon img {
@@ -993,7 +994,8 @@
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    transition: border-color var(--dur-fast) var(--ease-standard),
+    transition:
+        border-color var(--dur-fast) var(--ease-standard),
         color var(--dur-fast) var(--ease-standard);
 }
 
@@ -1028,7 +1030,7 @@
     transform-origin: center;
 }
 
-/* ---- FontAwesome sizing per context (Moodle icons rule, TIPGOODLE-352) ---- */
+/* ---- FontAwesome sizing per context (Moodle icons rule) ---- */
 .local-coursetransfer .fa {
     line-height: 1;
 }
@@ -1128,7 +1130,8 @@
     border-radius: var(--radius-md);
     padding: 15px 17px;
     cursor: pointer;
-    transition: background-color var(--dur-fast) var(--ease-standard),
+    transition:
+        background-color var(--dur-fast) var(--ease-standard),
         border-color var(--dur-fast) var(--ease-standard);
 }
 
@@ -1521,7 +1524,8 @@
 }
 
 @keyframes ct-segment-pulse {
-    0%, 100% {
+    0%,
+    100% {
         background: var(--neutral-100);
     }
     50% {
@@ -1896,6 +1900,7 @@
 
 /* Layout stacking reacts to the CONTAINER width (the plugin content column),
    not the window — so it works even when a theme right column/drawer narrows it. */
+/* stylelint-disable-next-line csstree/validator -- Container queries are valid CSS; the bundled csstree does not know them. */
 @container ct (max-width: 720px) {
     .local-coursetransfer .ct-detail-grid {
         grid-template-columns: 1fr;
@@ -1982,9 +1987,9 @@
     }
 
     .local-coursetransfer .ct-destopt-extra {
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         display: flex !important;
         flex-direction: column;
-        align-items: center;
         align-items: center;
         margin: 10px;
     }
@@ -1994,6 +1999,7 @@
     }
 
     .local-coursetransfer .ct-destcard-head {
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         display: flex !important;
         justify-content: center;
         flex-direction: column;
@@ -2001,6 +2007,7 @@
     }
 
     .local-coursetransfer .ct-destopt-extra {
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         padding: 0 !important;
     }
 
@@ -2026,6 +2033,7 @@
     /* Card selectors (type/role/site) to a single column — overrides the inline
        `grid-template-columns:1fr 1fr` some steps set for desktop. */
     .local-coursetransfer .ct-rolecards {
+        /* stylelint-disable-next-line declaration-no-important -- Overrides an inline style set by the templates. */
         grid-template-columns: 1fr !important;
     }
 
@@ -2085,6 +2093,7 @@
         overflow-wrap: anywhere;
         word-break: break-word;
         text-align: center;
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         display: flex !important;
         flex-direction: column;
     }
@@ -2097,6 +2106,7 @@
         overflow-wrap: anywhere;
         word-break: break-word;
         text-align: center;
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         display: flex !important;
         flex-direction: column;
     }
@@ -2114,6 +2124,7 @@
 
     .local-coursetransfer .ct-revstats {
         flex-direction: column;
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         display: flex !important;
     }
 
@@ -2134,6 +2145,7 @@
 
     .local-coursetransfer .ct-selrow-meta {
         width: auto;
+        /* stylelint-disable-next-line declaration-no-important -- Overrides a base rule declared later in this file. */
         text-align: center !important;
         margin-top: 2px;
         font-weight: 600;
@@ -2348,6 +2360,7 @@
     gap: 14px 20px;
 }
 
+/* stylelint-disable-next-line csstree/validator -- Container queries are valid CSS; the bundled csstree does not know them. */
 @container ct (max-width: 540px) {
     .local-coursetransfer .ct-fields {
         grid-template-columns: 1fr;
@@ -2782,7 +2795,7 @@
 }
 
 /* ============================================================
-   Restore wizard (admin + teacher, TIPGOODLE-352)
+   Restore wizard (admin + teacher)
    ============================================================ */
 
 /* Landing: start card */
@@ -4456,7 +4469,7 @@
    leaks to other Moodle pages (this stylesheet is loaded site-wide). */
 @media (min-width: 768px) {
     body.ct-summary-page #page.drawers div[role="main"] {
-        background: linear-gradient(138deg, #FFF9E4 11.83%, #FFEBED 89.48%);
+        background: linear-gradient(138deg, #fff9e4 11.83%, #ffebed 89.48%);
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.10);
         padding: 29px;
         border-radius: 10px;

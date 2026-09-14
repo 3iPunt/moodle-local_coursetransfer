@@ -1,5 +1,4 @@
 <?php
-$string['coursetransfer:origin_restore_category'] = 'Leheneratu jatorri-plataformako kategoria';
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,6 +31,8 @@ $string['coursetransfer:origin_restore_category'] = 'Leheneratu jatorri-platafor
  * @author     3IPUNT <contacte@tresipunt.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = "Berreskuratu urruneko ikastaroak";
 $string['event_request_completed'] = 'Transferentzia-eskaera osatuta';
@@ -244,6 +245,7 @@ $string['backupsize_larger'] = "Babeskopia-tamaina baimendutakoa baino handiagoa
 $string['restore_origin_remove'] = "Ezabatu iturburuko ikastaroa";
 $string['restore_origin_remove_desc'] = "Jatorrizko ikastaroa ezabatu egingo da leheneratu ondoren";
 $string['coursetransfer:origin_restore'] = "Berrezarri urruneko ikastaroak edo kategoriak";
+$string['coursetransfer:origin_restore_category'] = 'Leheneratu jatorri-plataformako kategoria';
 $string['coursetransfer:origin_restore_course'] = "Berreskuratu iturri-plataforma ikastaroa";
 $string['coursetransfer:origin_remove_course'] = "Ezabatu ikastaroa iturri-plataformatik";
 $string['coursetransfer:origin_remove_category'] = "Ezabatu iturri-plataforma kategoria";
@@ -311,7 +313,7 @@ $string['in_target_adding_not_remove_enrols'] = 'Target enrols cannot be deleted
 $string['in_target_adding_not_remove_groups'] = 'Groups cannot be deleted in target, when the target is a content merge (--target_target=4)';
 $string['coursetransfer:view_logs'] = 'Erregistroak ikusi';
 
-// Parekatutako plataformen orria (TIPGOODLE-352 birdiseinua).
+// Parekatutako plataformen orria (birdiseinua).
 $string['platform_conn_error'] = 'Errorearekin';
 $string['platform_conn_ok'] = 'Konektatzen da';
 $string['platform_conn_untested'] = 'Probatu gabe';
@@ -374,7 +376,7 @@ $string['platforms_saved_untested'] = 'Plataforma gorde da. Probatu konexioa zer
 $string['platforms_this_site'] = 'Gune hau';
 $string['platforms_test_role_pending'] = 'Gordetzean funtzionatuko du: egiaztapen honek plataforma honen beraren <strong>Hona bidaltzen dut</strong> erregistroa behar du, orain sortuko dena.';
 
-// Executions log page (TIPGOODLE-352 redesign).
+// Executions log page.
 $string['exec_lead'] = 'Abian, zain eta errorearekin dauden transferentzien pultsua.';
 $string['exec_refresh'] = 'Eguneratu';
 $string['exec_tab_active'] = 'Abian';
@@ -443,7 +445,7 @@ $string['exec_err_nomessage'] = 'Eskaerak huts egin du baina ez da xehetasunik g
 $string['exec_err_incomplete'] = 'Kategoriaren leheneratzea osatu gabe amaitu da: gutxienez ikastaro batek huts egin du.';
 $string['exec_err_incomplete_action'] = 'Ireki xehetasuna zein ikastarok huts egin duten ikusteko eta banan-banan berriro saiatzeko.';
 
-// Request detail page (TIPGOODLE-352 redesign).
+// Request detail page.
 $string['exec_request_num'] = 'Eskaera';
 $string['exec_open_origin'] = 'Jatorrizko ikastaroa';
 $string['exec_open_dest'] = 'Helmugako ikastaroa';
@@ -635,7 +637,7 @@ $string['rw_removeorigin_cat_desc'] = 'Suntsitzailea: jatorriko kategoria urrune
 $string['rw_removeorigin_confirm_cat'] = 'Ulertzen dut jatorriko kategoria behin betiko ezabatuko dela urruneko plataforman berreskuratu ondoren, eta ekintza hau ezin dela desegin.';
 $string['rw_review_removeorigin_field_cat'] = 'Ezabatu jatorriko kategoria';
 $string['rw_review_dest_cat'] = '→ hemen: {$a}';
-// Irakaslearen ikastaro-berreskuratze laguntzailea (TIPGOODLE-352).
+// Irakaslearen ikastaro-berreskuratze laguntzailea.
 $string['rct_title'] = 'Berreskuratu urruneko ikastaroa';
 $string['rct_lead'] = 'Ekarri ikastaro oso bat, edo behar dituzun atalak bakarrik, beste Moodle plataforma batetik ikastaro honetara.';
 $string['rct_back_course'] = 'Itzuli ikastarora';
@@ -693,7 +695,7 @@ $string['rct_done_step2'] = 'Zure ikastarora ekartzen';
 $string['rct_done_step3'] = 'Prest eta eskuragarri';
 $string['rct_done_see'] = 'Ikusi nire berreskuratzeak';
 $string['rct_sec_empty'] = 'jarduerarik gabe';
-// Irakasle/kudeatzailearen kategoria-berreskuratze laguntzailea (TIPGOODLE-352).
+// Irakasle/kudeatzailearen kategoria-berreskuratze laguntzailea.
 $string['rcc_title'] = 'Berreskuratu urruneko kategoria';
 $string['rcc_lead'] = 'Ekarri kategoria oso bat —bere ikastaro guztiak, azpikategoriak barne— beste Moodle plataforma batetik kategoria honetara.';
 $string['rcc_back_cat'] = 'Itzuli kategoriara';
@@ -716,7 +718,7 @@ $string['rcc_tree_error'] = 'Ezin izan da kategoriaren zuhaitza kargatu.';
 $string['rcc_done_title'] = 'Prestatzen ari gara';
 $string['rcc_done_desc'] = 'Kategoriaren ikastaroak zure kategoriara ekartzen ari gara. Bigarren mailan gertatzen da eta minutu batzuk behar ditzake; prest dagoenean jakinaraziko dizugu.';
 $string['rcc_done_see'] = 'Ikusi nire berreskuratzeak';
-// Urrutiko ezabatze-laguntzailea (administratzailea) (TIPGOODLE-352).
+// Urrutiko ezabatze-laguntzailea (administratzailea).
 $string['rmv_title'] = 'Ezabatu urruneko plataforman';
 $string['rmv_lead'] = 'Ezabatu ikastaroak edo kategoria osoak konektatutako beste Moodle plataforma batean. Ekintza suntsitzailea eta urrunekoa da: ezabatzen dena ez dago gune honetan.';
 $string['rmv_start'] = 'Ezabatu urruneko ikastaroak edo kategoriak';

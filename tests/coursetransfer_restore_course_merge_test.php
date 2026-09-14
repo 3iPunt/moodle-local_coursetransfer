@@ -73,8 +73,6 @@ require_once($CFG->libdir . '/setuplib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class coursetransfer_restore_course_merge_test extends advanced_testcase {
-
-
     /** @var stdClass Origin Course */
     protected $origincourse;
 
@@ -146,7 +144,7 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
      * @throws invalid_parameter_exception
      * @throws moodle_exception
      */
-    public function setUp():void {
+    public function setUp(): void {
 
         $this->resetAfterTest(true);
         $this->generator = phpunit_util::get_data_generator();
@@ -291,15 +289,18 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
         $this->create_courses();
         // 4. Test in Target Course. With Users and Groups. Merge Content and Users and Groups.
         $configuration4 = new configuration_course(
-                backup::TARGET_EXISTING_ADDING,
-                false,
-                false,
-                true,
-                false,
-                0
+            backup::TARGET_EXISTING_ADDING,
+            false,
+            false,
+            true,
+            false,
+            0
         );
-        list($requesttarget4, $requestorigin4) = $this->test_restore_course(
-                $configuration4, $this->targetcourse4, $this->origincourse);
+        [$requesttarget4, $requestorigin4] = $this->test_restore_course(
+            $configuration4,
+            $this->targetcourse4,
+            $this->origincourse
+        );
 
         // EXECUTE TASKS.
         $this->execute_tasks();
@@ -337,7 +338,11 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
         $field = get_config('local_coursetransfer', 'origin_field_search_user');
         $value = $USER->{$field};
         target_course_callback_external::target_backup_course_completed(
-                $field, $value, $requesttarget->id, $file->get_filesize(), $file->get_filepath()
+            $field,
+            $value,
+            $requesttarget->id,
+            $file->get_filesize(),
+            $file->get_filepath()
         );
         return $file;
     }
@@ -357,43 +362,48 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
      * @throws moodle_exception
      */
     protected function test_restore_course(
-            configuration_course $configuration, stdClass $coursetarget, stdClass $courseorigin, $sections = []): array {
+        configuration_course $configuration,
+        stdClass $coursetarget,
+        stdClass $courseorigin,
+        $sections = []
+    ): array {
 
         $requesttarget = coursetransfer_request::set_request_restore_course(
-                $this->user,
-                $this->siteorigin,
-                $coursetarget->id,
-                $courseorigin->id,
-                $configuration,
-                $sections,
-                null);
+            $this->user,
+            $this->siteorigin,
+            $coursetarget->id,
+            $courseorigin->id,
+            $configuration,
+            $sections,
+            null
+        );
 
         $requestorigin = coursetransfer_request::set_request_restore_course_response(
-                $this->user,
-                $requesttarget->id,
-                $this->sitetarget,
-                $coursetarget->id,
-                $courseorigin,
-                $configuration,
-                $sections);
+            $this->user,
+            $requesttarget->id,
+            $this->sitetarget,
+            $coursetarget->id,
+            $courseorigin,
+            $configuration,
+            $sections
+        );
 
         // Create Backup.
         $restask = coursetransfer_backup::create_task_backup_course(
-                $courseorigin->id,
-                $this->user->id,
-                $this->sitetarget,
-                $requesttarget->id,
-                $requestorigin->id,
-                $sections,
-                $configuration->originenrolusers,
-                null,
-                true
+            $courseorigin->id,
+            $this->user->id,
+            $this->sitetarget,
+            $requesttarget->id,
+            $requestorigin->id,
+            $sections,
+            $configuration->originenrolusers,
+            null,
+            true
         );
 
         $this->assertTrue($restask);
 
         return [$requesttarget, $requestorigin];
-
     }
 
     /**
@@ -423,8 +433,13 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
         $fs = get_file_storage();
 
         $file = $fs->get_file(
-                $context->id, 'local_coursetransfer', 'backup',
-                $requestorigin->id, '/', 'backup.mbz');
+            $context->id,
+            'local_coursetransfer',
+            'backup',
+            $requestorigin->id,
+            '/',
+            'backup.mbz'
+        );
 
         $this->assertNotEmpty($file);
 
@@ -442,8 +457,12 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
      * @throws dml_exception
      */
     protected function execute_restore(
-            stdClass $requesttarget, stdClass $requestorigin, stdClass $coursetarget, stdClass $courseorigin,
-            stored_file $file) {
+        stdClass $requesttarget,
+        stdClass $requestorigin,
+        stdClass $coursetarget,
+        stdClass $courseorigin,
+        stored_file $file
+    ) {
 
         $requesttarget = coursetransfer_request::get($requesttarget->id);
         $requestorigin = coursetransfer_request::get($requestorigin->id);
@@ -569,5 +588,4 @@ class coursetransfer_restore_course_merge_test extends advanced_testcase {
             $this->assertCount($g['count'], $members);
         }
     }
-
 }

@@ -1,5 +1,4 @@
 <?php
-$string['coursetransfer:origin_restore_category'] = 'Restaurar categoría de plataforma orixe';
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,6 +31,8 @@ $string['coursetransfer:origin_restore_category'] = 'Restaurar categoría de pla
  * @author     3IPUNT <contacte@tresipunt.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = "Restaurar cursos remotos";
 $string['event_request_completed'] = 'Petición de transferencia completada';
@@ -244,6 +245,7 @@ $string['backupsize_larger'] = "O tamaño da copia de seguridade é superior ao 
 $string['restore_origin_remove'] = "Eliminar o curso de orixe";
 $string['restore_origin_remove_desc'] = "O curso de orixe eliminarase unha vez restaurado";
 $string['coursetransfer:origin_restore'] = "Restaurar cursos ou categorías remotos";
+$string['coursetransfer:origin_restore_category'] = 'Restaurar categoría de plataforma orixe';
 $string['coursetransfer:origin_restore_course'] = "Curso de restauración da plataforma de orixe";
 $string['coursetransfer:origin_remove_course'] = "Eliminar o curso da plataforma de orixe";
 $string['coursetransfer:origin_remove_category'] = "Eliminar a categoría da plataforma de orixe";
@@ -311,7 +313,7 @@ $string['in_target_adding_not_remove_enrols'] = 'Os rexistros de destino non se 
 $string['in_target_adding_not_remove_groups'] = 'Non se poden eliminar grupos no destino, cando o destino é unha combinación de contido (--target_target=4)';
 $string['coursetransfer:view_logs'] = 'Ver rexistros';
 
-// Páxina de plataformas emparelladas (redeseño TIPGOODLE-352).
+// Páxina de plataformas emparelladas.
 $string['platform_conn_error'] = 'Con erro';
 $string['platform_conn_ok'] = 'Conecta';
 $string['platform_conn_untested'] = 'Sen probar';
@@ -374,7 +376,7 @@ $string['platforms_saved_untested'] = 'Plataforma gardada. Proba a conexión des
 $string['platforms_this_site'] = 'Este sitio';
 $string['platforms_test_role_pending'] = 'Quedará operativo ao gardar: esta comprobación necesita o rexistro <strong>Envío a</strong> desta mesma plataforma, que se creará agora.';
 
-// Executions log page (TIPGOODLE-352 redesign).
+// Executions log page.
 $string['exec_lead'] = 'O pulso das transferencias en curso, en espera e con erro.';
 $string['exec_refresh'] = 'Actualizar';
 $string['exec_tab_active'] = 'En curso';
@@ -443,7 +445,7 @@ $string['exec_err_nomessage'] = 'A petición fallou pero non se rexistrou ningú
 $string['exec_err_incomplete'] = 'A restauración de categoría rematou incompleta: polo menos un curso fallou.';
 $string['exec_err_incomplete_action'] = 'Abre o detalle para ver que cursos fallaron e reintentalos individualmente.';
 
-// Request detail page (TIPGOODLE-352 redesign).
+// Request detail page.
 $string['exec_request_num'] = 'Petición';
 $string['exec_open_origin'] = 'Curso de orixe';
 $string['exec_open_dest'] = 'Curso de destino';
@@ -635,7 +637,7 @@ $string['rw_removeorigin_cat_desc'] = 'Destrutivo: a categoría de orixe elimina
 $string['rw_removeorigin_confirm_cat'] = 'Entendo que a categoría de orixe eliminarase de forma permanente na plataforma remota tras restaurala, e que esta acción non se pode desfacer.';
 $string['rw_review_removeorigin_field_cat'] = 'Eliminar categoría de orixe';
 $string['rw_review_dest_cat'] = '→ en {$a}';
-// Asistente de restauración de curso para o profesor (TIPGOODLE-352).
+// Asistente de restauración de curso para o profesor.
 $string['rct_title'] = 'Restaurar curso remoto';
 $string['rct_lead'] = 'Trae un curso completo, ou só as seccións que necesites, desde outra plataforma Moodle a este curso.';
 $string['rct_back_course'] = 'Volver ao curso';
@@ -693,7 +695,7 @@ $string['rct_done_step2'] = 'Traendo ao teu curso';
 $string['rct_done_step3'] = 'Listo e dispoñible';
 $string['rct_done_see'] = 'Ver as miñas restauracións';
 $string['rct_sec_empty'] = 'sen actividades';
-// Asistente de restauración de categoría para profesor/xestor (TIPGOODLE-352).
+// Asistente de restauración de categoría para profesor/xestor.
 $string['rcc_title'] = 'Restaurar categoría remota';
 $string['rcc_lead'] = 'Trae unha categoría completa —todos os seus cursos, incluídas as subcategorías— desde outra plataforma Moodle a esta categoría.';
 $string['rcc_back_cat'] = 'Volver á categoría';
@@ -716,7 +718,7 @@ $string['rcc_tree_error'] = 'Non se puido cargar a árbore da categoría.';
 $string['rcc_done_title'] = 'Estámolo preparando';
 $string['rcc_done_desc'] = 'Estamos traendo os cursos da categoría á túa categoría. Ocorre en segundo plano e pode tardar uns minutos; avisarémoste cando estea listo.';
 $string['rcc_done_see'] = 'Ver as miñas restauracións';
-// Asistente de borrado remoto (admin) (TIPGOODLE-352).
+// Asistente de borrado remoto (admin).
 $string['rmv_title'] = 'Eliminar en plataforma remota';
 $string['rmv_lead'] = 'Borra cursos ou categorías completas noutra plataforma Moodle conectada. É unha acción destrutiva e remota: o que se borra non está neste sitio.';
 $string['rmv_start'] = 'Eliminar cursos ou categorías remotas';
